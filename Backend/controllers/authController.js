@@ -1,98 +1,56 @@
-const pool = require('../config/db');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// authController.js
 
-// Register a new user
-exports.register = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+require("dotenv").config();
 
-    // Check if user exists
-    const [existingUser] = await pool.query(
-      'SELECT * FROM users WHERE username = ? OR email = ?',
-      [username, email]
-    );
+const bcrypt = require("bcrypt");
 
-    if (existingUser.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const [result] = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email, hashedPassword]
-    );
-
-    // Create token
-    const token = jwt.sign(
-      { id: result.insertId },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.status(201).json({ token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Login user
 exports.login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { username, password } = req.body;
-
-    // Check if user exists
-    const [users] = await pool.query(
-      'SELECT * FROM users WHERE username = ?',
-      [username]
-    );
-
-    if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    const user = await User.findByEmail(email); // استخدم الدالة المناسبة في الموديل
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
     }
 
-    const user = users[0];
-
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res
+        .status(401)
+        .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
     }
 
-    // Create token
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     res.json({ token });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res
+      .status(500)
+      .json({ message: "حدث خطأ أثناء تسجيل الدخول", error: error.message });
   }
 };
 
-// Get user profile
-exports.getProfile = async (req, res) => {
+exports.register = async (req, res) => {
+  const { name, email, password, role } = req.body;
+
   try {
-    const [users] = await pool.query(
-      'SELECT id, username, email, created_at FROM users WHERE id = ?',
-      [req.user.id]
-    );
+    const newUser = new User(name, email, password, role || "user");
+    const userId = await newUser.create();
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+  
+ 
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
-    res.json(users[0]);
+    res.status(201).json({ message: "تم إنشاء المستخدم بنجاح", userId, token });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("❌ Error in register:", error);
+    res.status(500).json({ message: error.message || "حدث خطأ أثناء التسجيل" });
   }
 };
