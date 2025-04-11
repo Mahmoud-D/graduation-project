@@ -9,7 +9,7 @@ const {verifyToken} = require('../middleware/auth');
  router.get('/', 
     
     verifyToken, 
-    checkRole(['user']),
+    checkRole(['user', 'admin']),
     
     userController.getAllUsers);
 

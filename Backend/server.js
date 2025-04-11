@@ -61,6 +61,7 @@ app.use(express.urlencoded({ extended: true }));
 
  // Routes
 app.use('/api/users', userRoutes);
+
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/orderDishes', orderDishRoutes);
