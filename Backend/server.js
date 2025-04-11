@@ -10,12 +10,15 @@ const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/authRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const cors = require('cors');
+
 const app = express();
 
  app.use(bodyParser.json());
  const User = require('./models/User');
 const db = require('./config/db');
 
+app.use(cors());
 
   
 app.use(express.json());
