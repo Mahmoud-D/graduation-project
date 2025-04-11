@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 export default function Page() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is authenticated
