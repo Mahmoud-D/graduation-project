@@ -11,11 +11,14 @@ const authRoutes = require('./routes/authRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const cors = require('cors');
+
+
 const app = express();
 
 app.use(bodyParser.json());
 const User = require('./models/User');
 const db = require('./config/db');
+
 
 
 app.use(cors());
@@ -59,6 +62,7 @@ app.post('/execute-sql', async (req, res) => {
 
 // Routes
 app.use('/api/users', userRoutes);
+
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/orderDishes', orderDishRoutes);
