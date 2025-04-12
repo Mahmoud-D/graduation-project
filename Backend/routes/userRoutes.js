@@ -4,13 +4,13 @@ const userController = require("../controllers/userController");
 const checkRole = require("../middleware/checkRole");
 const { verifyToken } = require("../middleware/auth");
 
-router.get("/",   verifyToken,   checkRole(["adsmin"]),   userController.getAllUsers);
+router.get("/",   verifyToken,   checkRole(["admin"]),   userController.getAllUsers);
 
 router.get("/:id", verifyToken,   checkRole(["admin"]),userController.getUserById);
 
-router.put('/:id', userController.updateUser);
+router.put('/', userController.updateUser);
 
-// router.delete('/:id', userController.deleteUser);
-router.post('/:id', userController.createUser);
+router.delete('/:id', verifyToken,   checkRole(["admin"]),userController.deleteUser);
+router.post('/', verifyToken,   checkRole(["admin"]),userController.createUser);
 
 module.exports = router;
