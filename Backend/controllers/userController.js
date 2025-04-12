@@ -13,8 +13,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// الحصول على مستخدم بواسطة الـ ID
-exports.getUserById = async (req, res) => {
+ exports.getUserById = async (req, res) => {
   try {
     const user = await User.getById(req.params.id);
     if (!user) {
@@ -25,3 +24,16 @@ exports.getUserById = async (req, res) => {
     res.status(500).json({ message: 'حدث خطأ أثناء جلب بيانات المستخدم' });
   }
 };
+
+
+
+export.createUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const user = new User(name, email, password, role);
+    const userId = await user.create();
+    res.status(201).json({ message: 'تم إنشاء المستخدم بنجاح', userId });
+  } catch (error) {
+    res.status(500).json({ message: 'حدث خطأ أثناء تسجيل المستخدم' });
+  }
+};  

@@ -2,35 +2,87 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 require('dotenv').config();
 
+// التحقق من وجود السريت
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET غير موجود في ملف .env');
+}
+
 exports.verifyToken = (req, res, next) => {
   try {
-    const token = req.header('Authorization');
-
-    if (!token) {
-      return res.status(401).json({ message: 'يرجى تسجيل الدخول - لا يوجد توكن' });
+    const authHeader = req.header('Authorization');
+    
+    if (!authHeader) {
+      return res.status(401).json({ 
+        message: 'يرجى تسجيل الدخول - لا يوجد توكن',
+        error: 'missing_token' 
+      });
     }
 
-    // ✅ فك التوكن واستخراج userId
+    // استخراج التوكن بعد إزالة Bearer إذا وجدت
+    const token = authHeader.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ 
+        message: 'صيغة التوكن غير صالحة',
+        error: 'invalid_token_format' 
+      });
+    }
+
+    // فك تشفير التوكن
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // 🔍 جلب بيانات المستخدم من قاعدة البيانات باستخدام callback
-    pool.query('SELECT id, name, email, role FROM users WHERE id = ?', [userId], (err, users) => {
-      if (err) {
-        return res.status(500).json({ message: 'خطأ في قاعدة البيانات', error: err });
+    if (!userId) {
+      return res.status(401).json({ 
+        message: 'التوكن لا يحتوي على بيانات مستخدم صالحة',
+        error: 'invalid_token_payload' 
+      });
+    }
+
+    // التحقق من وجود المستخدم في قاعدة البيانات
+    pool.query(
+      'SELECT id, name, email, role FROM users WHERE id = ?', 
+      [userId], 
+      (err, users) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ 
+            message: 'خطأ في قاعدة البيانات',
+            error: 'database_error' 
+          });
+        }
+
+        if (users.length === 0) {
+          return res.status(401).json({ 
+            message: 'المستخدم غير موجود',
+            error: 'user_not_found' 
+          });
+        }
+
+        req.user = users[0];
+        next();
       }
-
-      if (users.length === 0) {
-        return res.status(401).json({ message: 'المستخدم غير موجود أو التوكن غير صالح' });
-      }
-
-      // 🛡️ حفظ بيانات المستخدم في req.user
-      req.user = users[0];
-
-      next();
-    });
+    );
   } catch (error) {
     console.error('❌ Error in verifyToken:', error);
-    return res.status(500).json({ message: 'خطأ في التحقق من التوكن', error });
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        message: 'توكن غير صالح',
+        error: 'jwt_invalid' 
+      });
+    }
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        message: 'انتهت صلاحية التوكن',
+        error: 'jwt_expired' 
+      });
+    }
+
+    return res.status(500).json({ 
+      message: 'خطأ في التحقق من التوكن',
+      error: 'server_error' 
+    });
   }
 };
