@@ -100,6 +100,28 @@ class User {
   }
 }
 
+static async update(id, data) {
+  try {
+    const [results] = await connection.promise().query('UPDATE users SET ? WHERE id = ?', [data, id]);
+    return results.affectedRows > 0;
+  } catch (err) {
+    console.error('❌ Error updating user:', err);
+    throw new Error('خطأ في تحديث المستخدم');
+  } 
 }
+static async delete(id) {
+  try {
+    const [results] = await connection.promise().query('DELETE FROM users WHERE id = ?', [id]);
+    return results.affectedRows > 0;
+  } catch (err) {
+    console.error('❌ Error deleting user:', err);
+    throw new Error('خطأ في حذف المستخدم');
+  }
+}
+}
+
+
+
+
 
 module.exports = User;
