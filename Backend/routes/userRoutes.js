@@ -8,7 +8,7 @@ router.get("/",   verifyToken,   checkRole(["admin"]),   userController.getAllUs
 
 router.get("/:id", verifyToken,   checkRole(["admin"]),userController.getUserById);
 
-router.put('/', userController.updateUser);
+router.put('/:id', userController.updateUser);
 
 router.delete('/:id', verifyToken,   checkRole(["admin"]),userController.deleteUser);
 router.post('/', verifyToken,   checkRole(["admin"]),userController.createUser);

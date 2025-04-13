@@ -41,9 +41,7 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    res.status(200).json({ message: 'تم تحديث بيانات المستخدم بنجاح' });
-
-    return;
+ 
     const { id } = req.params;
     const { name, email, password, role } = req.body;
     const user = new User(name, email, password, role);
