@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Navigation from "./navigation";
 
 export default function HeroSection() {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-dark-shade">
+      {/* Navigation */}
+      <Navigation />
+
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -17,7 +21,7 @@ export default function HeroSection() {
       </div>
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 text-center text-white">
+      <div className="container relative z-10 mx-auto px-4 text-center text-white mt-16">
         <h1 className="text-5xl md:text-6xl font-bold mb-6">
           اطلب طعامك المفضل
         </h1>
