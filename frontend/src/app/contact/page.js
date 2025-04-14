@@ -7,7 +7,7 @@ export default function ContactPage() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-8">اتصل بنا</h1>
           <p className="text-xl text-gray-600 mb-8">
-            لديك أسئلة؟ نحن هنا لمساعدتك! تواصل معنا من خلال أي من الطرق التالية.
+            لديك استفسار عن طلبك أو قائمتنا؟ نحن هنا لمساعدتك! تواصل معنا من خلال أي من الطرق التالية.
           </p>
         </div>
 
@@ -17,17 +17,23 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-gray-900">البريد الإلكتروني</h3>
-                <p className="text-gray-600">support@universityfinder.com</p>
+                <p className="text-gray-600">info@restaurant.com</p>
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">رقم الهاتف</h3>
                 <p className="text-gray-600">+1 (555) 123-4567</p>
               </div>
               <div>
+                <h3 className="font-medium text-gray-900">ساعات العمل</h3>
+                <p className="text-gray-600">
+                  كل يوم من 10 صباحاً حتى 11 مساءً
+                </p>
+              </div>
+              <div>
                 <h3 className="font-medium text-gray-900">العنوان</h3>
                 <p className="text-gray-600">
-                  123 شارع التعليم<br />
-                  مدينة أكاديمية، AC 12345<br />
+                  123 شارع المطاعم<br />
+                  مدينة الطعام، FC 12345<br />
                   الولايات المتحدة
                 </p>
               </div>

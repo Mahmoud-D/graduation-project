@@ -33,12 +33,12 @@ export default function HeroSection() {
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4 mb-8">
-        <Input
-          type="text"
-          placeholder="ابحث عن مطعمك المفضل"
-          className="bg-white/90 text-dark-shade text-right h-12"
-          style={{ color: "black" }} 
-        />
+          <Input
+            type="text"
+            placeholder="ابحث عن وجبتك المفضلة"
+            className="bg-white/90 text-dark-shade text-right h-12"
+            style={{ color: "black" }} 
+          />
           <Button className="bg-primary hover:bg-primary/90 h-12 px-8">
             ابحث
           </Button>
@@ -57,7 +57,7 @@ export default function HeroSection() {
             variant="outline"
             className="bg-transparent border-white text-white hover:bg-white/10 text-lg px-8"
           >
-            تصفح المطاعم
+            تصفح القائمة
           </Button>
         </div>
       </div>

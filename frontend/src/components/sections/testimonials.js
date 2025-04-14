@@ -7,7 +7,7 @@ const testimonials = [
     name: "أحمد محمد",
     image: "/testimonial1.jpg",
     rating: 5,
-    comment: "أفضل تطبيق توصيل طعام استخدمته! سريع وموثوق وخيارات متنوعة.",
+    comment: "أفضل مطعم في المنطقة! الأطباق الشرقية لذيذة جداً والتوصيل سريع.",
     date: "قبل 3 أيام",
   },
   {
@@ -15,7 +15,7 @@ const testimonials = [
     name: "سارة أحمد",
     image: "/testimonial2.jpg",
     rating: 5,
-    comment: "خدمة ممتازة وتوصيل سريع. العروض والخصومات رائعة!",
+    comment: "البرجر هنا رائع! الطعم مميز والخدمة ممتازة.",
     date: "قبل أسبوع",
   },
   {
@@ -23,7 +23,7 @@ const testimonials = [
     name: "محمد علي",
     image: "/testimonial3.jpg",
     rating: 4,
-    comment: "تطبيق سهل الاستخدام وخيارات متنوعة من المطاعم. أنصح به بشدة.",
+    comment: "البيتزا لذيذة والكمية مناسبة. أنصح بتجربة البيتزا الخاصة بهم.",
     date: "قبل أسبوعين",
   },
 ];
@@ -34,10 +34,10 @@ export default function Testimonials() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-dark-shade mb-4">
-            آراء العملاء
+            آراء عملائنا
           </h2>
           <p className="text-lg text-dark-shade/70">
-            ماذا يقول عملاؤنا عن تجربتهم معنا
+            ماذا يقول عملاؤنا عن تجربتهم في مطعمنا
           </p>
         </div>
 

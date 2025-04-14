@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const navLinks = [
   { name: "الرئيسية", href: "/" },
-  { name: "المطاعم", href: "/restaurants" },
+  { name: "القائمة", href: "/menu" },
   { name: "العروض", href: "/offers" },
   { name: "من نحن", href: "/about" },
   { name: "اتصل بنا", href: "/contact" },
@@ -19,13 +19,13 @@ export default function Navigation() {
           <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
-              alt="فود اكسبرس"
+              alt="مطعمنا"
               width={40}
               height={40}
               className="mr-2"
               priority
             />
-            <span className="text-xl font-bold text-dark-shade">فود اكسبرس</span>
+            <span className="text-xl font-bold text-dark-shade">مطعمنا</span>
           </Link>
 
           {/* Desktop Navigation */}

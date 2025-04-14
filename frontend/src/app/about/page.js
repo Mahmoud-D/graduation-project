@@ -7,7 +7,7 @@ export default function AboutPage() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-8">من نحن</h1>
           <p className="text-xl text-gray-600 mb-8">
-            مرحباً بكم في منصتنا، حيث نربط الطلاب بجامعات أحلامهم.
+            مرحباً بكم في مطعمنا، حيث نقدم لكم ألذ الأطباق وأسرع خدمة توصيل.
           </p>
         </div>
 
@@ -15,33 +15,32 @@ export default function AboutPage() {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">مهمتنا</h2>
             <p className="text-gray-600">
-              نحن ملتزمون بتبسيط عملية التقديم للجامعات ومساعدة الطلاب في العثور على
-              التطابق الأكاديمي المثالي. توفر منصتنا أدوات وموارد شاملة لاتخاذ
-              قرارات مستنيرة بشأن التعليم العالي.
+              نحن ملتزمون بتقديم تجربة طعام استثنائية لعملائنا، من خلال تقديم أطباق عالية الجودة
+              وخدمة توصيل سريعة وموثوقة. نهدف إلى جعل طلب الطعام تجربة سهلة وممتعة.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">ما نقدمه</h2>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>قاعدة بيانات شاملة للجامعات</li>
-              <li>توصيات مخصصة</li>
-              <li>نظام تتبع الطلبات</li>
-              <li>معلومات المنح الدراسية</li>
-              <li>إرشادات ودعم من الخبراء</li>
+              <li>قائمة متنوعة من الأطباق الشهية</li>
+              <li>توصيل سريع وموثوق</li>
+              <li>تتبع الطلبات في الوقت الفعلي</li>
+              <li>عروض وتخفيضات حصرية</li>
+              <li>خدمة عملاء على مدار الساعة</li>
             </ul>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">فريقنا</h2>
             <p className="text-gray-600">
-              يتكون فريقنا من محترفين ذوي خبرة في التعليم ومطورين ومستشارين
-              متحمسين لمساعدة الطلاب في تحقيق أهدافهم الأكاديمية. نجمع بين
-              التكنولوجيا والخبرة البشرية لتقديم أفضل توجيه ممكن.
+              يتكون فريقنا من طهاة محترفين وموظفي خدمة متميزين، ملتزمين بتقديم أفضل
+              تجربة طعام لعملائنا. نستخدم أفضل المكونات وأحدث التقنيات لضمان جودة
+              الطعام وسرعة التوصيل.
             </p>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}
