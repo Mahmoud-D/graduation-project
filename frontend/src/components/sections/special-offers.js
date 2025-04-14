@@ -6,7 +6,7 @@ const offers = [
   {
     id: 1,
     title: "خصم 30%",
-    description: "على جميع المطاعم الشرقية",
+    description: "على جميع الوجبات الشرقية",
     code: "EAST30",
     expiry: "ينتهي في 3 أيام",
     image: "/offer1.jpg",
@@ -38,10 +38,10 @@ export default function SpecialOffers() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-dark-shade mb-4">
-            عروض خاصة
+            عروضنا الخاصة
           </h2>
           <p className="text-lg text-dark-shade/70">
-            اكتشف أفضل العروض والخصومات
+            استمتع بأفضل العروض والخصومات
           </p>
         </div>
 

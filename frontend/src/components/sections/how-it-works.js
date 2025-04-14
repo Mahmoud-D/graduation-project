@@ -3,13 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 const steps = [
   {
     icon: "🔍",
-    title: "اختر مطعمك",
-    description: "تصفح مجموعة متنوعة من المطاعم واختر ما يناسبك",
+    title: "تصفح القائمة",
+    description: "اكتشف مجموعة متنوعة من الأطباق الشهية في قائمتنا",
   },
   {
     icon: "🍽️",
-    title: "حدد طلبك",
-    description: "اختر وجباتك المفضلة وأضفها إلى السلة",
+    title: "اختر وجباتك",
+    description: "أضف وجباتك المفضلة إلى السلة",
   },
   {
     icon: "💳",

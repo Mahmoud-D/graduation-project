@@ -6,7 +6,7 @@ const footerLinks = {
     { name: "من نحن", href: "/about" },
     { name: "اتصل بنا", href: "/contact" },
     { name: "الوظائف", href: "/careers" },
-    { name: "للمطاعم", href: "/restaurants" },
+    { name: "القائمة", href: "/menu" },
   ],
   legal: [
     { name: "الشروط والأحكام", href: "/terms" },
@@ -29,13 +29,13 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-shade text-white pt-16 pb-8">
+    <footer className="bg-primary text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Company Info */}
           <div>
-            <h3 className="text-2xl font-bold mb-6">فود اكسبرس</h3>
-            <p className="text-white/70 mb-4">
+            <h3 className="text-2xl font-bold mb-6">مطعمنا</h3>
+            <p className="text-white/90 mb-4">
               خدمة توصيل الطعام الأسرع والأفضل في مدينتك
             </p>
             <div className="flex gap-4">
@@ -43,7 +43,7 @@ export default function Footer() {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                 >
                   {link.icon}
                 </a>
@@ -53,13 +53,13 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-semibold mb-4">الشركة</h4>
+            <h4 className="font-semibold mb-4 text-white">الشركة</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/70 hover:text-white transition-colors"
+                    className="text-white/90 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -70,13 +70,13 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold mb-4">معلومات قانونية</h4>
+            <h4 className="font-semibold mb-4 text-white">معلومات قانونية</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/70 hover:text-white transition-colors"
+                    className="text-white/90 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -87,13 +87,13 @@ export default function Footer() {
 
           {/* Help Links */}
           <div>
-            <h4 className="font-semibold mb-4">المساعدة</h4>
+            <h4 className="font-semibold mb-4 text-white">المساعدة</h4>
             <ul className="space-y-2">
               {footerLinks.help.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/70 hover:text-white transition-colors"
+                    className="text-white/90 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -104,23 +104,23 @@ export default function Footer() {
         </div>
 
         {/* Newsletter */}
-        <div className="border-t border-white/10 pt-8 pb-4">
+        <div className="border-t border-white/20 pt-8 pb-4">
           <div className="max-w-md mx-auto text-center">
-            <h4 className="font-semibold mb-4">اشترك في نشرتنا البريدية</h4>
+            <h4 className="font-semibold mb-4 text-white">اشترك في نشرتنا البريدية</h4>
             <div className="flex gap-2">
               <input
                 type="email"
                 placeholder="بريدك الإلكتروني"
-                className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-white/40"
+                className="flex-1 px-4 py-2 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:border-white/50 text-white placeholder-white/70"
               />
-              <Button className="bg-primary hover:bg-primary/90">اشترك</Button>
+              <Button className="bg-white text-primary hover:bg-white/90">اشترك</Button>
             </div>
           </div>
         </div>
 
         {/* Copyright */}
-        <div className="text-center text-white/50 text-sm mt-8">
-          © {new Date().getFullYear()} فود اكسبرس. جميع الحقوق محفوظة
+        <div className="text-center text-white/80 text-sm mt-8">
+          © {new Date().getFullYear()} مطعمنا. جميع الحقوق محفوظة
         </div>
       </div>
     </footer>

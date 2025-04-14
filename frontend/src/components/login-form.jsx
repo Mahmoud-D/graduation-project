@@ -68,49 +68,51 @@ export function LoginForm({ className, ...props }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
+        <CardHeader className="text-right">
+          <CardTitle>تسجيل الدخول</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            أدخل بيانات اعتمادك للوصول إلى حسابك
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="grid gap-2 text-right">
+                <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="example@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  className="text-right placeholder:text-right"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="grid gap-2 text-right">
+                <Label htmlFor="password">كلمة المرور</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  className="text-right placeholder:text-right"
                 />
               </div>
               {error && (
-                <div className="text-red-500 text-sm">{error}</div>
+                <div className="text-red-500 text-sm text-right">{error}</div>
               )}
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                 </Button>
               </div>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don't have an account?{" "}
+            <div className="mt-4 text-center text-sm text-right">
+              ليس لديك حساب؟{" "}
               <a href="/register" className="underline underline-offset-4">
-                Register
+                سجل الآن
               </a>
             </div>
           </form>

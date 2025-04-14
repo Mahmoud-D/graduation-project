@@ -80,81 +80,86 @@ export function RegistrationForm({ className, ...props }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
+        <CardHeader className="text-right">
+          <CardTitle>إنشاء حساب جديد</CardTitle>
           <CardDescription>
-            Enter your information below to create your account
+            أدخل معلوماتك أدناه لإنشاء حسابك
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="firstName">First name</Label>
+                <div className="grid gap-2 text-right">
+                  <Label htmlFor="firstName">الاسم الأول</Label>
                   <Input
                     id="firstName"
-                    placeholder="John"
+                    placeholder="محمد"
                     value={formData.firstName}
                     onChange={handleChange}
                     required
+                    className="text-right placeholder:text-right"
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="lastName">Last name</Label>
+                <div className="grid gap-2 text-right">
+                  <Label htmlFor="lastName">الاسم الأخير</Label>
                   <Input
                     id="lastName"
-                    placeholder="Doe"
+                    placeholder="أحمد"
                     value={formData.lastName}
                     onChange={handleChange}
                     required
+                    className="text-right placeholder:text-right"
                   />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="grid gap-2 text-right">
+                <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="example@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  className="text-right placeholder:text-right"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="grid gap-2 text-right">
+                <Label htmlFor="password">كلمة المرور</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  className="text-right placeholder:text-right"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="grid gap-2 text-right">
+                <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
+                  className="text-right placeholder:text-right"
                 />
               </div>
               {error && (
-                <div className="text-red-500 text-sm">{error}</div>
+                <div className="text-red-500 text-sm text-right">{error}</div>
               )}
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating account..." : "Create account"}
+                  {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
                 </Button>
               </div>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+            <div className="mt-4 text-center text-sm text-right">
+              لديك حساب بالفعل؟{" "}
               <a href="/login" className="underline underline-offset-4">
-                Log in
+                تسجيل الدخول
               </a>
             </div>
           </form>
