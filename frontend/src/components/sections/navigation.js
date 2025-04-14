@@ -23,6 +23,7 @@ export default function Navigation() {
               width={40}
               height={40}
               className="mr-2"
+              priority
             />
             <span className="text-xl font-bold text-dark-shade">فود اكسبرس</span>
           </Link>

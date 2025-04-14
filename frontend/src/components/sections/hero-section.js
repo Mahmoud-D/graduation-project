@@ -11,17 +11,19 @@ export default function HeroSection() {
 
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
         <Image
           src="/hero-bg.jpg"
           alt="طعام شهي"
           fill
-          className="object-cover opacity-40"
+          className="object-cover"
           priority
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
         />
       </div>
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 text-center text-white mt-16">
+      <div className="container relative z-20 mx-auto px-4 text-center text-white mt-16">
         <h1 className="text-5xl md:text-6xl font-bold mb-6">
           اطلب طعامك المفضل
         </h1>
