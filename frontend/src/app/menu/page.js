@@ -14,6 +14,7 @@ export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = useState("الكل");
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchDishes();
   }, []);
 
