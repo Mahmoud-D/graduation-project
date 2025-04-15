@@ -15,7 +15,7 @@ const offers = [
   {
     id: 2,
     title: "توصيل مجاني",
-    description: "للطلبات فوق 100 ريال",
+    description: "للطلبات فوق 100 جنيه",
     code: "FREEDELIVERY",
     expiry: "ينتهي اليوم",
     image: "/offer2.jpg",
