@@ -1,20 +1,25 @@
-const express = require('express');
+// routes/orderRoutes.js
+
+const express = require("express");
 const router = express.Router();
-const OrderController = require('../controllers/orderController');
+const OrderController = require("../controllers/orderController");
+const orderDishController = require("../controllers/orderDishController");
+const { verifyToken } = require("../middleware/auth");
+const checkRole = require("../middleware/checkRole");
 
 // Get all orders
-router.get('/', OrderController.getAllOrders);
 
-// Get order by ID
-router.get('/:id', OrderController.getOrderById);
+ // Create new order
+router.post("/",verifyToken, OrderController.createOrder);
+// // Get order by ID
+router.get('/my-orders', verifyToken, OrderController.getMyOrders);
+router.get("/:id", OrderController.getOrderDetails);
+// // // Update order status
+router.put("/:id", OrderController.updateOrder);
 
-// Create new order
-router.post('/', OrderController.createOrder);
+// // // Delete order
+router.delete("/:id", OrderController.deleteOrder);
 
-// Update order status
-router.put('/:id', OrderController.updateOrderStatus);
-
-// Delete order
-router.delete('/:id', OrderController.deleteOrder);
+router.get("/",verifyToken,checkRole(["admin"]),OrderController.getAllOrders);
 
 module.exports = router;

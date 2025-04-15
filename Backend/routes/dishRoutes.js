@@ -1,20 +1,27 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const DishController = require('../controllers/dishController');
+const DishController = require("../controllers/dishController");
+const { verifyToken } = require("../middleware/auth");
+const checkRole = require("../middleware/checkRole");
 
-// Get all dishes
-router.get('/', DishController.getAllDishes);
+router.post("/", verifyToken, checkRole(["admin"]), DishController.createDish);
 
-// Get dish by ID
-router.get('/:id', DishController.getDishById);
+ router.put(
+  "/:id",
+  verifyToken,
+  checkRole(["admin"]),
+  DishController.updateDish
+);
 
-// Create new dish
-router.post('/', DishController.createDish);
+ router.delete(
+  "/:id",
+  verifyToken,
+  checkRole(["admin"]),
+  DishController.deleteDish
+);
 
-// Update dish
-router.put('/:id', DishController.updateDish);
+router.get("/", DishController.getAllDishes);
 
-// Delete dish
-router.delete('/:id', DishController.deleteDish);
+router.get("/:id", DishController.getDishById);
 
 module.exports = router;

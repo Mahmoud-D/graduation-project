@@ -1,149 +1,71 @@
 {
-    "info": {
-      "_postman_id": "d765f18f-6724-4bb3-808f-498b9a930d5e",
-      "name": "Dish API Collection",
-      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "item": [
-      {
-        "name": "Get All Dishes",
-        "request": {
-          "method": "GET",
-          "header": [
-            {
-              "key": "Authorization",
-              "value": "{{Authorization}}",
-              "description": "Token for Authorization"
-            }
-          ],
-          "url": {
-            "raw": "{{baseUrl}}/api/dishes",
-            "protocol": "http",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "api",
-              "dishes"
-            ]
-          }
-        }
-      },
-      {
-        "name": "Get Dish By ID",
-        "request": {
-          "method": "GET",
-          "header": [
-            {
-              "key": "Authorization",
-              "value": "{{Authorization}}",
-              "description": "Token for Authorization"
-            }
-          ],
-          "url": {
-            "raw": "{{baseUrl}}/api/dishes/:id",
-            "protocol": "http",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "api",
-              "dishes",
-              ":id"
-            ]
-          }
-        }
-      },
-      {
-        "name": "Create New Dish",
-        "request": {
-          "method": "POST",
-          "header": [
-            {
-              "key": "Authorization",
-              "value": "{{Authorization}}",
-              "description": "Token for Authorization"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": {
-            "mode": "raw",
-            "raw": "{\n  \"name\": \"طبق جديد\",\n  \"description\": \"وصف الطبق\",\n  \"price\": 50,\n  \"category\": \"مقبلات\"\n}"
-          },
-          "url": {
-            "raw": "{{baseUrl}}/api/dishes",
-            "protocol": "http",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "api",
-              "dishes"
-            ]
-          }
-        }
-      },
-      {
-        "name": "Update Dish",
-        "request": {
-          "method": "PUT",
-          "header": [
-            {
-              "key": "Authorization",
-              "value": "{{Authorization}}",
-              "description": "Token for Authorization"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": {
-            "mode": "raw",
-            "raw": "{\n  \"name\": \"طبق معدل\",\n  \"description\": \"وصف الطبق المعدل\",\n  \"price\": 60,\n  \"category\": \"شوربة\"\n}"
-          },
-          "url": {
-            "raw": "{{baseUrl}}/api/dishes/:id",
-            "protocol": "http",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "api",
-              "dishes",
-              ":id"
-            ]
-          }
-        }
-      },
-      {
-        "name": "Delete Dish",
-        "request": {
-          "method": "DELETE",
-          "header": [
-            {
-              "key": "Authorization",
-              "value": "{{Authorization}}",
-              "description": "Token for Authorization"
-            }
-          ],
-          "url": {
-            "raw": "{{baseUrl}}/api/dishes/:id",
-            "protocol": "http",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "api",
-              "dishes",
-              ":id"
-            ]
-          }
-        }
-      }
-    ]
+	"info": {
+	  "name": "Coupon Uses API",
+	  "_postman_id": "c12345-uses-collection",
+	  "description": "API requests to test coupon_uses routes",
+	  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+	  {
+		"name": "Create Coupon Use",
+		"request": {
+		  "method": "POST",
+		  "header": [
+			{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+		  ],
+		  "body": {
+			"mode": "raw",
+			"raw": "{\n  \"coupon_id\": 1,\n  \"user_id\": 2,\n  \"order_id\": 5\n}"
+		  },
+		  "url": {
+			"raw": "{{baseURL}}/coupon-uses",
+			"host": ["{{baseURL}}"],
+			"path": ["coupon-uses"]
+		  }
+		}
+	  },
+	  {
+		"name": "Get All Coupon Uses (Admin)",
+		"request": {
+		  "method": "GET",
+		  "header": [
+			{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+		  ],
+		  "url": {
+			"raw": "{{baseURL}}/coupon-uses",
+			"host": ["{{baseURL}}"],
+			"path": ["coupon-uses"]
+		  }
+		}
+	  },
+	  {
+		"name": "Get Coupon Use By ID",
+		"request": {
+		  "method": "GET",
+		  "header": [
+			{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+		  ],
+		  "url": {
+			"raw": "{{baseURL}}/coupon-uses/1",
+			"host": ["{{baseURL}}"],
+			"path": ["coupon-uses", "1"]
+		  }
+		}
+	  },
+	  {
+		"name": "Delete Coupon Use (Admin)",
+		"request": {
+		  "method": "DELETE",
+		  "header": [
+			{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+		  ],
+		  "url": {
+			"raw": "{{baseURL}}/coupon-uses/1",
+			"host": ["{{baseURL}}"],
+			"path": ["coupon-uses", "1"]
+		  }
+		}
+	  }
+	]
   }
   

@@ -52,3 +52,21 @@ exports.deleteOrderDish = async (req, res) => {
     res.status(500).json({ message: "هناك خطأ في الخادم" });
   }
 };
+
+
+
+exports. deleteDishFromOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const deleted = await OrderDish.deleteByOrderId(orderId);
+    if (deleted) {
+      return res.status(200).json({ message: "Dishes deleted successfully!" });
+    } else {
+      return res.status(404).json({ message: "Order not found!" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error deleting dishes" });
+  }
+};

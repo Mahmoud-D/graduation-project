@@ -1,62 +1,185 @@
-const Order = require('../models/Order'); // استيراد موديل الطلب
+// controllers/orderController.js
 
-// الحصول على جميع الطلبات
-exports.getAllOrders = async (req, res) => {
-  try {
-    const orders = await Order.find(); // جلب جميع الطلبات
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء جلب الطلبات' });
-  }
-};
+const Order = require("../models/Order");
+const OrderDish = require("../models/OrderDish");
+const couponModel = require("../models/coupon");
 
-// الحصول على طلب بواسطة الـ ID
-exports.getOrderById = async (req, res) => {
+// const createOrder = async (req, res) => {
+//   const {  status, dishes } = req.body;
+
+//   try {
+//     const orderData = { user_id: req.user.id, status };
+//     const { id: orderId } = await Order.create(orderData);
+
+//     for (let dish of dishes) {
+//       await OrderDish.addDishesToOrder(orderId, dish.dishId, dish.quantity);
+//     }
+
+//     // return res.status(201).json({ message: "  orderId  !",  orderId });
+
+//     return res
+//       .status(201)
+//       .json({ message: "Order created successfully!", orderId });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ message: "Error creating order" });
+//   }
+// };
+
+
+
+const createOrder = async (req, res) => {
+  const { status, dishes, coupon_code } = req.body;
+
   try {
-    const order = await Order.findById(req.params.id); // جلب الطلب باستخدام الـ ID
-    if (!order) {
-      return res.status(404).json({ message: 'الطلب غير موجود' });
+    const orderData = { user_id: req.user.id, status };
+    const { id: orderId } = await Order.create(orderData);
+
+    // تحقق من الكوبون إذا كان موجودًا وصالحًا
+    if (coupon_code) {
+      const coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
+      if (coupon === null) {
+        return res.status(400).json({ message: "Invalid or expired coupon" });
+      }
+      if (coupon === "Coupon limit reached") {
+        return res.status(400).json({ message: "Coupon usage limit reached" });
+      }
+      if (coupon === "User has exceeded coupon usage limit") {
+        return res.status(400).json({ message: "You have exceeded your coupon usage limit" });
+      }
+
+      // تطبيق الكوبون على الطلب
+      await couponModel.applyCouponToOrder(orderId, coupon.id, req.user.id);
     }
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء جلب بيانات الطلب' });
-  }
-};
 
-// إنشاء طلب جديد
-exports.createOrder = async (req, res) => {
-  const { userId, dishes, totalPrice } = req.body;
-  try {
-    const newOrder = new Order({ userId, dishes, totalPrice });
-    await newOrder.save();
-    res.status(201).json(newOrder);
-  } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء إنشاء الطلب' });
-  }
-};
-
-// تحديث حالة الطلب
-exports.updateOrderStatus = async (req, res) => {
-  try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!order) {
-      return res.status(404).json({ message: 'الطلب غير موجود' });
+    for (let dish of dishes) {
+      await OrderDish.addDishesToOrder(orderId, dish.dishId, dish.quantity);
     }
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء تحديث حالة الطلب' });
+
+    return res.status(201).json({ message: "Order created successfully!", orderId });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error creating order" });
   }
 };
+
+
+ 
+
+const getAllOrders = async (req, res) => {
+   
+  try {
+    const orders = await Order.getAll();
+    return res.status(200).json(orders);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching orders" });
+  }
+};
+
+
+
+
+ 
+ 
+
+ 
+
+// جلب تفاصيل الطلب بناءً على الـ id
+const getOrderDetails = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.getById(id);
+    return res.status(200).json({ order });
+  } catch (err) {
+    console.error(err);
+    
+    if (err.message.includes("not found")) {
+      return res.status(404).json({ message: err.message });
+    }
+
+    return res.status(500).json({ message: "Error fetching order details" });
+  }
+};
+
+
+const updateOrder = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updated = await Order.update(id, status);
+
+    if (updated) {
+      return res.status(200).json({ message: "Order updated successfully!" });
+    }
+
+    // لو الدالة Order.update عملت reject برسالة
+    return res.status(404).json({ message: `Order with ID ${id} not found` });
+
+  } catch (err) {
+    console.error(err);
+
+    if (err.message.includes("not found")) {
+      return res.status(404).json({ message: err.message });
+    }
+
+    return res.status(500).json({ message: "Error updating order" });
+  }
+};
+
 
 // حذف طلب
-exports.deleteOrder = async (req, res) => {
+const deleteOrder = async (req, res) => {
+  const { id } = req.params;
+  const { force } = req.query;
+
   try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) {
-      return res.status(404).json({ message: 'الطلب غير موجود' });
+    if (force === "true") {
+      // نحذف الصفوف المرتبطة الأول
+      await OrderDish.deleteByOrderId(id);
     }
-    res.json({ message: 'تم حذف الطلب بنجاح' });
-  } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء حذف الطلب' });
+
+    const deleted = await Order.delete(id);
+    if (deleted) {
+      return res.status(200).json({ message: "Order deleted successfully!" });
+    } else {
+      return res.status(404).json({ message: "Order not found!" });
+    }
+  } catch (err) {
+    console.error(err);
+
+    if (err.code === "ER_ROW_IS_REFERENCED_2") {
+      return res.status(400).json({
+        message:
+          "Cannot delete order: there are related items linked to it. Please delete them first or use force=true.",
+      });
+    }
+
+    return res.status(500).json({ message: "Error deleting order" });
   }
+};
+
+
+const getMyOrders = async (req, res) => {
+  const userId = req.user.id; // تأكد أنك مستخرج user من التوكن أو السيشن
+
+  try {
+    const myOrders = await Order.getMyOrders(userId);
+    return res.status(200).json({ orders: myOrders });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching your orders" });
+  }
+};
+
+
+module.exports = {
+  createOrder,
+  getAllOrders,
+  getOrderDetails,
+  updateOrder,
+  deleteOrder,
+  getMyOrders
 };

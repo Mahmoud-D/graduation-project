@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 require('dotenv').config();
 
-// التحقق من وجود السريت
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET غير موجود في ملف .env');
 }
@@ -18,7 +17,6 @@ exports.verifyToken = (req, res, next) => {
       });
     }
 
-    // استخراج التوكن بعد إزالة Bearer إذا وجدت
     const token = authHeader.replace('Bearer ', '');
 
     if (!token) {
@@ -28,8 +26,9 @@ exports.verifyToken = (req, res, next) => {
       });
     }
 
-    // فك تشفير التوكن
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("decoded token:", decoded);
+    
     const userId = decoded.userId;
 
     if (!userId) {
@@ -39,7 +38,6 @@ exports.verifyToken = (req, res, next) => {
       });
     }
 
-    // التحقق من وجود المستخدم في قاعدة البيانات
     pool.query(
       'SELECT id, name, email, role FROM users WHERE id = ?', 
       [userId], 
