@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Navigation from "./navigation";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -52,13 +53,15 @@ export default function HeroSection() {
           >
             اطلب الآن
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="bg-transparent border-white text-white hover:bg-white/10 text-lg px-8"
-          >
-            تصفح القائمة
-          </Button>
+          <Link href="/menu">
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-transparent border-white text-white hover:bg-white/10 text-lg px-8"
+            >
+              تصفح القائمة
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 // Sample data - replace with real data later
 const menuCategories = [
@@ -99,6 +100,7 @@ export default function MenuCategories() {
 
         {/* View More Button */}
         <div className="text-center mt-12">
+        <Link href="/menu">
           <Button
             variant="outline"
             size="lg"
@@ -106,6 +108,7 @@ export default function MenuCategories() {
           >
             تصفح القائمة كاملة
           </Button>
+          </Link>
         </div>
       </div>
     </section>
