@@ -1,3 +1,5 @@
+'use client';
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -32,7 +34,16 @@ const offers = [
   },
 ];
 
+
+
+
+
+
+
 export default function SpecialOffers() {
+
+
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -46,7 +57,11 @@ export default function SpecialOffers() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {offers.map((offer) => (
+   
+
+
+      
+           {offers.map((offer) => (
             <Card
               key={offer.id}
               className="overflow-hidden hover:shadow-lg transition-shadow group"
@@ -94,7 +109,7 @@ export default function SpecialOffers() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ))}  
         </div>
       </div>
     </section>

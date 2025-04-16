@@ -59,7 +59,7 @@ exports.createDish = (req, res) => {
       const imagePath = `uploads/${req.file.filename}`;
       const { name, description, price, category } = req.body;
 
-      const parsedCategories = JSON.parse(category); // "[1,2,3]" from form-data input
+      const parsedCategories = JSON.parse(category);
 
       console.log('Received data:', { name, description, price, parsedCategories, imagePath });
 

@@ -46,7 +46,7 @@ export function RegistrationForm({ className, ...props }) {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,6 +60,8 @@ export function RegistrationForm({ className, ...props }) {
       });
 
       const data = await response.json();
+      
+console.log("data ---- ",data);
 
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");
@@ -68,7 +70,6 @@ export function RegistrationForm({ className, ...props }) {
       // Save token to localStorage
       localStorage.setItem("token", data.token);
       
-      // Redirect to dashboard or home page
       router.push("/login");
     } catch (err) {
       setError(err.message);

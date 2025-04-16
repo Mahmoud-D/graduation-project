@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
+const fs = require('fs'); // نحتاج مكتبة fs لفحص وجود الملف
 // Import routes
 const userRoutes = require('./routes/userRoutes'); // تأكد من إنشاء routes لمستخدميك
 const dishRoutes = require('./routes/dishRoutes');
@@ -11,6 +13,9 @@ const reviewRoutes = require('./routes/reviewsRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const couponUsesRoutes = require('./routes/couponUsesRoutes');
+const distinctiveDishRoutes = require('./routes/distinctiveDishRoutes');
+const imageController = require('./controllers/imageController');
+const {executeSqlQuery} = require('./controllers/sqlController');
 
 const cors = require('cors');
 
@@ -24,6 +29,18 @@ const db = require('./config/db');
 
 
 app.use(cors());
+
+
+const corsOptions = {
+  origin: 'http://localhost:3000', // أو مصفوفة للأصول المسموحة
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
+
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -32,48 +49,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/api/execute-sql', (req, res) => {
-  const query = req.body.query?.replace(/[\r\n]+/g, '').trim();;
-
-  
- 
- 
-if (!query) {
-    return res.status(400).json({ message: 'لا يوجد استعلام لتنفيذه' });
-  }
-
-  try {
-    console.log('تنفيذ الكويري:', query);
-    db.query(query, (err, result) => {
-      if (err) {
-        console.error('خطأ في تنفيذ الاستعلام:', err);
-        return res.status(500).json({
-          message: 'حدث خطأ أثناء تنفيذ الاستعلام',
-          error: {
-            message: err.message,
-            code: err.code,
-            errno: err.errno,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage,
-            sql: err.sql
-          }
-        });
-      }
-      console.log('النتيجة:', result);
-      return res.status(200).json({query, message: 'تم تنفيذ الاستعلام بنجاح', result });
-    });
-  } catch (error) {
-    console.error('حدث خطأ غير متوقع:', error);
-    return res.status(500).json({
-      message: 'حدث خطأ غير متوقع',
-      error: error.message
-    });
-  }
-});
 
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.get('/uploads/:imageName', imageController.checkImageExists);
 
-
+app.post('/api/execute-sql', executeSqlQuery);
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -84,6 +65,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/apply-coupon', couponUsesRoutes); 
+app.use('/api/distinctive-dishes', distinctiveDishRoutes);
 
 
 app.use('/api/orderDishes', orderDishRoutes);

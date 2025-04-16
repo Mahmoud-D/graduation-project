@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
+import authEndpoints from "@/app/api/endPonts/auth";
+ 
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -30,34 +31,47 @@ export function LoginForm({ className, ...props }) {
     }));
   };
 
+
+
+
+
+  const handleLogin = async () => {
+    const result = await loginUser(email, password);
+    if (result.success) {
+      setMessage('Login successful!');
+      // يمكنك إعادة توجيه المستخدم إلى الصفحة الرئيسية أو إلى أي صفحة أخرى بعد تسجيل الدخول
+    } else {
+      setMessage(result.message);
+    }
+  };
+
+
+
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await authEndpoints.login({
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
+    
 
-      if (!response.ok) {
+      const data = await response;
+
+      if (!response.token) {
         throw new Error(data.message || "Login failed");
       }
 
       // Save token to localStorage
       localStorage.setItem("token", data.token);
       
-      // Redirect to dashboard or home page
-      router.push("/dashboard");
+      // Redirect to / or home page
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {
