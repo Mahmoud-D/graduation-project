@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import ProductCard from "@/components/productCard";
 
 const categories = ["الكل", "وجبات رئيسية", "مقبلات", "حلويات", "مشروبات"];
 
@@ -66,7 +65,7 @@ export default function MenuPage() {
             <Button
               key={category}
               variant={category === selectedCategory ? "default" : "outline"}
-              className="rounded-full"
+              className="rounded-full cursor-pointer"
               onClick={() => setSelectedCategory(category)}
             >
               {category}
@@ -76,40 +75,8 @@ export default function MenuPage() {
 
         {/* Dishes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDishes.map((dish) => (
-            <Card
-              key={dish.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="relative h-48">
-              {/* {dish.name} */}
-                <Image
-                  src={ `http://localhost:5000/${dish.image_path}`}
-                  alt={dish.name}
-                  fill
-                  className="object-cover"
-                />
-                {dish.isSpicy && (
-                  <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-                    حار 🌶️
-                  </span>
-                )}
-              </div>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-semibold text-dark-shade">
-                    {dish.name}
-                  </h3>
-                  <div className="text-primary font-bold">
-                    {dish.price} جنيه
-                  </div>
-                </div>
-                <p className="text-dark-shade/70 mb-4">{dish.description}</p>
-                <Button className="w-full bg-primary hover:bg-primary/90">
-                  أضف إلى السلة
-                </Button>
-              </CardContent>
-            </Card>
+          {fallbackDishes.map((dish) => (
+            <ProductCard key={dish.id} dish={dish} />
           ))}
         </div>
 
