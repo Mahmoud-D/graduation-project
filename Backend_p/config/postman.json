@@ -1,0 +1,149 @@
+{
+	"info": {
+	  "_postman_id": "a1b2c3d4-e5f6-7890",
+	  "name": "Distinctive Dishes API",
+	  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+	  "description": "Collection for testing Distinctive Dishes API endpoints"
+	},
+	"item": [
+	  {
+		"name": "Get All Featured Dishes",
+		"request": {
+		  "method": "GET",
+		  "header": [],
+		  "url": {
+			"raw": "http://localhost:5000/api/distinctive-dishes",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5000",
+			"path": ["api", "distinctive-dishes"]
+		  },
+		  "description": "Get all active featured dishes (for users)"
+		},
+		"response": []
+	  },
+	  {
+		"name": "Add Featured Dish (Admin)",
+		"request": {
+		  "method": "POST",
+		  "header": [
+			{
+			  "key": "Content-Type",
+			  "value": "application/json",
+			  "type": "text"
+			},
+			{
+			  "key": "Authorization",
+			  "value": "Bearer YOUR_ADMIN_TOKEN",
+			  "type": "text"
+			}
+		  ],
+		  "body": {
+			"mode": "raw",
+			"raw": "{\n  \"dish_id\": 1,\n  \"featured_order\": 1,\n  \"featured_title\": \"عرض خاص\",\n  \"is_active\": 1,\n  \"start_date\": \"2023-12-01 00:00:00\",\n  \"end_date\": \"2023-12-31 23:59:59\"\n}",
+			"options": {
+			  "raw": {
+				"language": "json"
+			  }
+			}
+		  },
+		  "url": {
+			"raw": "http://localhost:5000/api/distinctive-dishes",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5000",
+			"path": ["api", "distinctive-dishes"]
+		  },
+		  "description": "Add a new featured dish (admin only)"
+		},
+		"response": []
+	  },
+	  {
+		"name": "Update Featured Dish (Admin)",
+		"request": {
+		  "method": "PUT",
+		  "header": [
+			{
+			  "key": "Content-Type",
+			  "value": "application/json",
+			  "type": "text"
+			},
+			{
+			  "key": "Authorization",
+			  "value": "Bearer YOUR_ADMIN_TOKEN",
+			  "type": "text"
+			}
+		  ],
+		  "body": {
+			"mode": "raw",
+			"raw": "{\n  \"is_active\": 0,\n  \"featured_order\": 2\n}",
+			"options": {
+			  "raw": {
+				"language": "json"
+			  }
+			}
+		  },
+		  "url": {
+			"raw": "http://localhost:5000/api/distinctive-dishes/1",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5000",
+			"path": ["api", "distinctive-dishes", "1"]
+		  },
+		  "description": "Update a featured dish (admin only)"
+		},
+		"response": []
+	  },
+	  {
+		"name": "Delete Featured Dish (Admin)",
+		"request": {
+		  "method": "DELETE",
+		  "header": [
+			{
+			  "key": "Authorization",
+			  "value": "Bearer YOUR_ADMIN_TOKEN",
+			  "type": "text"
+			}
+		  ],
+		  "url": {
+			"raw": "http://localhost:5000/api/distinctive-dishes/1",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5000",
+			"path": ["api", "distinctive-dishes", "1"]
+		  },
+		  "description": "Delete a featured dish (admin only)"
+		},
+		"response": []
+	  }
+	],
+	"auth": {
+	  "type": "bearer",
+	  "bearer": [
+		{
+		  "key": "token",
+		  "value": "YOUR_ADMIN_TOKEN",
+		  "type": "string"
+		}
+	  ]
+	},
+	"event": [
+	  {
+		"listen": "test",
+		"script": {
+		  "exec": [
+			"pm.test(\"Status code is 200\", function () {",
+			"    pm.response.to.have.status(200);",
+			"});"
+		  ],
+		  "type": "text/javascript"
+		}
+	  }
+	],
+	"variable": [
+	  {
+		"key": "baseUrl",
+		"value": "http://localhost:5000/api"
+	  }
+	]
+  }

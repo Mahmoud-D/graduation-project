@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 
 
 export default function ProductCard({ dish }) {
+
+
+  console.log(dish);
+  
   const { addItem } = useCart();
 
   const handleAddToCart = (dish) => {
@@ -22,7 +26,7 @@ export default function ProductCard({ dish }) {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-48">
         <Image
-          src={dish.image || "/placeholder-dish.png"}
+          src={`http://localhost:5000/${dish.image_path}`|| "/placeholder-dish.png"}
           alt={dish.name}
           fill
           className="object-cover"
