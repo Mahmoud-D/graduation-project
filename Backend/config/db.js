@@ -4,19 +4,30 @@
 const mysql = require("mysql2");
 
 // إعداد الاتصال بقاعدة البيانات البعيدة
-const db = mysql.createConnection({
-  host: "sql8.freesqldatabase.com", // استبدل بـ hostname الذي زودتني به
-  user: "sql8772293", // اسم المستخدم
-  password: "QsLIMmc2dS", // كلمة المرور
-  database: "sql8772293", // اسم قاعدة البيانات
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-   queueLimit: 0,
-   charset: 'utf8mb4' 
+// const db = mysql.createConnection({
+//host: "sql8.freesqldatabase.com", // استبدل بـ hostname الذي زودتني به
+//user: "sql8772293", // اسم المستخدم
+//password: "QsLIMmc2dS", // كلمة المرور
+//database: "sql8772293", // اسم قاعدة البيانات
+//port: 3306,
+//waitForConnections: true,
+//connectionLimit: 10,
+  // queueLimit: 0,
+  // charset: 'utf8mb4' 
 
   // multipleStatements: true
+//});
+
+// if0_38799926
+const db = mysql.createConnection({
+  host: 'sql.freedb.tech',
+  port: 3306,
+  user: 'freedb_khale',
+  password: 'EuGWA7J5%RG3C?m',
+  database: 'freedb_khaled'
 });
+
+
 
 db.connect((err) => {
   if (err) {
