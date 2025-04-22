@@ -1,6 +1,8 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const navLinks = [
   { name: "الرئيسية", href: "/" },
@@ -11,6 +13,19 @@ const navLinks = [
 ];
 
 export default function Navigation() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check for token in localStorage
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm shadow-sm">
       <div className="container mx-auto px-4">
@@ -42,14 +57,38 @@ export default function Navigation() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild className="hover:bg-gray-100 cursor-pointer">
-              <Link href="/login">تسجيل الدخول</Link>
-            </Button>
-            <Button size="sm" asChild className="hover:bg-primary/90 cursor-pointer">
-              <Link href="/register">إنشاء حساب</Link>
-            </Button>
-          </div>
+          {!isLoggedIn && (
+            <div className="hidden md:flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                <Link href="/login">تسجيل الدخول</Link>
+              </Button>
+              <Button
+                size="sm"
+                asChild
+                className="hover:bg-primary/90 cursor-pointer"
+              >
+                <Link href="/register">إنشاء حساب</Link>
+              </Button>
+            </div>
+          )}
+
+          {isLoggedIn && (
+            <div className="hidden md:flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:bg-red-100 text-red-600 cursor-pointer"
+                onClick={handleLogout}
+              >
+                تسجيل الخروج
+              </Button>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <Button
@@ -78,4 +117,4 @@ export default function Navigation() {
       </div>
     </nav>
   );
-} 
+}
