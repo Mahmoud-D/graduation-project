@@ -127,14 +127,16 @@ exports.deleteDish = async (req, res) => {
   
   try {
     const dish = await Dish.getById(req.params.id);
-    if (!dish) {
+     if (!dish) {
       return res.status(404).json({ message: "الطبق غير موجود" });
     }
     
     const deletedRows = await Dish.delete(req.params.id);
+    console.log(deletedRows);
+    
 
 
-    if (deletedRows > 0) {
+    if (deletedRows.length == 0) {
       res.json({ message: "تم حذف الطبق بنجاح" });
     } else {
       res.status(500).json({ message: "حدث خطأ أثناء حذف الطبق" });

@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+const sql = require('../config/db'); // استيراد الاتصال بقاعدة البيانات من الملف الجديد
 require('dotenv').config();
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET غير موجود في ملف .env');
 }
 
-exports.verifyToken = (req, res, next) => {
+exports.verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
     
@@ -38,29 +38,23 @@ exports.verifyToken = (req, res, next) => {
       });
     }
 
-    pool.query(
-      'SELECT id, name, email, role FROM users WHERE id = ?', 
-      [userId], 
-      (err, users) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ 
-            message: 'خطأ في قاعدة البيانات',
-            error: 'database_error' 
-          });
-        }
+    // استعلام للحصول على المستخدم
+    const users = await sql`
+      SELECT id, name, email, role 
+      FROM users 
+      WHERE id = ${userId}
+    `;
 
-        if (users.length === 0) {
-          return res.status(401).json({ 
-            message: 'المستخدم غير موجود',
-            error: 'user_not_found' 
-          });
-        }
+    // تحقق من وجود المستخدم
+    if (users.length === 0) {
+      return res.status(401).json({ 
+        message: 'المستخدم غير موجود',
+        error: 'user_not_found' 
+      });
+    }
 
-        req.user = users[0];
-        next();
-      }
-    );
+    req.user = users[0]; // استرجاع أول مستخدم من النتيجة
+    next();
   } catch (error) {
     console.error('❌ Error in verifyToken:', error);
     

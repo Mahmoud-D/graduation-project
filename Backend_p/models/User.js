@@ -1,5 +1,6 @@
-const connection = require('../config/db');
+const sql = require('../config/db'); // الاتصال الجديد بـ postgres
 const bcrypt = require('bcrypt');
+
 class User {
   constructor(name, email, password, role) {
     this.name = name;
@@ -8,7 +9,6 @@ class User {
     this.role = role;
   }
 
-  // 🔐 تشفير كلمة المرور
   async hashPassword() {
     const saltRounds = 10;
     try {
@@ -18,28 +18,25 @@ class User {
     }
   }
 
-  // 🧑‍💻 إنشاء مستخدم جديد
   async create() {
     try {
       const hashedPassword = await this.hashPassword();
-      const sql = 'INSERT INTO users (name, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())';
-      const [results] = await connection.promise().query(sql, [this.name, this.email, hashedPassword, this.role]);
-      console.log('✅ Insert result:', results);
-      return results.insertId;
+      const result = await sql`
+        INSERT INTO users (name, email, password, role, created_at)
+        VALUES (${this.name}, ${this.email}, ${hashedPassword}, ${this.role}, NOW())
+        RETURNING id
+      `;
+      console.log('✅ Insert result:', result);
+      return result[0].id;
     } catch (err) {
       console.error('❌ Error during insert:', err);
-      // هنا يمكنك طباعة المزيد من التفاصيل حول الخطأ:
       throw new Error('error in create user ' + err.message);
     }
   }
 
-
-
-
-
   static async getAll() {
     try {
-      const [results] = await connection.promise().query('SELECT * FROM users');
+      const results = await sql`SELECT * FROM users`;
       return results;
     } catch (err) {
       console.error('❌ Error getting all users:', err);
@@ -47,19 +44,15 @@ class User {
     }
   }
 
-
   static async getById(id) {
     try {
-      const [results] = await connection.promise().query('SELECT * FROM users WHERE id = ?', [id]);
-      return results[0];
+      const result = await sql`SELECT * FROM users WHERE id = ${id}`;
+      return result[0];
     } catch (err) {
       console.error('❌ Error getting user by ID:', err);
       throw new Error('خطأ في جلب المستخدم');
     }
   }
-
-
-
 
   static async comparePassword(plainPassword, hashedPassword) {
     try {
@@ -69,19 +62,19 @@ class User {
     }
   }
 
-  // 🏗️ إنشاء جدول users إذا لم يكن موجود
   static async initTable() {
-    const sql = `CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      role VARCHAR(50) DEFAULT 'user',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`;
-
+    const sqlQuery = `
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
     try {
-      await connection.promise().query(sql);
+      await sql.unsafe(sqlQuery); // استخدم unsafe عشان نمرر SQL string عادي
       console.log('✅ Table "users" is ready');
     } catch (err) {
       console.error('❌ Error creating users table:', err);
@@ -89,39 +82,39 @@ class User {
     }
   }
 
-
   static async findByEmail(email) {
-  try {
-    const [results] = await connection.promise().query('SELECT * FROM users WHERE email = ?', [email]);
-    return results[0]; // إذا وجدنا المستخدم، نعيده
-  } catch (err) {
-    console.error('❌ Error finding user by email:', err);
-    throw new Error('خطأ في البحث عن المستخدم');
+    try {
+      const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+      return result[0];
+    } catch (err) {
+      console.error('❌ Error finding user by email:', err);
+      throw new Error('خطأ في البحث عن المستخدم');
+    }
+  }
+
+  static async update(id, data) {
+    try {
+      const fields = Object.entries(data)
+        .map(([key, value], index) => sql`${sql(key)} = ${value}`)
+        .reduce((prev, curr) => sql`${prev}, ${curr}`);
+
+      const result = await sql`UPDATE users SET ${fields} WHERE id = ${id}`;
+      return result.count > 0;
+    } catch (err) {
+      console.error('❌ Error updating user:', err);
+      throw new Error('خطأ في تحديث المستخدم');
+    }
+  }
+
+  static async delete(id) {
+    try {
+      const result = await sql`DELETE FROM users WHERE id = ${id}`;
+      return result.count > 0;
+    } catch (err) {
+      console.error('❌ Error deleting user:', err);
+      throw new Error('خطأ في حذف المستخدم');
+    }
   }
 }
-
-static async update(id, data) {
-  try {
-    const [results] = await connection.promise().query('UPDATE users SET ? WHERE id = ?', [data, id]);
-    return results.affectedRows > 0;
-  } catch (err) {
-    console.error('❌ Error updating user:', err);
-    throw new Error('خطأ في تحديث المستخدم');
-  } 
-}
-static async delete(id) {
-  try {
-    const [results] = await connection.promise().query('DELETE FROM users WHERE id = ?', [id]);
-    return results.affectedRows > 0;
-  } catch (err) {
-    console.error('❌ Error deleting user:', err);
-    throw new Error('خطأ في حذف المستخدم');
-  }
-}
-}
-
-
-
-
 
 module.exports = User;

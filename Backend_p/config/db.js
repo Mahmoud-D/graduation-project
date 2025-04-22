@@ -1,56 +1,35 @@
 // ├───config
 // │       db.js
+const postgres = require('postgres');
 
-const mysql = require("mysql2");
+// connection string
+const connectionString = 'postgresql://postgres.oeeireubrxukwihvtxji:gpgpgpgpgpgpgpgpgpgp@aws-0-us-east-2.pooler.supabase.com:5432/postgres';
 
-// إعداد الاتصال بقاعدة البيانات البعيدة
-// const db = mysql.createConnection({
-//host: "sql8.freesqldatabase.com", // استبدل بـ hostname الذي زودتني به
-//user: "sql8772293", // اسم المستخدم
-//password: "QsLIMmc2dS", // كلمة المرور
-//database: "sql8772293", // اسم قاعدة البيانات
-//port: 3306,
-//waitForConnections: true,
-//connectionLimit: 10,
-  // queueLimit: 0,
-  // charset: 'utf8mb4' 
-
-  // multipleStatements: true
-//});
-
-// if0_38799926
-const db = mysql.createConnection({
-  host: 'sql.freedb.tech',
-  port: 3306,
-  user: 'freedb_khale',
-  password: 'EuGWA7J5%RG3C?m',
-  database: 'freedb_khaled'
-});
-
-
-
-db.connect((err) => {
-  if (err) {
-    console.error("Error connecting to the database:", err);
-    return;
+// connection options
+const options = {
+  ssl: {
+    rejectUnauthorized: false // لازم تكون false عشان Supabase تستخدم شهادة عامة
+  },
+  idle_timeout: 20,
+  max_lifetime: 60 * 30,
+  connection: {
+    application_name: 'graduation-project'
   }
-  console.log("Connected to the database");
-});
+};
 
-db.on("connection", (connection) => {
-  connection.on("query", (query) => {
-    console.log("Executing query:", query.sql);
-  });
-});
+// create client
+const sql = postgres(connectionString, options);
 
-//  connection.on('query', (query) => {
-//   console.log('Executing query:', query.sql);
-// });
+// test connection
+async function testConnection() {
+  try {
+    const result = await sql`SELECT NOW()`;
+    console.log('✅ Connected to PostgreSQL at:', result[0].now);
+  } catch (err) {
+    console.error('❌ Error connecting to PostgreSQL:', err);
+  }
+}
 
-module.exports = db;
+testConnection();
 
-// Host: sql8.freesqldatabase.com
-// Database name: sql8772293
-// Database user: sql8772293
-// Database password: QsLIMmc2dS
-// Port number: 3306
+module.exports = sql;

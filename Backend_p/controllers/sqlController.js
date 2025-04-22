@@ -1,7 +1,7 @@
 // sqlController.js
-const db = require('../config/db');  // تأكد من أن المسار صحيح حسب تنظيم المجلدات في مشروعك
+const db = require('../config/db');  // دي هي `sql` اللي من مكتبة postgres
 
- const executeSqlQuery = (req, res) => {
+const executeSqlQuery = async (req, res) => {
   const query = req.body.query?.replace(/[\r\n]+/g, '').trim();
 
   if (!query) {
@@ -10,30 +10,21 @@ const db = require('../config/db');  // تأكد من أن المسار صحيح
 
   try {
     console.log('تنفيذ الكويري:', query);
-    db.query(query, (err, result) => {
-      if (err) {
-        console.error('خطأ في تنفيذ الاستعلام:', err);
-        return res.status(500).json({
-          message: 'حدث خطأ أثناء تنفيذ الاستعلام',
-          error: {
-            query: query,
-            message: err.message,
-            code: err.code,
-            errno: err.errno,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage,
-            sql: err.sql
-          }
-        });
-      }
-      console.log('النتيجة:', result);
-      return res.status(200).json({ query, message: 'تم تنفيذ الاستعلام بنجاح', result });
-    });
-  } catch (error) {
-    console.error('حدث خطأ غير متوقع:', error);
+    
+    // تنفيذ الكويري بشكل ديناميكي
+    const result = await db.unsafe(query);
+
+    console.log('النتيجة:', result);
+    return res.status(200).json({ query, message: 'تم تنفيذ الاستعلام بنجاح', result });
+  } catch (err) {
+    console.error('❌ خطأ في تنفيذ الاستعلام:', err);
     return res.status(500).json({
-      message: 'حدث خطأ غير متوقع',
-      error: error.message
+      message: 'حدث خطأ أثناء تنفيذ الاستعلام',
+      error: {
+        query,
+        message: err.message,
+        code: err.code
+      }
     });
   }
 };

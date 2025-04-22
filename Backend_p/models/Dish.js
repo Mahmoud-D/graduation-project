@@ -1,201 +1,169 @@
-// models/Dish.js
+const sql = require('../config/db');
 
-const connection = require("../config/db");
-
-// Create Dish Model
+// Get all dishes
 const Dish = {
-  getAll: ({ category, minPrice, maxPrice, name }) => {
-    let sql = `
+  getAll: async ({ category, minPrice, maxPrice, name }) => {
+    let query = sql`
       SELECT 
         d.*,
         AVG(r.rating) AS average_rating,
-        GROUP_CONCAT(c.name) AS categories
+        STRING_AGG(c.name, ',') AS categories
       FROM dishes d
       LEFT JOIN reviews r ON d.id = r.dish_id
       LEFT JOIN dish_categories dc ON d.id = dc.dish_id
       LEFT JOIN categories c ON dc.category_id = c.id
-      WHERE 1
+      WHERE TRUE
     `;
     const params = [];
-  
+
     if (category) {
-      sql += " AND c.name = ?";
-      params.push(category); // هنا بنضيف اسم التصنيف في الفلتر
+      query = sql`${query} AND c.name = ${category}`;
     }
-  
+
     if (minPrice) {
-      sql += " AND d.price >= ?";
-      params.push(minPrice);
+      query = sql`${query} AND d.price >= ${minPrice}`;
     }
-  
+
     if (maxPrice) {
-      sql += " AND d.price <= ?";
-      params.push(maxPrice);
+      query = sql`${query} AND d.price <= ${maxPrice}`;
     }
-  
+
     if (name) {
-      sql += " AND d.name LIKE ?";
-      params.push(`%${name}%`);
+      query = sql`${query} AND d.name ILIKE ${`%${name}%`}`;
     }
-  
-    sql += " GROUP BY d.id";
-  
-    return connection.promise()
-      .query(sql, params)
-      .then(([results]) => {
-        return results.map(dish => ({
-          ...dish,
-          average_rating: dish.average_rating
-            ? parseFloat(dish.average_rating).toFixed(1)
-            : null,
-          categories: dish.categories
-            ? dish.categories.split(',')
-            : []
-        }));
-      })
-      .catch((err) => {
-        console.error("Error in getAll:", err);
-        throw err;
-      });
-  },
-  
-  
 
+    query = sql`${query} GROUP BY d.id`;
 
-  
-
-
- 
-  
-
-
-
-
-
-
-
-
-
-  
-
-  getById: (id) => {
-    return new Promise((resolve, reject) => {
-      const dishSql = `
-        SELECT 
-          d.id,
-          d.name,
-          d.description,
-          d.price,
-          d.image_path,
-          AVG(r.rating) AS average_rating
-        FROM 
-          dishes d
-        LEFT JOIN 
-          reviews r ON d.id = r.dish_id
-        WHERE 
-          d.id = ?
-        GROUP BY 
-          d.id
-      `;
-  
-      const commentsSql = `SELECT comment FROM reviews WHERE dish_id = ?`;
-  
-      const categoriesSql = `
-        SELECT c.id, c.name 
-        FROM categories c
-        INNER JOIN dish_categories dc ON c.id = dc.category_id
-        WHERE dc.dish_id = ?
-      `;
-  
-      connection.query(dishSql, [id], (err, dishResults) => {
-        if (err) return reject(err);
-        if (dishResults.length === 0) return resolve(null);
-  
-        const dish = dishResults[0];
-        dish.average_rating = dish.average_rating
-          ? parseFloat(dish.average_rating).toFixed(1)
-          : null;
-  
-        connection.query(commentsSql, [id], (err, commentsResults) => {
-          if (err) return reject(err);
-          dish.comments = commentsResults.map(row => row.comment);
-  
-          connection.query(categoriesSql, [id], (err, categoryResults) => {
-            if (err) return reject(err);
-  
-            dish.categories = categoryResults.map(row => ({
-              id: row.id,
-              name: row.name
-            }));
-  
-            resolve(dish);
-          });
-        });
-      });
-    });
-  },
-  
-  
-  
-  
-
-
-  create: (name, description, price, category, imagePath) => {
-    return new Promise((resolve, reject) => {
-      const sql = "INSERT INTO dishes (name, description, price, image_path,  created_at) VALUES (?, ?, ?,  ?, NOW())";
- 
-      connection.promise().query(sql, [name, description, price, category, imagePath])
-        .then(([results]) => {
-          if (results && results.insertId) {
-            resolve(results.insertId);
-          } else {
-            reject(new Error("لم يتم الحصول على insertId"));
-          }
-        })
-        .catch(err => {
-          console.error('Error in create dish:', err);
-          reject(err);
-        });
-    });
-  },
-
-  update: (id, name, description, price, category) => {
-    return connection
-      .promise()
-      .query(
-        "UPDATE dishes SET name = ?, description = ?, price = ?, category = ? WHERE id = ?",
-        [name, description, price, category, id]
-      )
-      .then(([result]) => result.affectedRows)
-      .catch((err) => {
-        throw err;
-      });
-  },
-
-  delete: (id) => {
-    return connection
-      .promise()
-      .query("DELETE FROM dishes WHERE id = ?", [id])
-      .then(([result]) => result.affectedRows)
-      .catch((err) => {
-        console.error("Error in delete:", err);
-        throw err;
-      });
-  },
-  linkCategory: async (dishId, categoryId) => {
     try {
-      const sql = "INSERT INTO dish_categories (dish_id, category_id) VALUES (?, ?)";
-      const [result] = await connection.promise().query(sql, [dishId, categoryId]);
-  
+      const result = await query;  // استخدم `query` هنا
+      return result.map(dish => ({
+        ...dish,
+        average_rating: dish.average_rating ? parseFloat(dish.average_rating).toFixed(1) : null,
+        categories: dish.categories ? dish.categories.split(',') : []
+      }));
+    } catch (err) {
+      console.error("Error in getAll:", err);
+      throw err;
+    }
+  },
+
+  // Get dish by ID
+  getById: async (id) => {
+    const dishSql = sql`
+      SELECT 
+        d.id,
+        d.name,
+        d.description,
+        d.price,
+        d.image_path,
+        AVG(r.rating) AS average_rating
+      FROM dishes d
+      LEFT JOIN reviews r ON d.id = r.dish_id
+      WHERE d.id = ${id}
+      GROUP BY d.id
+    `;
+
+    const commentsSql = sql`SELECT comment FROM reviews WHERE dish_id = ${id}`;
+
+    const categoriesSql = sql`
+      SELECT c.id, c.name 
+      FROM categories c
+      INNER JOIN dish_categories dc ON c.id = dc.category_id
+      WHERE dc.dish_id = ${id}
+    `;
+
+    try {
+      const dishResult = await dishSql;
+      if (dishResult.length === 0) return null;
+
+      const dish = dishResult[0];
+      dish.average_rating = dish.average_rating ? parseFloat(dish.average_rating).toFixed(1) : null;
+
+      const commentsResult = await commentsSql;
+      dish.comments = commentsResult.map(row => row.comment);
+
+      const categoriesResult = await categoriesSql;
+      dish.categories = categoriesResult.map(row => ({ id: row.id, name: row.name }));
+
+      return dish;
+    } catch (err) {
+      console.error("Error in getById:", err);
+      throw err;
+    }
+  },
+
+  // Create new dish
+  create: async (name, description, price, imagePath) => {
+    const sqlQuery = sql`
+      INSERT INTO dishes (name, description, price, image_path, created_at)
+      VALUES (${name}, ${description}, ${price}, ${imagePath}, NOW()) RETURNING id
+    `;
+
+    try {
+      const result = await sqlQuery;
+      return result[0].id;
+    } catch (err) {
+      console.error('Error in create dish:', err);
+      throw err;
+    }
+  },
+
+  // Update dish details
+  update: async (id, name, description, price) => {
+    const query = sql`
+      UPDATE dishes
+      SET name = ${name}, description = ${description}, price = ${price}
+      WHERE id = ${id}
+    `;
+
+    try {
+      const result = await query;
+      return result.rowCount;
+    } catch (err) {
+      console.error('Error in update dish:', err);
+      throw err;
+    }
+  },
+
+  // Delete dish by ID
+  delete: async (id) => {
+    const query = sql`DELETE FROM dishes WHERE id = ${id}`;
+
+    try {
+      const result = await query;
       return result;
-    } catch (error) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, error);
+    } catch (err) {
+
+     if (err.code === '23503') { // Foreign key violation code
+      throw {
+        success: false,
+        error: 'CANNOT_DELETE_RELATED_RECORDS_EXIST',
+         message: 'لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق'
+      };
+    }
+
+
+      console.error("Error in delete:", err);
+      throw err;
+    }
+  },
+ 
+  // Link dish to a category
+  linkCategory: async (dishId, categoryId) => {
+    const query = sql`
+      INSERT INTO dish_categories (dish_id, category_id)
+      VALUES (${dishId}, ${categoryId})
+    `;
+
+    try {
+      const result = await query;
+      return result.rowCount;
+    } catch (err) {
+      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
   }
-  
-  
-  
 };
 
 module.exports = Dish;
+

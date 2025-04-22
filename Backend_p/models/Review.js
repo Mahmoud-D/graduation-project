@@ -1,35 +1,44 @@
-const connection = require('../config/db');
+const sql = require('../config/db');
 
 const Review = {
-  // Create a new review
-  create: ({ user_id, dish_id, rating, comment }) => {
-    return new Promise((resolve, reject) => {
-      const sql = `
+  // إنشاء تقييم جديد
+  create: async ({ user_id, dish_id, rating, comment }) => {
+    try {
+      const query = sql`
         INSERT INTO reviews (user_id, dish_id, rating, comment)
-        VALUES (?, ?, ?, ?)
+        VALUES (${user_id}, ${dish_id}, ${rating}, ${comment})
+        RETURNING id
       `;
-      connection.query(sql, [user_id, dish_id, rating, comment], (err, results) => {
-        if (err) return reject(err);
-        resolve({ id: results.insertId, user_id, dish_id, rating, comment });
-      });
-    });
+      const result = await query;
+      return {
+        id: result[0].id,
+        user_id,
+        dish_id,
+        rating,
+        comment
+      };
+    } catch (err) {
+      console.error('❌ Error creating review:', err);
+      throw err;
+    }
   },
 
-  // Get all reviews for a specific dish
-  getByDishId: (dishId) => {
-    return new Promise((resolve, reject) => {
-      const sql = `
+  // الحصول على جميع التقييمات لطبق معين
+  getByDishId: async (dishId) => {
+    try {
+      const query = sql`
         SELECT reviews.*, users.name AS user_name
         FROM reviews
         JOIN users ON reviews.user_id = users.id
-        WHERE dish_id = ?
-        ORDER BY created_at DESC
+        WHERE dish_id = ${dishId}
+        ORDER BY reviews.created_at DESC
       `;
-      connection.query(sql, [dishId], (err, results) => {
-        if (err) return reject(err);
-        resolve(results);
-      });
-    });
+      const results = await query;
+      return results;
+    } catch (err) {
+      console.error('❌ Error fetching reviews for dish:', err);
+      throw err;
+    }
   }
 };
 
