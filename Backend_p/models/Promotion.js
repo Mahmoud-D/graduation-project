@@ -1,6 +1,7 @@
 const db = require('../config/db');
- 
+
 class Promotion {
+  // استرجاع العروض الترويجية النشطة والتي تكون في فترة صالحة
   static async findAllActive() {
     const [rows] = await db.promise().query(`
       SELECT * FROM promotions 
@@ -10,11 +11,13 @@ class Promotion {
     return rows;
   }
 
+  // استرجاع عرض ترويجي بناءً على الـ ID
   static async findById(id) {
     const [rows] = await db.promise().query('SELECT * FROM promotions WHERE id = ?', [id]);
     return rows[0];
   }
 
+  // إنشاء عرض ترويجي جديد
   static async create(data) {
     const { dish_id, discount_percentage, start_date, end_date } = data;
     const [result] = await db.promise().query(
@@ -24,6 +27,7 @@ class Promotion {
     return this.findById(result.insertId);
   }
 
+  // تحديث عرض ترويجي موجود
   static async update(id, data) {
     const { dish_id, discount_percentage, start_date, end_date, is_active } = data;
     await db.promise().query(
@@ -33,17 +37,20 @@ class Promotion {
     return this.findById(id);
   }
 
+  // تبديل حالة العرض الترويجي (تفعيل أو إلغاء تفعيل)
   static async toggleStatus(id) {
     const promo = await this.findById(id);
     await db.promise().query('UPDATE promotions SET is_active = ? WHERE id = ?', [!promo.is_active, id]);
     return this.findById(id);
   }
 
+  // حذف عرض ترويجي بناءً على الـ ID
   static async delete(id) {
     await db.promise().query('DELETE FROM promotions WHERE id = ?', [id]);
     return true;
   }
 
+  // استرجاع الأطباق التي تحتوي على عروض ترويجية نشطة
   static async getDishesWithPromotions() {
     const [dishes] = await db.promise().query(`
       SELECT d.*, p.discount_percentage 

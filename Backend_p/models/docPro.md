@@ -144,4 +144,187 @@
 ---
 ---
 ---
-# 6
+#  🎯 6  Database Design for `orders`
+
+| Column Name   | Data Type   | Constraints             | Description                                  |
+|---------------|-------------|--------------------------|----------------------------------------------|
+| id            | INTEGER     | PRIMARY KEY, SERIAL     | Unique ID for the order                      |
+| user_id       | INTEGER     | FOREIGN KEY (users.id)  | The user who placed the order                |
+| status        | TEXT        | NOT NULL                | Status of the order (e.g., pending, paid)    |
+| created_at    | TIMESTAMP   | DEFAULT now()           | Timestamp when the order was created         |
+| updated_at    | TIMESTAMP   | DEFAULT now()           | Timestamp when the order was last updated    |
+
+### ✔️ Related Tables
+
+#### `order_dishes`
+ 
+#### `coupon_uses`
+
+ 
+
+## 🔧 Operations on `orders`
+
+| Function Name               | Description                                                             | Return                          |
+|----------------------------|-------------------------------------------------------------------------|---------------------------------|
+| `getAllOrdersWithDishes`   | Returns all orders with their dishes and quantities                     | `Array of orders with dishes`  |
+| `getAll`                   | Returns all orders (grouped), with dish names and quantities aggregated | `Array of grouped orders`      |
+| `getById(id)`              | Returns full details of a specific order (user, dishes, promo, coupon)  | `Order object`                 |
+| `getMyOrders(userId)`      | Returns orders made by a specific user                                  | `Array of grouped orders`      |
+| `create({ user_id, status })` | Creates a new order with user_id and status                          | `{ id, user_id, status }`      |
+| `update(id, status)`       | Updates the status of an order                                          | `Boolean`                      |
+| `delete(id)`               | Deletes an order by ID                                                  | `Boolean`                      |
+
+---
+
+## 🔗 Entity-Relationship Summary
+
+### Relationships:
+
+- `users` ⟶ `orders`: **1 : M**  
+  > كل مستخدم يمكنه إنشاء أكثر من طلب.
+
+- `orders` ⟶ `order_dishes`: **1 : M**  
+  > كل طلب يحتوي على عدة أطباق.
+
+- `dishes` ⟶ `order_dishes`: **1 : M**  
+  > كل طبق يمكن أن يظهر في عدة طلبات.
+
+- `orders` ⟶ `coupon_uses`: **1 : 1** (أو **0 : 1**)  
+  > يمكن للطلب استخدام كوبون واحد فقط، وأحيانًا لا يستخدم.
+
+- `coupons` ⟶ `coupon_uses`: **1 : M**  
+  > الكوبون الواحد يمكن استخدامه في عدة طلبات.
+
+- `dishes` ⟶ `promotions`: **1 : M**  
+  > الطبق الواحد قد يحصل على أكثر من عرض خلال فترات مختلفة.
+
+---
+
+---
+---
+---
+---
+---
+
+#  🎯 7. **Database Design for Coupon_Uses**
+
+| Column Name | Data Type   | Constraints                      | Description                                  |
+|-------------|-------------|-----------------------------------|----------------------------------------------|
+| user_id     | INT         | FOREIGN KEY (users.id)            | Reference to the user who used the coupon   |
+| coupon_id   | INT         | FOREIGN KEY (coupons.id)          | Reference to the coupon used                |
+| order_id    | INT         | FOREIGN KEY (orders.id)           | Reference to the order where the coupon was applied |
+| use_date    | TIMESTAMP   | DEFAULT NOW()                     | The date and time when the coupon was used  |
+
+#### **Operations on Coupon_Uses**
+
+| Function Name             | Description                                                   | Return |
+|---------------------------|---------------------------------------------------------------|--------|
+| `addCouponUse`             | Adds a new record for a coupon usage by a user on an order   | void   |
+| `checkUserCouponUsage`     | Checks how many times a user has used a specific coupon      | Integer (usage count) |
+| `checkCouponTotalUsage`    | Checks the total number of uses of a specific coupon         | Integer (usage count) |
+| `getCouponById`            | Retrieves coupon details by ID if the coupon is active and valid | Object (coupon details) |
+
+### 3. **Entity-Relationship Summary**
+
+- **Coupon_Uses (M:1) Users:** Each coupon use is related to a specific user, but a user can use multiple coupons.
+- **Coupon_Uses (M:1) Coupons:** Each coupon use is tied to a single coupon, but a coupon can be used multiple times.
+- **Coupon_Uses (M:1) Orders:** Each coupon use is associated with a specific order, but an order can be linked to multiple coupon uses.
+
+---
+---
+---
+---
+---
+ 
+ #  🎯 8. **Database Design for Coupons Table**
+
+| **Column Name**    | **Data Type** | **Constraints** | **Description**                  |
+|--------------------|---------------|-----------------|----------------------------------|
+| `id`               | INT           | PRIMARY KEY     | Unique identifier for the coupon. |
+| `code`             | VARCHAR(50)    | UNIQUE, NOT NULL | The unique code for the coupon.  |
+| `discount_type`    | VARCHAR(20)    | NOT NULL        | The type of discount (e.g., fixed, percentage). |
+| `discount_value`   | DECIMAL(10,2)  | NOT NULL        | The value of the discount.       |
+| `min_order`        | DECIMAL(10,2)  | NOT NULL        | The minimum order amount required for the coupon to be used. |
+| `start_date`       | DATETIME       | NOT NULL        | The date the coupon becomes valid. |
+| `end_date`         | DATETIME       | NOT NULL        | The date the coupon expires.    |
+| `max_uses`         | INT           | NOT NULL        | The maximum number of times the coupon can be used. |
+| `current_uses`     | INT           | DEFAULT 0       | The current number of uses for the coupon. |
+| `is_active`        | BOOLEAN        | DEFAULT TRUE    | Indicates if the coupon is active or not. |
+| `user_max_uses`    | INT           | NOT NULL        | The maximum number of times a user can use the coupon. |
+
+---
+
+### . **Operations on Coupons Table**
+
+| **Function Name**     | **Description**                                        | **Return**                        |
+|-----------------------|--------------------------------------------------------|-----------------------------------|
+| `createCoupon`         | Creates a new coupon in the database.                  | Result of the insert operation.   |
+| `getCoupons`           | Retrieves all coupons or a specific coupon by code.    | The ID of the coupon (or null if not found). |
+| `getCouponsByFilter`   | Retrieves all active coupons, optionally filtered by code. | List of coupons matching the filter. |
+| `getCouponById`        | Retrieves a coupon by its ID.                          | The coupon object or null if not found. |
+| `updateCoupon`         | Updates an existing coupon based on its ID.            | Result of the update operation.   |
+| `deleteCoupon`         | Deletes a coupon based on its ID.                       | Result of the delete operation.   |
+| `getCouponUses`        | Retrieves the total number of times a coupon has been used. | Number of uses (integer).         |
+| `getUserCouponUses`    | Retrieves the total number of times a specific user has used a coupon. | Number of uses by the user.       |
+| `addCouponToOrder`     | Adds a coupon usage record to the coupon_uses table.   | Result of the insert operation.   |
+| `applyCouponToOrder`   | Applies a coupon to an order and updates usage counts. | Success message or error.         |
+| `getCouponByCode`      | Retrieves a coupon by its code, checking if it is valid for the user. | The coupon object or an error message. |
+
+---
+
+### 3. **Entity-Relationship Summary**
+
+- **1:M** Relationship: 
+   - **Coupons** can be associated with multiple **Coupon_Uses** (one coupon can be used multiple times in different orders).
+   
+   **Explanation**: Each coupon can be used multiple times by different users, but each use is recorded in the `coupon_uses` table with references to the specific coupon, user, and order.
+
+
+----
+----
+----
+----
+----
+
+
+
+ #  🎯 8. Database Design for **promotions**
+
+| Column Name       | Data Type     | Constraints      | Description                                              |
+|-------------------|---------------|------------------|----------------------------------------------------------|
+| id                | INT           | PRIMARY KEY      | Unique identifier for the promotion                      |
+| dish_id           | INT           | NOT NULL         | Foreign key referencing the dish associated with the promotion |
+| discount_percentage | DECIMAL(5,2)  | NOT NULL         | Percentage discount applied to the dish                  |
+| start_date        | DATETIME      | NOT NULL         | Start date of the promotion                              |
+| end_date          | DATETIME      | NOT NULL         | End date of the promotion                                |
+| is_active         | BOOLEAN       | NOT NULL         | Flag to indicate if the promotion is active              |
+
+---
+
+### Operations on **promotions**
+
+| Function Name         | Description                                                                                     | Return                         |
+|-----------------------|-------------------------------------------------------------------------------------------------|--------------------------------|
+| `findAllActive`        | Fetches all active promotions within the valid date range.                                       | Array of active promotions     |
+| `findById`             | Fetches a promotion by its ID.                                                                   | A single promotion object      |
+| `create`               | Creates a new promotion with the provided data.                                                   | The newly created promotion    |
+| `update`               | Updates an existing promotion with new data (dish_id, discount_percentage, start_date, end_date, is_active). | The updated promotion object   |
+| `toggleStatus`         | Toggles the status (active/inactive) of a promotion based on its current status.                 | The updated promotion object   |
+| `delete`               | Deletes a promotion based on its ID.                                                             | `true` (if deleted successfully) |
+| `getDishesWithPromotions` | Retrieves all dishes that have active promotions.                                                | Array of dishes with promotions|
+
+---
+
+### Entity-Relationship Summary
+
+- **promotions (1:M) dishes**
+  - A promotion can be associated with multiple dishes (each dish may have multiple promotions over time, but only one active promotion at a time).
+  
+- **promotions (M:1) dish_id**
+  - A promotion references a specific dish through the `dish_id` foreign key.
+
+---
+
+ 
+ 
+ 
