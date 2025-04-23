@@ -34,7 +34,7 @@ export default function LoginForm() {
       password: "",
     },
   });
-  const API = process.env.NEXT_PUBLIC_API_URL || "https://restaurantbackground-production.up.railway.app/api/";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/";
   const onSubmit = async (data: FormValues) => {
     try {
       // Add static role to request data

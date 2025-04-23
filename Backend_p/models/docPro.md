@@ -1,4 +1,4 @@
-# 🎯 Database Design for `users`
+# 🎯 1- Database Design for `users`
 
 | **Column Name** | **Data Type**            | **Constraints**         | **Description**                                                                 |
 |-----------------|--------------------------|-------------------------|---------------------------------------------------------------------------------|
@@ -288,7 +288,7 @@
 
 
 
- #  🎯 8. Database Design for **promotions**
+ #  🎯 9. Database Design for **promotions**
 
 | Column Name       | Data Type     | Constraints      | Description                                              |
 |-------------------|---------------|------------------|----------------------------------------------------------|
@@ -324,7 +324,50 @@
   - A promotion references a specific dish through the `dish_id` foreign key.
 
 ---
+---
+---
+---
 
+ 
+---
+
+# 10. 🗃️ **Database Design for `order_dishes` Table**
+
+| Column Name  | Data Type  | Constraints                      | Description                                  |
+|--------------|------------|----------------------------------|----------------------------------------------|
+| `id`         | SERIAL     | PRIMARY KEY                      | Unique ID for each row                       |
+| `order_id`   | INTEGER    | NOT NULL, FOREIGN KEY            | References the associated order              |
+| `dish_id`    | INTEGER    | NOT NULL, FOREIGN KEY            | References the associated dish               |
+| `quantity`   | INTEGER    | NOT NULL, CHECK (quantity > 0)   | The number of units of this dish in the order|
+| `created_at` | TIMESTAMP  | DEFAULT NOW()                    | Timestamp of when the row was added (optional)|
+
+> 💡 `order_id` and `dish_id` should reference the `orders` and `dishes` tables respectively.
+
+---
+
+### 2. ⚙️ **Operations on `order_dishes` Table**
+
+| Method | Function Name         | HTTP Equivalent           | Description                                        |
+|--------|------------------------|----------------------------|----------------------------------------------------|
+| POST   | `addDishToOrder`       | `POST /orders/:id/dishes`  | Add a dish to a specific order                    |
+| GET    | `getByOrderId`         | `GET /orders/:id/dishes`   | Retrieve all dishes for a specific order          |
+| DELETE | `deleteByOrderId`      | `DELETE /orders/:id/dishes`| Delete all dishes associated with a specific order|
+
+---
+
+### 3. 🧩 **Entity-Relationship Summary**
+
+```plaintext
+Order (1) ────< (∞) OrderDish (∞) >──── (1) Dish
+```
+
+- One **Order** can contain many **Dishes**
+- The relationship is **many-to-many**, managed via the **order_dishes** table
+- The `order_dishes` table acts as a join table and stores additional data (like quantity)
+
+---
+
+ 
  
  
  

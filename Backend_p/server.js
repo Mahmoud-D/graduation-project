@@ -15,6 +15,7 @@ const couponRoutes = require('./routes/couponRoutes');
 const couponUsesRoutes = require('./routes/couponUsesRoutes');
 const distinctiveDishRoutes = require('./routes/distinctiveDishRoutes');
 const imageController = require('./controllers/imageController');
+ 
 const {executeSqlQuery} = require('./controllers/sqlController');
 
 const cors = require('cors');
@@ -25,6 +26,7 @@ const app = express();
 app.use(bodyParser.json());
 const User = require('./models/User');
 const db = require('./config/db');
+const  {sendEmail}  = require('./email-service/emailServices/emailService');
 
 
 
@@ -71,9 +73,65 @@ app.use('/api/distinctive-dishes', distinctiveDishRoutes);
 app.use('/api/orderDishes', orderDishRoutes);
 app.use('/api/auth', authRoutes);
 
+// app.post('/send-email', emailController.sendEmail);
+// app.get('/track/open', async (req, res) => {
+//   const email = req.query.email;
+//   await supabase.from('email_logs').update({ opened: true, opened_at: new Date() }).eq('email', email);
+  
+//   // إرجاع صورة 1x1 شفافة
+//   const img = Buffer.from(
+//     'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'
+//   );
+//   res.writeHead(200, {
+//     'Content-Type': 'image/gif',
+//     'Content-Length': img.length,
+//   });
+//   res.end(img);
+// });
+// app.get('/track/click', async (req, res) => {
+//   const { email, url } = req.query;
+//   const originalUrl = decodeURIComponent(url);
 
- 
+//   await supabase.from('email_logs').update({ link_clicked: true, clicked_at: new Date() }).eq('email', email);
 
+//   res.redirect(originalUrl);
+// });
+
+
+
+
+
+
+
+
+
+
+
+app.get("/send-email", async (req, res) => {
+  // إدخال البيانات كـ Static Data
+  const staticData = {
+    to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
+    subject: "Test Email", // الموضوع
+    html: "<h1>This is a test email</h1>", // المحتوى HTML
+    text: "This is a test email", // المحتوى النصي
+    // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
+    // templateData: {}, // البيانات التي سيتم استخدامها في القالب
+    language: "ar", // اللغة
+    // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
+    // attachments: [] // المرفقات
+  };
+
+  try {
+    // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
+    const emailResult = await sendEmail(staticData);
+
+    // إرجاع نتيجة النجاح
+    res.status(200).json({ message: "Email sent successfully!", result: emailResult });
+  } catch (error) {
+    console.error("Error in sending email:", error);
+    res.status(500).json({ message: "Failed to send email", error: error.message });
+  }
+});
  
 
 app.get('/api', (req, res) => {
