@@ -40,10 +40,13 @@ exports.verifyToken = async (req, res, next) => {
 
     // استعلام للحصول على المستخدم
     const users = await sql`
-      SELECT id, name, email, role 
+      SELECT id, name, email, role ,is_verified
       FROM users 
       WHERE id = ${userId}
     `;
+
+
+console.log("users ---->:", users);
 
     // تحقق من وجود المستخدم
     if (users.length === 0) {
@@ -52,6 +55,17 @@ exports.verifyToken = async (req, res, next) => {
         error: 'user_not_found' 
       });
     }
+
+
+if (!users[0].is_verified) {
+  return res.status(401).json({ 
+    message: ' المستخدم غير مفعل يرجى التحقق من البريد الإلكتروني أو إعادة توثيق الحساب' ,
+    error: 'user_not_verified' 
+  });
+}
+
+
+
 
     req.user = users[0]; // استرجاع أول مستخدم من النتيجة
     next();

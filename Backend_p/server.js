@@ -24,9 +24,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(bodyParser.json());
-const User = require('./models/User');
-const db = require('./config/db');
-const  {sendEmail}  = require('./email-service/emailServices/emailService');
+ const  {sendEmail}  = require('./email-service/emailServices/emailService');
 
 
 
@@ -107,31 +105,31 @@ app.use('/api/auth', authRoutes);
 
 
 
-app.get("/send-email", async (req, res) => {
-  // إدخال البيانات كـ Static Data
-  const staticData = {
-    to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
-    subject: "Test Email", // الموضوع
-    html: "<h1>This is a test email</h1>", // المحتوى HTML
-    text: "This is a test email", // المحتوى النصي
-    // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
-    // templateData: {}, // البيانات التي سيتم استخدامها في القالب
-    language: "ar", // اللغة
-    // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
-    // attachments: [] // المرفقات
-  };
+// app.get("/send-email", async (req, res) => {
+//   // إدخال البيانات كـ Static Data
+//   const staticData = {
+//     to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
+//     subject: "Test Email", // الموضوع
+//     html: "<h1>This is a test email</h1>", // المحتوى HTML
+//     text: "This is a test email", // المحتوى النصي
+//     // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
+//     // templateData: {}, // البيانات التي سيتم استخدامها في القالب
+//     language: "ar", // اللغة
+//     // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
+//     // attachments: [] // المرفقات
+//   };
 
-  try {
-    // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
-    const emailResult = await sendEmail(staticData);
+//   try {
+//     // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
+//     const emailResult = await sendEmail(staticData);
 
-    // إرجاع نتيجة النجاح
-    res.status(200).json({ message: "Email sent successfully!", result: emailResult });
-  } catch (error) {
-    console.error("Error in sending email:", error);
-    res.status(500).json({ message: "Failed to send email", error: error.message });
-  }
-});
+//     // إرجاع نتيجة النجاح
+//     res.status(200).json({ message: "Email sent successfully!", result: emailResult });
+//   } catch (error) {
+//     console.error("Error in sending email:", error);
+//     res.status(500).json({ message: "Failed to send email", error: error.message });
+//   }
+// });
  
 
 app.get('/api', (req, res) => {
