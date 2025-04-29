@@ -24,7 +24,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(bodyParser.json());
- const  {sendEmail}  = require('./email-service/emailServices/emailService');
+//  const  {sendEmail}  = require('./email-service/emailServices/emailService');
 
 
 
