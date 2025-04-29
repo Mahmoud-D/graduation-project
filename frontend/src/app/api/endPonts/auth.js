@@ -39,6 +39,10 @@ class AuthService {
   isAuthenticated() {
     return !!this.api.getToken();
   }
+  
+  async sendResetPasswordEmail(email) {
+    return await this.api.post('/auth/sendResetPasswordEmail', { email });
+  }
 }
 
 // Create a singleton instance

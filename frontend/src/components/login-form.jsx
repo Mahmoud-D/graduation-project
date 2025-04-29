@@ -206,6 +206,17 @@ export function LoginForm({ className, ...props }) {
               </div>
             )}
             
+            <div className="flex justify-between items-center mb-4">
+              <Button
+                type="button"
+                variant="link"
+                className="text-primary p-0 h-auto font-medium hover:underline cursor-pointer"
+                onClick={() => router.push('/forgot-password')}
+              >
+                نسيت كلمة المرور؟
+              </Button>
+            </div>
+
             <Button 
               type="submit" 
               className="w-full h-12 text-base font-medium mt-2 cursor-pointer" 
