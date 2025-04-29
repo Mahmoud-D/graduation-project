@@ -1,22 +1,40 @@
 // apiHandler.js
 class APIHandler {
   constructor() {
-    this.apiBaseURL = process.env.NEXT_PUBLIC_API_URL; // عنوان API
+    this.apiBaseURL = process.env.NEXT_PUBLIC_API_URL;
+    this.tokenKey = 'token'; // Centralize token key name
+  }
+
+  getToken() {
+    return typeof window !== 'undefined' ? localStorage.getItem(this.tokenKey) : null;
+  }
+
+  setToken(token) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.tokenKey, token);
+    }
+  }
+
+  removeToken() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.tokenKey);
+    }
   }
 
   async request(method, endpoint, data = null, params = {}, headers = {}) {
     let url = `${this.apiBaseURL}${endpoint}`;
     const queryParams = new URLSearchParams(params).toString();
+    
     if (queryParams) {
       url += `?${queryParams}`;
     }
-
+    
     const requestHeaders = {
       'Content-Type': 'application/json',
       ...headers,
     };
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    const token = this.getToken();
     if (token) {
       requestHeaders['Authorization'] = `Bearer ${token}`;
     }
@@ -32,15 +50,33 @@ class APIHandler {
 
     try {
       const response = await fetch(url, options);
+      const responseData = await response.json().catch(() => ({}));
+      
+      // Return a standardized response format
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        return {
+          success: false,
+          status: response.status,
+          message: responseData.message || response.statusText || 'Request failed',
+          data: responseData,
+          error: true
+        };
       }
-
-      const responseData = await response.json();
-      return responseData;
+      
+      return {
+        success: true,
+        status: response.status,
+        data: responseData,
+        message: responseData.message || 'Success'
+      };
     } catch (error) {
       console.error("API Error: ", error);
-      throw new Error(`API request failed: ${error.message}`);
+      return {
+        success: false,
+        status: 0,
+        message: error.message || 'Network error',
+        error: true
+      };
     }
   }
 
@@ -61,8 +97,4 @@ class APIHandler {
   }
 }
 
-
-
 export { APIHandler };
-
-

@@ -1,35 +1,47 @@
-// الاستخدام في ملف آخر:
-
+// auth.js
 import { APIHandler } from "../apiHandler";
 
- 
+class AuthService {
+  constructor() {
+    this.api = new APIHandler();
+  }
 
-const apiHandler = new APIHandler();
- 
+  async login(email, password) {
+    const response = await this.api.post('/auth/login', { email, password });
+    
+    if (response.success && response.data?.token) {
+      this.api.setToken(response.data.token);
+    }
+    
+    return response;
+  }
 
+  async register(userData) {
+    const response = await this.api.post('/auth/register', userData);
+    
+    if (response.success && response.data?.token) {
+      this.api.setToken(response.data.token);
+    }
+    
+    return response;
+  }
 
+  async fetchCurrentUser() {
+    return await this.api.get('/user');
+  }
 
-const authEndpoints = {
-  login: async (data) => {
-    return await apiHandler.post('/auth/login', data);
-  },
-  register: async (data) => {
-    return await apiHandler.post('/auth/register', data);
-  },
-  fetchUser: async () => {
-    return await apiHandler.get('/user');
-  },
-  logout: async () => {
-    return await apiHandler.post('/auth/logout');
-  },
-};
+  async logout() {
+    const response = await this.api.post('/auth/logout');
+    this.api.removeToken();
+    return response;
+  }
 
-export default authEndpoints;
+  isAuthenticated() {
+    return !!this.api.getToken();
+  }
+}
 
- 
+// Create a singleton instance
+const authService = new AuthService();
 
- 
- 
-
-
-
+export default authService;
