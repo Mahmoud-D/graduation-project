@@ -14,8 +14,10 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const couponUsesRoutes = require('./routes/couponUsesRoutes');
 const distinctiveDishRoutes = require('./routes/distinctiveDishRoutes');
+import paypalRoutes from './routes/paypalRoutes.js';
+
 const imageController = require('./controllers/imageController');
- 
+  
 const {executeSqlQuery} = require('./controllers/sqlController');
 
 const cors = require('cors');
@@ -66,6 +68,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/apply-coupon', couponUsesRoutes); 
 app.use('/api/distinctive-dishes', distinctiveDishRoutes);
+app.use('/api/paypal', paypalRoutes);
 
 
 app.use('/api/orderDishes', orderDishRoutes);
