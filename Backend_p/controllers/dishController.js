@@ -25,8 +25,9 @@ exports.getAllDishes = async (req, res) => {
 
 
 exports.getDishById = async (req, res) => {
+ 
   try {
-    const dish = await Dish.getById(req.params.id); // جلب الطبق باستخدام الـ ID
+    const dish = await Dish.getDishesByIds(req.body.ids); // جلب الطبق باستخدام الـ ID
     if (!dish) {
       return res.status(404).json({ message: "الطبق غير موجود" });
     }

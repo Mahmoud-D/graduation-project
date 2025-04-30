@@ -28,7 +28,7 @@ exports.getDishesWithPromotions = async (req, res) => {
 
 exports.getAllPromotions = async (req, res) => {
   try {
-    const [promotions] = await db.promise().query("SELECT * FROM promotions");
+    const promotions = await Promotion.getAllPromotions(req.body);
     res.json(promotions);
   } catch (error) {
     res.status(500).json({ message: error.message });

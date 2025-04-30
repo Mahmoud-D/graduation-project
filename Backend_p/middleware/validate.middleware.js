@@ -2,7 +2,7 @@
     const result = schema.safeParse(req.body);
   
     if (!result.success) {
-      const errors = result.error.errors.map((e) => e.message);
+      const errors = result.error.errors.map((e) => e);
       return res.status(400).json({ errors });
     }
   

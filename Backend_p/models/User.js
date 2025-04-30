@@ -1,5 +1,6 @@
-const sql = require('../config/db'); // الاتصال الجديد بـ postgres
-const bcrypt = require('bcrypt');
+const e = require("express");
+const sql = require("../config/db"); // الاتصال الجديد بـ postgres
+const bcrypt = require("bcrypt");
 
 class User {
   constructor(name, email, password, role) {
@@ -14,7 +15,7 @@ class User {
     try {
       return await bcrypt.hash(this.password, saltRounds);
     } catch (error) {
-      throw new Error('خطأ في تشفير كلمة المرور');
+      throw new Error("خطأ في تشفير كلمة المرور");
     }
   }
 
@@ -26,11 +27,16 @@ class User {
         VALUES (${this.name}, ${this.email}, ${hashedPassword}, ${this.role}, NOW())
         RETURNING id
       `;
-      console.log('✅ Insert result:', result);
+      console.log("✅ Insert result:", result);
       return result[0].id;
     } catch (err) {
-      console.error('❌ Error during insert:', err);
-      throw new Error('error in create user ' + err.message);
+      if (err.code === "23505") {
+        console.log("البريد الإلكتروني موجود بالفعل.");
+        throw new Error("البريد الإلكتروني موجود بالفعل.");
+      } else {
+        console.log("حدث خطأ غير متوقع:", err);
+        throw new Error("error in create user " + err.message);
+      }
     }
   }
 
@@ -39,8 +45,8 @@ class User {
       const results = await sql`SELECT * FROM users`;
       return results;
     } catch (err) {
-      console.error('❌ Error getting all users:', err);
-      throw new Error('خطأ في جلب المستخدمين');
+      console.error("❌ Error getting all users:", err);
+      throw new Error("خطأ في جلب المستخدمين");
     }
   }
 
@@ -49,8 +55,8 @@ class User {
       const result = await sql`SELECT * FROM users WHERE id = ${id}`;
       return result[0];
     } catch (err) {
-      console.error('❌ Error getting user by ID:', err);
-      throw new Error('خطأ في جلب المستخدم');
+      console.error("❌ Error getting user by ID:", err);
+      throw new Error("خطأ في جلب المستخدم");
     }
   }
 
@@ -58,7 +64,7 @@ class User {
     try {
       return await bcrypt.compare(plainPassword, hashedPassword);
     } catch (error) {
-      throw new Error('خطأ في مقارنة كلمة المرور');
+      throw new Error("خطأ في مقارنة كلمة المرور");
     }
   }
 
@@ -77,8 +83,8 @@ class User {
       await sql.unsafe(sqlQuery); // استخدم unsafe عشان نمرر SQL string عادي
       console.log('✅ Table "users" is ready');
     } catch (err) {
-      console.error('❌ Error creating users table:', err);
-      throw new Error('خطأ أثناء إنشاء الجدول');
+      console.error("❌ Error creating users table:", err);
+      throw new Error("خطأ أثناء إنشاء الجدول");
     }
   }
 
@@ -87,8 +93,8 @@ class User {
       const result = await sql`SELECT * FROM users WHERE email = ${email}`;
       return result[0];
     } catch (err) {
-      console.error('❌ Error finding user by email:', err);
-      throw new Error('خطأ في البحث عن المستخدم');
+      console.error("❌ Error finding user by email:", err);
+      throw new Error("خطأ في البحث عن المستخدم");
     }
   }
 
@@ -101,8 +107,8 @@ class User {
       const result = await sql`UPDATE users SET ${fields} WHERE id = ${id}`;
       return result.count > 0;
     } catch (err) {
-      console.error('❌ Error updating user:', err);
-      throw new Error('خطأ في تحديث المستخدم');
+      console.error("❌ Error updating user:", err);
+      throw new Error("خطأ في تحديث المستخدم");
     }
   }
 
@@ -111,8 +117,8 @@ class User {
       const result = await sql`DELETE FROM users WHERE id = ${id}`;
       return result.count > 0;
     } catch (err) {
-      console.error('❌ Error deleting user:', err);
-      throw new Error('خطأ في حذف المستخدم');
+      console.error("❌ Error deleting user:", err);
+      throw new Error("خطأ في حذف المستخدم");
     }
   }
 }

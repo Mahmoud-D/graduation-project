@@ -8,8 +8,10 @@
 | `password`      | `VARCHAR(255)`            | `NOT NULL`              | The password of the user (hashed value).                                         |
 | `role`          | `VARCHAR(50)`             | `DEFAULT 'user'`        | The role of the user (default is "user").                                        |
 | `created_at`    | `TIMESTAMP`               | `DEFAULT CURRENT_TIMESTAMP` | The timestamp when the user was created.                                          |
+| `is_verified`    | `boolean`               | `boolean` | Whether the user's email/account is verified (defaults to false). |
 
----
+
+ ---
 
 ### Operations on `users`
 

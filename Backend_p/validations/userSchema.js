@@ -1,11 +1,59 @@
 // validations/auth.schema.js
-const { z } = require('zod');
+// validations/auth.schema.js
+const { z } = require("zod");
+const { findByEmail } = require("../models/User");
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name is too short'),
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(6, 'Password too short'),
-  role: z.string().optional() 
+  name: z
+    .string()
+    .min(2, "اسم المستخدم يجب أن يكون على الأقل مكون من حرفين")
+    .regex(/^[a-zA-Z\s]+$/, "الاسم يجب أن يحتوي فقط على حروف ومسافات"),
+  email: z
+    .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase()) 
+    .refine(async (email) => {
+      const userExists = await findByEmail(email);
+      return !userExists;
+    }, "البريد الإلكتروني موجود بالفعل."),
+  password: z
+    .string()
+    .min(6, "كلمة المرور يجب أن تكون على الأقل مكونة من 6 أحرف")
+    .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
+    .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
+    .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
+  role: z
+    .string()
+    .optional()
+    .refine(
+      (role) => ["user", "admin"].includes(role),
+      'الدور غير صحيح. يجب أن يكون "user" أو "admin"'
+    ),
 });
 
-module.exports = { registerSchema };
+
+
+const EmailSchema = z.object({
+  
+  email: z
+  .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase())
+    .refine(async (email) => {
+      const userExists = await findByEmail(email);
+      return !userExists;
+    }, "البريد الإلكتروني موجود بالفعل."),
+    
+  });
+  
+  const passwordValidate = z.object({
+ 
+    newPassword: z
+      .string()
+      .min(6, "كلمة المرور يجب أن تكون على الأقل مكونة من 6 أحرف")
+      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
+      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
+      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
+
+  });
+  module.exports = { registerSchema,EmailSchema,passwordValidate };

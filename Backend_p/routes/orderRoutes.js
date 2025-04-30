@@ -6,11 +6,13 @@ const OrderController = require("../controllers/orderController");
 const orderDishController = require("../controllers/orderDishController");
 const { verifyToken } = require("../middleware/auth");
 const checkRole = require("../middleware/checkRole");
+const validator = require('../middleware/validate.middleware');
 
+ const { createOrderSchema } = require("../validations/orderValidation");
 // Get all orders
 
  // Create new order
-router.post("/",verifyToken, OrderController.createOrder);
+router.post("/",verifyToken,validator(createOrderSchema), OrderController.createOrder);
 // // Get order by ID
 router.get('/my-orders', verifyToken, OrderController.getMyOrders);
 router.get("/:id", OrderController.getOrderDetails);

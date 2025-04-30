@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
+const { CategorySchema } = require('../validations/categorySchema');
+const validator = require('../middleware/validate.middleware');
 
-// جلب جميع الفئات
-router.get('/', categoryController.getAllCategories);
+ router.get('/', categoryController.getAllCategories);
 
-// إضافة فئة جديدة
-router.post('/', categoryController.createCategory);
+ router.post('/',validator(CategorySchema), categoryController.createCategory);
 
-// تعديل فئة
-router.put('/:id', categoryController.updateCategory);
+ router.put('/:id',validator(CategorySchema), categoryController.updateCategory);
 
-// حذف فئة
-router.delete('/:id', categoryController.deleteCategory);
+ router.delete('/:id', categoryController.deleteCategory);
 
 module.exports = router;

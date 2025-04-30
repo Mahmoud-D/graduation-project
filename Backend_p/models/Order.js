@@ -169,7 +169,7 @@ const Order = {
     }
   },
 
-  create: async ({ user_id, status }) => {
+  create: async ({ user_id, status='pending' }) => {
     const now = new Date();
     try {
       const result = await sql`

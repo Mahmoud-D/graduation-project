@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/authController');
-const { registerSchema } = require('../validations/userSchema');
+const { registerSchema,EmailSchema,passwordValidate } = require('../validations/userSchema');
 const validator = require('../middleware/validate.middleware');
 
 
@@ -11,8 +11,8 @@ router.post('/login', AuthController.login);
 // User registration
 router.post('/register',validator(registerSchema), AuthController.register);
 router.get('/verify-email', AuthController.verifyEmail);
-router.post('/resendVerificationEmail', AuthController.resendVerificationEmail);
-router.post('/sendResetPasswordEmail', AuthController.sendResetPasswordEmail );
-router.post('/resetPassword', AuthController.resetPassword );
+router.post('/resendVerificationEmail',validator(EmailSchema), AuthController.resendVerificationEmail);
+router.post('/sendResetPasswordEmail',validator(EmailSchema), AuthController.sendResetPasswordEmail );
+router.post('/resetPassword',validator(passwordValidate), AuthController.resetPassword );
 
 module.exports = router;

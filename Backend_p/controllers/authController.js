@@ -11,29 +11,77 @@ const sendEmail = require("../utils/emailService");
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
+  // التحقق من وجود البيانات المطلوبة
+  if (!email || !password) {
+    return res.status(400).json({ 
+      success: false,
+      message: "يجب إدخال البريد الإلكتروني وكلمة المرور"
+    });
+  }
+
   try {
-    const user = await User.findByEmail(email); // استخدم الدالة المناسبة في الموديل
+    // البحث عن المستخدم
+    const user = await User.findByEmail(email);
+    
+    // حالة عدم وجود المستخدم
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+      return res.status(404).json({ 
+        success: false,
+        message: "الحساب غير موجود",
+        hint: "قد يكون البريد الإلكتروني غير صحيح"
+      });
     }
 
+    // حالة الحساب غير المفعل
+    if (!user.is_verified) {
+      return res.status(403).json({ 
+        success: false,
+        message: "حساب غير مفعل",
+        action_required: "التحقق من البريد الإلكتروني وتفعيل الحساب"
+      });
+    }
+
+    // التحقق من كلمة المرور
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+      return res.status(401).json({ 
+        success: false,
+        message: "معلومات الدخول غير صحيحة",
+        hint: "كلمة المرور غير صحيحة"
+      });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    // إنشاء Token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        role: user.role 
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
+
+    // إرجاع الاستجابة الناجحة
+    res.status(200).json({
+      success: true,
+      message: "تم تسجيل الدخول بنجاح",
+      token: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
-    res.json({ token });
+
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "حدث خطأ أثناء تسجيل الدخول", error: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "حدث خطأ في الخادم",
+      system_message: error.message,
+      hint: "الرجاء المحاولة مرة أخرى لاحقًا"
+    });
   }
 };
 
@@ -59,21 +107,87 @@ exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // 1. إنشاء مستخدم جديد
-    const newUser = new User(name, email, password, role || "user");
-    const userId = await newUser.create(); // التأكد من أن create يتم بشكل صحيح بعد تشفير كلمة السر
+     const newUser = new User(name, email, password, role || "user");
+    const userId = await newUser.create(); 
 
-    // 2. توليد التوكن
     const token = generateToken(userId);
 
-    // 3. إنشاء رابط التوثيق
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    const frontendUrl =  req.headers.origin || process.env.FRONTEND_URL; // fallback إذا لم يكن موجودًا في الـ headers
+    const verificationLink = `${frontendUrl}/verify-email?token=${token}`;
 
-    const subject = "Welcome to Our Service!";
-    const text = `Hi ${name},\n\nThank you for signing up with our service. Please click the link below to verify your email address:\n\n${verificationLink}`;
-    const html = `<p>Hi ${name},</p><p>Thank you for signing up with our service. Please click the link below to verify your email address:</p><a href="${verificationLink}">${verificationLink}</a>`;
+console.log(verificationLink);
+
+
+    const subject = "مرحبًا بك في مطعمنا م";
+    const text = `مرحبًا ${name},\n\nشكرًا لتسجيلك في مطعمنا! نحن متحمسون أن تكون جزءًا من عائلتنا. لبدء تجربتك مع أفضل الأطباق لدينا، يرجى التحقق من بريدك الإلكتروني عبر الرابط أدناه:\n\n${verificationLink}\n\nنتمنى لك تجربة لذيذة! 🍴`;
+    
+    const html = `
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+          }
+         
+          .content {
+            margin-top: 20px;
+            text-align: center;
+          }
+          .cta-button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+         
+          <div class="content">
+             <a href="${verificationLink}" class="cta-button">تحقق من بريدك الإلكتروني</a>
+          </div>
+         
+        </div>
+      </body>
+    </html>
+  `;
+  
+    
     const category = "User Registration";
     const senderName = "Your Team"; // تخصيص اسم المرسل
+    
+
+
+
+
+
+
+
+
+
+
+
 
     // 4. إرسال البريد الإلكتروني مع التوكين
     await sendEmail({
@@ -104,8 +218,6 @@ exports.verifyEmail = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
-
-    // التحقق من أن المستخدم موجود
     const user = await User.getById(userId);
     if (!user) {
       return res.status(404).json({ message: "المستخدم غير موجود" });
@@ -114,8 +226,6 @@ exports.verifyEmail = async (req, res) => {
     if (user.is_verified) {
       return res.status(404).json({ message: "المستخدم تم توثيقة بالفعل  " });
     }
-
-    console.log(user);
 
     await User.update(user.id, { is_verified: true });
 
