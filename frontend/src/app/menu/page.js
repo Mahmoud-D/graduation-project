@@ -21,6 +21,10 @@ export default function MenuPage() {
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
+    if (category === "الكل") {
+      setSelectedDishes(dishes); 
+      return;
+    }
     const filteredDishes = dishes.filter(
       (dish) => dish.categories.includes(category)
     );
@@ -52,17 +56,12 @@ export default function MenuPage() {
         throw new Error("Failed to fetch categories");
       }
       const data = await response.json();
-      setCategories(data);
+      setCategories([{category_id: 0, category_name:"الكل"},...data]);
     } catch (err) {
       setError("فشل في تحميل التصنيفات. الرجاء المحاولة مرة أخرى.");
       console.error("Error fetching categories:", err);
     }
   }
-
-  const filteredDishes =
-    selectedCategory === "الكل"
-      ? dishes
-      : dishes.filter((dish) => dish.category === selectedCategory);
 
   if (loading) {
     return (
@@ -106,7 +105,7 @@ export default function MenuPage() {
           ))}
         </div>
 
-        {filteredDishes.length === 0 && (
+        {selectedDishes.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             لا توجد أطباق في هذا التصنيف حالياً
           </div>
