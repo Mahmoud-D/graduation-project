@@ -33,14 +33,13 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.png"
+              src="/logo.webp"
               alt="مطعمنا"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               className="mr-2"
               priority
             />
-            <span className="text-xl font-bold text-dark-shade">مطعمنا</span>
           </Link>
 
           {/* Desktop Navigation */}

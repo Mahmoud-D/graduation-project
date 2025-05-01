@@ -227,7 +227,6 @@ export function RegistrationForm({ className, ...props }) {
     }
   };
 
-  console.log("Form Data:", formData);
   
   return (
     <div className={cn("flex justify-center items-center min-h-[80vh]", className)} {...props}>
