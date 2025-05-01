@@ -5,7 +5,7 @@ const testimonials = [
   {
     id: 1,
     name: "أحمد محمد",
-    image: "/testimonial1.jpg",
+    image: "/profile-photo-fallback-1.jpg",
     rating: 5,
     comment: "أفضل مطعم في المنطقة! الأطباق الشرقية لذيذة جداً والتوصيل سريع.",
     date: "قبل 3 أيام",
@@ -13,7 +13,7 @@ const testimonials = [
   {
     id: 2,
     name: "سارة أحمد",
-    image: "/testimonial2.jpg",
+    image: "/profile-photo-fallback-1.jpg",
     rating: 5,
     comment: "البرجر هنا رائع! الطعم مميز والخدمة ممتازة.",
     date: "قبل أسبوع",
@@ -21,7 +21,7 @@ const testimonials = [
   {
     id: 3,
     name: "محمد علي",
-    image: "/testimonial3.jpg",
+    image: "/profile-photo-fallback-1.jpg",
     rating: 4,
     comment: "البيتزا لذيذة والكمية مناسبة. أنصح بتجربة البيتزا الخاصة بهم.",
     date: "قبل أسبوعين",
