@@ -2,9 +2,7 @@ const jwt = require('jsonwebtoken');
 const sql = require('../config/db'); // استيراد الاتصال بقاعدة البيانات من الملف الجديد
 require('dotenv').config();
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET غير موجود في ملف .env');
-}
+ 
 
 exports.verifyToken = async (req, res, next) => {
   try {

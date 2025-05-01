@@ -1,5 +1,6 @@
 // controllers/orderController.js
 
+const { getDishesByIds } = require("../models/Dish");
 const Order = require("../models/Order");
 const OrderDish = require("../models/OrderDish");
 const couponModel = require("../models/coupon");
@@ -26,42 +27,72 @@ const couponModel = require("../models/coupon");
 //   }
 // };
 
-
+// orderController.js
 
 const createOrder = async (req, res) => {
-  const { status, dishes, coupon_code } = req.body;
-
   try {
-    const orderData = { user_id: req.user.id, status };
-    const { id: orderId } = await Order.create(orderData);
+    const { dishes, coupon_code } = req.body;
 
-    // تحقق من الكوبون إذا كان موجودًا وصالحًا
-    if (coupon_code) {
-      const coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
-      if (coupon === null) {
-        return res.status(400).json({ message: "Invalid or expired coupon" });
-      }
-      if (coupon === "Coupon limit reached") {
-        return res.status(400).json({ message: "Coupon usage limit reached" });
-      }
-      if (coupon === "User has exceeded coupon usage limit") {
-        return res.status(400).json({ message: "You have exceeded your coupon usage limit" });
-      }
-
-      // تطبيق الكوبون على الطلب
-      await couponModel.applyCouponToOrder(orderId, coupon.id, req.user.id);
+    if (!dishes || dishes.length === 0) {
+      return res.status(400).json({ message: 'No dishes provided' });
     }
 
-    for (let dish of dishes) {
-      await OrderDish.addDishesToOrder(orderId, dish.dishId, dish.quantity);
-    }
+    // 1. Validate dishes
+    // 2. Fetch dishes details from database
+    const dbDishes = await getDishesByIds(dishIds);
 
-    return res.status(201).json({ message: "Order created successfully!", orderId });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Error creating order" });
+    // 3. Check promotions
+    // 4. Calculate subtotal
+    // 5. Apply coupon if any
+    // 6. Insert order into database
+    // 7. Insert order items
+
+    res.status(201).json({ message: 'Order created successfully (pending payment)' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
+
+module.exports = { createOrder };
+
+
+
+// const createOrder = async (req, res) => {
+//   const { status, dishes, coupon_code } = req.body;
+
+//   try {
+//     const orderData = { user_id: req.user.id, status };
+//     const { id: orderId } = await Order.create(orderData);
+
+//     // تحقق من الكوبون إذا كان موجودًا وصالحًا
+//     if (coupon_code) {
+//       const coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
+//       if (coupon === null) {
+//         return res.status(400).json({ message: "Invalid or expired coupon" });
+//       }
+//       if (coupon === "Coupon limit reached") {
+//         return res.status(400).json({ message: "Coupon usage limit reached" });
+//       }
+//       if (coupon === "User has exceeded coupon usage limit") {
+//         return res.status(400).json({ message: "You have exceeded your coupon usage limit" });
+//       }
+
+//       // تطبيق الكوبون على الطلب
+//       await couponModel.applyCouponToOrder(orderId, coupon.id, req.user.id);
+//     }
+
+//     for (let dish of dishes) {
+//       await OrderDish.addDishesToOrder(orderId, dish.dishId, dish.quantity);
+//     }
+
+//     return res.status(201).json({ message: "Order created successfully!", orderId });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ message: "Error creating order" });
+//   }
+// };
 
 
  
