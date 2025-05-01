@@ -1,24 +1,29 @@
 const nodemailer = require('nodemailer');
 
+// Create transporter using Brevo SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp-relay.brevo.com',   // Brevo SMTP server
+  port: 587,                      // Port for TLS
+  secure: false,                  // Use TLS, not SSL
   auth: {
-    user: 'khaled.mohameed1998@gmail.com',        // الإيميل بتاعك
-    pass: 'tmel cllz eljv zsbf',      // ال App Password اللي طلعته
+    user: '8be65b001@smtp-brevo.com',   // Your Brevo SMTP login
+    pass: 'UmDRGI3T205hVKw4',           // Your Brevo Master Password
   },
 });
 
+// Mail options
 const mailOptions = {
-  from: 'your_email@gmail.com',
-  to: 'khaled.mohameed1998@gmail.com',   // اللي انت عايز تبعتله
+  from: '"Khaled" <khaled.mohameed1998@gmail.com>',   // Use the validated email
+  to: 'siyedox789@exitings.com',
   subject: 'Graduation Project Test',
-  text: 'This is a test email using Gmail SMTP and Node.js!',
+  text: 'This is a test email using Brevo SMTP and Node.js!',
 };
 
+// Send email
 transporter.sendMail(mailOptions, function (error, info) {
   if (error) {
     console.log('Error occurred:', error);
   } else {
-    console.log('Email sent:', info.response);
+    console.log('Email sent successfully:', info.response);
   }
 });
