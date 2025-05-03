@@ -61,7 +61,6 @@ export default function MenuCategories() {
         throw new Error("Failed to fetch dishes");
       }
       const data = await response.json();
-      console.log("data", data);
       
       setDishes(data.data);
       setLoading(false);
@@ -118,7 +117,7 @@ export default function MenuCategories() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-dark-shade mb-4">
-            قائمتنا المميزة
+            الأعلى طلباََ
           </h2>
           <p className="text-lg text-dark-shade/70">
             اكتشف تشكيلتنا المتنوعة من الأطباق الشهية

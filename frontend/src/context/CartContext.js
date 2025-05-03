@@ -26,11 +26,11 @@ function cartReducer(state, action) {
         updatedItems = [...state.items];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + 1,
+          quantity: updatedItems[existingItemIndex].quantity + action.payload.quantity, // Add the new quantity instead of just 1
         };
       } else {
-        // Add new item
-        updatedItems = [...state.items, { ...action.payload, quantity: 1 }];
+        // Add new item with its quantity
+        updatedItems = [...state.items, { ...action.payload }]; // Use the payload quantity instead of forcing it to 1
       }
 
       const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -85,9 +85,26 @@ function cartReducer(state, action) {
     case 'UPDATE_QUANTITY': {
       const { id, quantity } = action.payload;
       
-      if (quantity <= 0) {
-        return state;
+      // If quantity is 0, remove the item completely
+      if (quantity === 0) {
+        const updatedItems = state.items.filter(item => item.id !== id);
+        
+        const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = updatedItems.reduce(
+          (sum, item) => sum + item.price * item.quantity, 
+          0
+        );
+
+        return {
+          ...state,
+          items: updatedItems,
+          totalItems,
+          totalPrice,
+        };
       }
+
+      // For quantities > 0, update as normal
+      if (quantity < 0) return state;
 
       const updatedItems = state.items.map(item => 
         item.id === id ? { ...item, quantity } : item
