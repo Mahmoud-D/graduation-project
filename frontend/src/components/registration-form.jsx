@@ -43,6 +43,7 @@ export function RegistrationForm({ className, ...props }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   
   // Function to reset the form
   const resetForm = () => {
@@ -222,11 +223,9 @@ export function RegistrationForm({ className, ...props }) {
       if (!response.ok) {
         throw new Error(data.errors[0].message || "فشل التسجيل. يرجى المحاولة مرة أخرى.");
       }
-
-      // Save token to localStorage
-      localStorage.setItem("token", data.token);
-
-      router.push("/login");
+      // Show verification message instead of redirecting
+      setShowVerificationMessage(true);
+      
     } catch (err) {
       setErrors(prev => ({...prev, general: err.message}));
     } finally {
@@ -238,148 +237,169 @@ export function RegistrationForm({ className, ...props }) {
   return (
     <div className={cn("flex justify-center items-center min-h-[80vh]", className)} {...props}>
       <Toaster position="top-center" richColors />
-      <Card className="w-full max-w-2xl shadow-lg">
-        <CardHeader className="text-right space-y-1 border-b pb-8 pt-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-3xl font-bold mb-2">إنشاء حساب جديد</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">
-                أدخل معلوماتك أدناه لإنشاء حسابك
-              </CardDescription>
-            </div>
-            <UserPlus className="h-7 w-7 text-primary" />
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2 text-right">
-                <Label htmlFor="firstName" className="text-sm font-medium">الاسم الأول</Label>
-                <Input
-                  id="firstName"
-                  placeholder="محمد"
-                  value={formData.firstName}
-                  onChange={handleNameChange}
-                  className={`text-right placeholder:text-right h-11 text-base ${errors.firstName ? "border-red-500" : ""}`}
-                />
-                {errors.firstName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
-                )}
+      {showVerificationMessage ? (
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader className="text-center space-y-1 border-b pb-8 pt-8">
+            <CardTitle className="text-3xl font-bold mb-4">تم التسجيل بنجاح!</CardTitle>
+            <CardDescription className="text-lg">
+              لقد أرسلنا رسالة تحقق إلى بريدك الإلكتروني
+              <div className="font-medium text-primary mt-2">{formData.email}</div>
+              يرجى التحقق من بريدك الإلكتروني لتفعيل حسابك
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex justify-center pt-6 pb-8">
+            <Button 
+              onClick={() => router.push('/login')} 
+              className="px-8 cursor-pointer"
+            >
+              العودة إلى صفحة تسجيل الدخول
+            </Button>
+          </CardFooter>
+        </Card>
+      ) : (
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader className="text-right space-y-1 border-b pb-8 pt-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-3xl font-bold mb-2">إنشاء حساب جديد</CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
+                  أدخل معلوماتك أدناه لإنشاء حسابك
+                </CardDescription>
               </div>
-              <div className="space-y-2 text-right">
-                <Label htmlFor="lastName" className="text-sm font-medium">الاسم الأخير</Label>
-                <Input
-                  id="lastName"
-                  placeholder="أحمد"
-                  value={formData.lastName}
-                  onChange={handleNameChange}
-                  className={`text-right placeholder:text-right h-11 text-base ${errors.lastName ? "border-red-500" : ""}`}
-                />
-                {errors.lastName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
-                )}
-              </div>
+              <UserPlus className="h-7 w-7 text-primary" />
             </div>
-            
-            <div className="space-y-2 text-right">
-              <Label htmlFor="email" className="text-sm font-medium">البريد الإلكتروني</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@email.com"
-                value={formData.email}
-                onChange={handleEmailChange}
-                className={`text-right placeholder:text-right h-11 text-base ${errors.email ? "border-red-500" : ""}`}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2 text-right">
-                <Label htmlFor="password" className="text-sm font-medium">كلمة المرور</Label>
-                <div className="relative">
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2 text-right">
+                  <Label htmlFor="firstName" className="text-sm font-medium">الاسم الأول</Label>
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handlePasswordChange}
-                    className={`text-right placeholder:text-right pr-3 h-11 text-base ${errors.password ? "border-red-500" : ""}`}
+                    id="firstName"
+                    placeholder="محمد"
+                    value={formData.firstName}
+                    onChange={handleNameChange}
+                    className={`text-right placeholder:text-right h-11 text-base ${errors.firstName ? "border-red-500" : ""}`}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </Button>
+                  {errors.firstName && (
+                    <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                  )}
                 </div>
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
+                <div className="space-y-2 text-right">
+                  <Label htmlFor="lastName" className="text-sm font-medium">الاسم الأخير</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="أحمد"
+                    value={formData.lastName}
+                    onChange={handleNameChange}
+                    className={`text-right placeholder:text-right h-11 text-base ${errors.lastName ? "border-red-500" : ""}`}
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2 text-right">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">تأكيد كلمة المرور</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={formData.confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                    className={`text-right placeholder:text-right pr-3 h-11 text-base ${errors.confirmPassword ? "border-red-500" : ""}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </Button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                <Label htmlFor="email" className="text-sm font-medium">البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="example@email.com"
+                  value={formData.email}
+                  onChange={handleEmailChange}
+                  className={`text-right placeholder:text-right h-11 text-base ${errors.email ? "border-red-500" : ""}`}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
-            </div>
-            
-            {errors.general && (
-              <div className="text-red-500 text-sm font-medium text-right bg-red-50 p-4 rounded-md">
-                {errors.general}
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2 text-right">
+                  <Label htmlFor="password" className="text-sm font-medium">كلمة المرور</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handlePasswordChange}
+                      className={`text-right placeholder:text-right pr-3 h-11 text-base ${errors.password ? "border-red-500" : ""}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2 text-right">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">تأكيد كلمة المرور</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      className={`text-right placeholder:text-right pr-3 h-11 text-base ${errors.confirmPassword ? "border-red-500" : ""}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                  )}
+                </div>
               </div>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-base font-medium mt-2 cursor-pointer" 
-              disabled={loading}
-            >
-              {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="border-t pt-5 pb-6">
-          <div className="w-full text-center text-base">
-            لديك حساب بالفعل؟{" "}
-            <a href="/login" className="text-primary font-medium hover:underline">
-              تسجيل الدخول
-            </a>
-          </div>
-        </CardFooter>
-      </Card>
+              
+              {errors.general && (
+                <div className="text-red-500 text-sm font-medium text-right bg-red-50 p-4 rounded-md">
+                  {errors.general}
+                </div>
+              )}
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-medium mt-2 cursor-pointer" 
+                disabled={loading}
+              >
+                {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="border-t pt-5 pb-6">
+            <div className="w-full text-center text-base">
+              لديك حساب بالفعل؟{" "}
+              <a href="/login" className="text-primary font-medium hover:underline">
+                تسجيل الدخول
+              </a>
+            </div>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 }

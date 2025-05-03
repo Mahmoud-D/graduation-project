@@ -30,7 +30,6 @@ const VerifyEmail = () => {
 
     authEndpoints.verifyEmail(token)
       .then((res) => {
-        console.log(res);
         if (!res.success) {
           setProgress(100);
           return setVerificationStatus('error');

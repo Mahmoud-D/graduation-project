@@ -121,8 +121,9 @@ export function LoginForm({ className, ...props }) {
       const response = await authEndpoints.login(formData.email, formData.password);
       
       if (response.success) {
-        // Redirect to home page
-        router.push("/");
+      // Save token to localStorage
+      localStorage.setItem("token", response.token);
+      router.push("/");
       } else {
         // Handle API error responses
         setErrors(prev => ({
