@@ -46,7 +46,7 @@ export function ForgotPasswordForm({ className, ...props }) {
     setLoading(true);
 
     try {
-      const response = await authEndpoints.sendResetPasswordEmail({ email });
+      const response = await authEndpoints.sendResetPasswordEmail(email);
       if (response.success) {
         setSuccess(true);
       } else {

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { toast, Toaster } from 'sonner';    
 
 export function RegistrationForm({ className, ...props }) {
   const router = useRouter();
@@ -58,7 +59,7 @@ export function RegistrationForm({ className, ...props }) {
   }, []);
 
   const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
     return passwordRegex.test(password);
   };
   
@@ -74,7 +75,7 @@ export function RegistrationForm({ className, ...props }) {
     } else if (!validatePassword(value)) {
       setErrors(prev => ({
         ...prev, 
-        password: "كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، بما في ذلك حرف واحد ورقم واحد"
+        password: "كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، بما في ذلك حرف واحد كبير ورقم واحد"
       }));
     } else {
       setErrors(prev => ({...prev, password: ""}));
@@ -145,6 +146,12 @@ export function RegistrationForm({ className, ...props }) {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (Object.values(errors).some(Boolean)) {
+      toast.error('👀 صحّح الأخطاء الظاهرة قبل المتابعة');
+      return;                        
+    }
+    
     setErrors({
       firstName: "",
       lastName: "",
@@ -213,7 +220,7 @@ export function RegistrationForm({ className, ...props }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(data.errors[0].message || "فشل التسجيل. يرجى المحاولة مرة أخرى.");
       }
 
       // Save token to localStorage
@@ -230,6 +237,7 @@ export function RegistrationForm({ className, ...props }) {
   
   return (
     <div className={cn("flex justify-center items-center min-h-[80vh]", className)} {...props}>
+      <Toaster position="top-center" richColors />
       <Card className="w-full max-w-2xl shadow-lg">
         <CardHeader className="text-right space-y-1 border-b pb-8 pt-8">
           <div className="flex justify-between items-center">
