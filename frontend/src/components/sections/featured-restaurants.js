@@ -61,7 +61,6 @@ export default function MenuCategories() {
         throw new Error("Failed to fetch dishes");
       }
       const data = await response.json();
-      console.log("data", data);
       
       setDishes(data.data);
       setLoading(false);
