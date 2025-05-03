@@ -43,6 +43,11 @@ class AuthService {
   async sendResetPasswordEmail(email) {
     return await this.api.post('/auth/sendResetPasswordEmail', { email });
   }
+  
+  async verifyEmail(token) {
+    return await this.api.get('/auth/verify-email', { token });
+  }
+
 }
 
 // Create a singleton instance
