@@ -29,8 +29,10 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
+const PORT = process.env.PORT || 5000;
+
 const corsOptions = {
-  origin: "http://localhost:3000", // أو مصفوفة للأصول المسموحة
+  origin: `http://localhost:${PORT}`, // أو مصفوفة للأصول المسموحة
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -118,7 +120,6 @@ app.get("/api", (req, res) => {
   res.send("API is working");
 });
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
