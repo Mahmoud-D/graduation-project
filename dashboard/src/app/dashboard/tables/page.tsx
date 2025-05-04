@@ -30,38 +30,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowUpDown, Search, X, Loader2 } from "lucide-react";
-
-// API endpoint
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/";
-
-// Category interfaces matching API schema
-interface CategoryResponse {
-  category_id: string;
-  category_name: string;
-  description: string;
-  dish_count: number;
-  created_at?: string; // Assuming this field exists in the response
-}
-
-interface CategoryCreate {
-  name: string;
-  description: string;
-}
-
-interface CategoryUpdate {
-  category_id: string;
-  name: string;
-  description: string;
-}
-
-// Interface for display purposes (maps API data to display format)
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  itemCount: number;
-  createdAt: string;
-}
+import { API } from "@/constant";
+import {
+  Category,
+  CategoryCreate,
+  CategoryResponse,
+  CategoryUpdate,
+} from "@/types";
 
 export default function TablesPage() {
   // State for categories
