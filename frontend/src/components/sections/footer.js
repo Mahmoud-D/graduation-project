@@ -103,21 +103,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="border-t border-white/20 pt-8 pb-4">
-          <div className="max-w-md mx-auto text-center">
-            <h4 className="font-semibold mb-4 text-white">اشترك في نشرتنا البريدية</h4>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="بريدك الإلكتروني"
-                className="flex-1 px-4 py-2 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:border-white/50 text-white placeholder-white/70"
-              />
-              <Button className="bg-white text-primary hover:bg-white/90">اشترك</Button>
-            </div>
-          </div>
-        </div>
-
         {/* Copyright */}
         <div className="text-center text-white/80 text-sm mt-8">
           © {new Date().getFullYear()} مطعمنا. جميع الحقوق محفوظة

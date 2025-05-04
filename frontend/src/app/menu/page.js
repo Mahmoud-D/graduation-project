@@ -4,19 +4,34 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/productCard";
 
-const categories = ["الكل", "وجبات رئيسية", "مقبلات", "حلويات", "مشروبات"];
 
 export default function MenuPage() {
   const [dishes, setDishes] = useState([]);
+  const [selectedDishes, setSelectedDishes] = useState(dishes);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("الكل");
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchDishes();
+    fetchCategories();
   }, []);
 
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    if (category === "الكل") {
+      setSelectedDishes(dishes); 
+      return;
+    }
+    const filteredDishes = dishes.filter(
+      (dish) => dish.categories.includes(category)
+    );
+    setSelectedDishes(filteredDishes);
+  };
+
+  
   const fetchDishes = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/dishes");
@@ -25,6 +40,7 @@ export default function MenuPage() {
       }
       const data = await response.json();
       setDishes(data);
+      setSelectedDishes(data); 
       setLoading(false);
     } catch (err) {
       setError("فشل في تحميل قائمة الطعام. الرجاء المحاولة مرة أخرى.");
@@ -32,11 +48,20 @@ export default function MenuPage() {
       console.error("Error fetching dishes:", err);
     }
   };
-
-  const filteredDishes =
-    selectedCategory === "الكل"
-      ? dishes
-      : dishes.filter((dish) => dish.category === selectedCategory);
+  
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/categories");
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const data = await response.json();
+      setCategories([{category_id: 0, category_name:"الكل"},...data]);
+    } catch (err) {
+      setError("فشل في تحميل التصنيفات. الرجاء المحاولة مرة أخرى.");
+      console.error("Error fetching categories:", err);
+    }
+  }
 
   if (loading) {
     return (
@@ -63,24 +88,24 @@ export default function MenuPage() {
         <div className="flex flex-wrap gap-3 justify-center mb-12">
           {categories.map((category) => (
             <Button
-              key={category}
-              variant={category === selectedCategory ? "default" : "outline"}
+              key={category.category_id}
+              variant={category.category_name === selectedCategory ? "default" : "outline"}
               className="rounded-full cursor-pointer"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategoryClick(category.category_name)}
             >
-              {category}
+              {category.category_name}
             </Button>
           ))}
         </div>
 
         {/* Dishes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dishes.map((dish) => (
+          {selectedDishes.map((dish) => (
             <ProductCard key={dish.id} dish={dish} />
           ))}
         </div>
 
-        {filteredDishes.length === 0 && (
+        {selectedDishes.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             لا توجد أطباق في هذا التصنيف حالياً
           </div>

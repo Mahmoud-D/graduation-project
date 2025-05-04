@@ -10,6 +10,9 @@ const orderDishRoutes = require("./routes/orderDishRoutes");
 const authRoutes = require("./routes/authRoutes");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
+const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
+
+
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const couponUsesRoutes = require("./routes/couponUsesRoutes");
@@ -57,6 +60,7 @@ app.use("/api/promotions", promotionsRoutes);
 app.use("/api/dishes", dishRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/restaurantReviews", restaurantReviewsRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/apply-coupon", couponUsesRoutes);
