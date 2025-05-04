@@ -30,61 +30,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowUpDown, Search, X, Loader2 } from "lucide-react";
-import Image from "next/image";
-
-// API endpoint
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/";
-
-// Dish interfaces matching API schema
-interface DishResponse {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  old_price: number | null;
-  image_path: string;
-  created_at: string;
-  average_rating: number;
-  categories: string[]; // Array of category IDs or objects
-}
-
-interface Category {
-  category_id: string;
-  category_name: string;
-}
-
-interface DishCreate {
-  name: string;
-  description: string;
-  price: number;
-  category: string; // Category ID for POST request
-}
-
-interface DishUpdate {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-}
-
-// Interface for display purposes (maps API data to display format)
-interface Dish {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  oldPrice: number | null;
-  imagePath: string;
-  createdAt: string;
-  averageRating: number;
-  categories: string[];
-}
+import { API } from "@/constant";
+import {
+  Dish,
+  DishCategory,
+  DishCreate,
+  DishResponse,
+  DishUpdate,
+} from "@/types";
 
 export default function DishesPage() {
   // State for dishes
   const [dishes, setDishes] = useState<Dish[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<DishCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
