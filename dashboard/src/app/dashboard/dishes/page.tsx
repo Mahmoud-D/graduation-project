@@ -38,6 +38,7 @@ import {
   DishResponse,
   DishUpdate,
 } from "@/types";
+import { useRouter } from "next/navigation";
 
 export default function DishesPage() {
   // State for dishes
@@ -69,10 +70,22 @@ export default function DishesPage() {
   // Filtered and sorted data
   const [displayedDishes, setDisplayedDishes] = useState<Dish[]>(dishes);
 
+  const router = useRouter();
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
+    return {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    };
+  };
+
   // Fetch categories for the dropdown
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API}categories`);
+      const response = await fetch(`${API}categories`, {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -90,7 +103,9 @@ export default function DishesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API}dishes`);
+      const response = await fetch(`${API}dishes`, {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -122,6 +137,14 @@ export default function DishesPage() {
 
   // Fetch data on component mount
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      setError("Authentication required. Please log in.");
+      router.push("/login");
+      return;
+    }
+
     fetchCategories();
     fetchDishes();
   }, []);
@@ -221,9 +244,7 @@ export default function DishesPage() {
     try {
       const response = await fetch(`${API}dishes`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newDish),
       });
 
@@ -264,9 +285,7 @@ export default function DishesPage() {
 
       const response = await fetch(`${API}dishes/${editingDish.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updateData),
       });
 
@@ -292,6 +311,7 @@ export default function DishesPage() {
     try {
       const response = await fetch(`${API}dishes/${dishId}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -326,8 +346,8 @@ export default function DishesPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container py-10 mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Dishes</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -342,7 +362,7 @@ export default function DishesPage() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
@@ -354,7 +374,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
@@ -365,7 +385,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="price">Price</Label>
                 <Input
                   id="price"
@@ -380,7 +400,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
                   name="category"
@@ -408,7 +428,7 @@ export default function DishesPage() {
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
                   Create Dish
                 </Button>
@@ -426,7 +446,7 @@ export default function DishesPage() {
             </DialogHeader>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-name">Name</Label>
                 <Input
                   id="edit-name"
@@ -438,7 +458,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-description">Description</Label>
                 <Input
                   id="edit-description"
@@ -449,7 +469,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-price">Price</Label>
                 <Input
                   id="edit-price"
@@ -464,7 +484,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-category">Category</Label>
                 <Select
                   name="category"
@@ -505,7 +525,7 @@ export default function DishesPage() {
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
                   Save Changes
                 </Button>
@@ -516,7 +536,7 @@ export default function DishesPage() {
       </div>
 
       {/* Search and filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -557,11 +577,11 @@ export default function DishesPage() {
 
       {/* Loading and error states */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : error ? (
-        <div className="bg-destructive/10 p-4 rounded-md text-destructive text-center">
+        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
           <p>{error}</p>
           <Button onClick={fetchDishes} variant="outline" className="mt-2">
             Try Again
@@ -601,7 +621,7 @@ export default function DishesPage() {
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="text-center py-8 text-muted-foreground"
+                  className="py-8 text-center text-muted-foreground"
                 >
                   No dishes found{searchTerm ? " matching your search" : ""}
                 </TableCell>
@@ -611,7 +631,7 @@ export default function DishesPage() {
                 <TableRow key={dish.id}>
                   <TableCell>
                     {dish.imagePath ? (
-                      <div className="relative h-10 w-10 rounded overflow-hidden">
+                      <div className="relative w-10 h-10 overflow-hidden rounded">
                         {/* <Image
                           src={dish.imagePath}
                           alt={dish.name}
@@ -620,7 +640,7 @@ export default function DishesPage() {
                         /> */}
                       </div>
                     ) : (
-                      <div className="h-10 w-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                      <div className="flex items-center justify-center w-10 h-10 text-xs rounded bg-muted text-muted-foreground">
                         No img
                       </div>
                     )}
@@ -632,7 +652,7 @@ export default function DishesPage() {
                   <TableCell className="text-right">
                     {formatPrice(dish.price)}
                     {dish.oldPrice && (
-                      <span className="text-xs line-through text-muted-foreground ml-2">
+                      <span className="ml-2 text-xs line-through text-muted-foreground">
                         {formatPrice(dish.oldPrice)}
                       </span>
                     )}
@@ -648,7 +668,7 @@ export default function DishesPage() {
                         <span>⭐ {dish.averageRating.toFixed(1)}</span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-muted-foreground">
                         No ratings
                       </span>
                     )}
