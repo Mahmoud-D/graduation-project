@@ -76,7 +76,7 @@ export default function Cart() {
                         </button>
                         <span className="mx-2">{item.quantity}</span>
                         <button 
-                          onClick={() => addItem(item)}
+                          onClick={() => addItem({...item, quantity: 1})}
                           className="p-1 rounded-full hover:bg-gray-100"
                         >
                           <Plus className="h-4 w-4" />
