@@ -14,12 +14,12 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
-import { toast, Toaster } from 'sonner';    
+import { toast, Toaster } from 'sonner';
 
 export function RegistrationForm({ className, ...props }) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Initial state values
   const initialFormData = {
     firstName: "",
@@ -28,7 +28,7 @@ export function RegistrationForm({ className, ...props }) {
     password: "",
     confirmPassword: "",
   };
-  
+
   const initialErrors = {
     firstName: "",
     lastName: "",
@@ -37,14 +37,14 @@ export function RegistrationForm({ className, ...props }) {
     confirmPassword: "",
     general: "",
   };
-  
+
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState(initialErrors);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
-  
+
   // Function to reset the form
   const resetForm = () => {
     setFormData(initialFormData);
@@ -53,7 +53,7 @@ export function RegistrationForm({ className, ...props }) {
     setShowPassword(false);
     setShowConfirmPassword(false);
   };
-  
+
   // Reset form when route changes and comes back
   useEffect(() => {
     resetForm();
@@ -63,96 +63,96 @@ export function RegistrationForm({ className, ...props }) {
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
     return passwordRegex.test(password);
   };
-  
+
   const handlePasswordChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({
       ...prev,
       password: value,
     }));
-    
+
     if (!value) {
-      setErrors(prev => ({...prev, password: "كلمة المرور مطلوبة"}));
+      setErrors(prev => ({ ...prev, password: "كلمة المرور مطلوبة" }));
     } else if (!validatePassword(value)) {
       setErrors(prev => ({
-        ...prev, 
+        ...prev,
         password: "كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، بما في ذلك حرف واحد كبير ورقم واحد"
       }));
     } else {
-      setErrors(prev => ({...prev, password: ""}));
+      setErrors(prev => ({ ...prev, password: "" }));
     }
-    
+
     // Also validate confirm password when password changes
     if (formData.confirmPassword && value !== formData.confirmPassword) {
-      setErrors(prev => ({...prev, confirmPassword: "كلمات المرور غير متطابقة"}));
+      setErrors(prev => ({ ...prev, confirmPassword: "كلمات المرور غير متطابقة" }));
     } else if (formData.confirmPassword) {
-      setErrors(prev => ({...prev, confirmPassword: ""}));
+      setErrors(prev => ({ ...prev, confirmPassword: "" }));
     }
   };
-  
+
   const handleConfirmPasswordChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({
       ...prev,
       confirmPassword: value,
     }));
-    
+
     if (!value) {
-      setErrors(prev => ({...prev, confirmPassword: "تأكيد كلمة المرور مطلوب"}));
+      setErrors(prev => ({ ...prev, confirmPassword: "تأكيد كلمة المرور مطلوب" }));
     } else if (value !== formData.password) {
-      setErrors(prev => ({...prev, confirmPassword: "كلمات المرور غير متطابقة"}));
+      setErrors(prev => ({ ...prev, confirmPassword: "كلمات المرور غير متطابقة" }));
     } else {
-      setErrors(prev => ({...prev, confirmPassword: ""}));
+      setErrors(prev => ({ ...prev, confirmPassword: "" }));
     }
   };
-  
+
   const validateEmail = (email) => {
     if (!email || typeof email !== 'string') {
       return false;
     }
-  
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   }
-  
+
   const handleEmailChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({
       ...prev,
       email: value,
     }));
-    
+
     if (!value) {
-      setErrors(prev => ({...prev, email: "البريد الإلكتروني مطلوب"}));
+      setErrors(prev => ({ ...prev, email: "البريد الإلكتروني مطلوب" }));
     } else if (!validateEmail(value)) {
-      setErrors(prev => ({...prev, email: "البريد الإلكتروني غير صالح"}));
+      setErrors(prev => ({ ...prev, email: "البريد الإلكتروني غير صالح" }));
     } else {
-      setErrors(prev => ({...prev, email: ""}));
+      setErrors(prev => ({ ...prev, email: "" }));
     }
   }
-  
+
   const handleNameChange = (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [id]: value,
     }));
-    
+
     if (!value) {
-      setErrors(prev => ({...prev, [id]: `${id === 'firstName' ? 'الاسم الأول' : 'الاسم الأخير'} مطلوب`}));
+      setErrors(prev => ({ ...prev, [id]: `${id === 'firstName' ? 'الاسم الأول' : 'الاسم الأخير'} مطلوب` }));
     } else {
-      setErrors(prev => ({...prev, [id]: ""}));
+      setErrors(prev => ({ ...prev, [id]: "" }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (Object.values(errors).some(Boolean)) {
       toast.error('👀 صحّح الأخطاء الظاهرة قبل المتابعة');
-      return;                        
+      return;
     }
-    
+
     setErrors({
       firstName: "",
       lastName: "",
@@ -161,21 +161,21 @@ export function RegistrationForm({ className, ...props }) {
       confirmPassword: "",
       general: "",
     });
-    
+
     // Validate all fields before submission
     let hasErrors = false;
     const newErrors = { ...errors };
-    
+
     if (!formData.firstName) {
       newErrors.firstName = "الاسم الأول مطلوب";
       hasErrors = true;
     }
-    
+
     if (!formData.lastName) {
       newErrors.lastName = "الاسم الأخير مطلوب";
       hasErrors = true;
     }
-    
+
     if (!formData.email) {
       newErrors.email = "البريد الإلكتروني مطلوب";
       hasErrors = true;
@@ -183,27 +183,27 @@ export function RegistrationForm({ className, ...props }) {
       newErrors.email = "البريد الإلكتروني غير صالح";
       hasErrors = true;
     }
-    
+
     if (!formData.password) {
       newErrors.password = "كلمة المرور مطلوبة";
       hasErrors = true;
-    } 
-    
+    }
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "تأكيد كلمة المرور مطلوب";
       hasErrors = true;
     }
-    
+
     if (hasErrors) {
       setErrors(newErrors);
       return;
     }
-    
+
     setLoading(true);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        `http://localhost:3000/auth/register`,
         {
           method: "POST",
           headers: {
@@ -225,15 +225,15 @@ export function RegistrationForm({ className, ...props }) {
       }
       // Show verification message instead of redirecting
       setShowVerificationMessage(true);
-      
+
     } catch (err) {
-      setErrors(prev => ({...prev, general: err.message}));
+      setErrors(prev => ({ ...prev, general: err.message }));
     } finally {
       setLoading(false);
     }
   };
 
-  
+
   return (
     <div className={cn("flex justify-center items-center min-h-[80vh]", className)} {...props}>
       <Toaster position="top-center" richColors />
@@ -248,8 +248,8 @@ export function RegistrationForm({ className, ...props }) {
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-center pt-6 pb-8">
-            <Button 
-              onClick={() => router.push('/login')} 
+            <Button
+              onClick={() => router.push('/login')}
               className="px-8 cursor-pointer"
             >
               العودة إلى صفحة تسجيل الدخول
@@ -299,7 +299,7 @@ export function RegistrationForm({ className, ...props }) {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2 text-right">
                 <Label htmlFor="email" className="text-sm font-medium">البريد الإلكتروني</Label>
                 <Input
@@ -314,7 +314,7 @@ export function RegistrationForm({ className, ...props }) {
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2 text-right">
                   <Label htmlFor="password" className="text-sm font-medium">كلمة المرور</Label>
@@ -344,7 +344,7 @@ export function RegistrationForm({ className, ...props }) {
                     <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2 text-right">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">تأكيد كلمة المرور</Label>
                   <div className="relative">
@@ -374,16 +374,16 @@ export function RegistrationForm({ className, ...props }) {
                   )}
                 </div>
               </div>
-              
+
               {errors.general && (
                 <div className="text-red-500 text-sm font-medium text-right bg-red-50 p-4 rounded-md">
                   {errors.general}
                 </div>
               )}
-              
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-base font-medium mt-2 cursor-pointer" 
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-medium mt-2 cursor-pointer"
                 disabled={loading}
               >
                 {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}

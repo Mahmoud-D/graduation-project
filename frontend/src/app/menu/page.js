@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/productCard";
 
-
 export default function MenuPage() {
   const [dishes, setDishes] = useState([]);
   const [selectedDishes, setSelectedDishes] = useState(dishes);
@@ -22,25 +21,24 @@ export default function MenuPage() {
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     if (category === "الكل") {
-      setSelectedDishes(dishes); 
+      setSelectedDishes(dishes);
       return;
     }
-    const filteredDishes = dishes.filter(
-      (dish) => dish.categories.includes(category)
+    const filteredDishes = dishes.filter((dish) =>
+      dish.categories.includes(category)
     );
     setSelectedDishes(filteredDishes);
   };
 
-  
   const fetchDishes = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/dishes");
+      const response = await fetch(`http://localhost:3000/api/dishes`);
       if (!response.ok) {
         throw new Error("Failed to fetch dishes");
       }
       const data = await response.json();
       setDishes(data);
-      setSelectedDishes(data); 
+      setSelectedDishes(data);
       setLoading(false);
     } catch (err) {
       setError("فشل في تحميل قائمة الطعام. الرجاء المحاولة مرة أخرى.");
@@ -48,20 +46,20 @@ export default function MenuPage() {
       console.error("Error fetching dishes:", err);
     }
   };
-  
+
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/categories");
+      const response = await fetch(`http://localhost:3000/api/categories`);
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
       const data = await response.json();
-      setCategories([{category_id: 0, category_name:"الكل"},...data]);
+      setCategories([{ category_id: 0, category_name: "الكل" }, ...data]);
     } catch (err) {
       setError("فشل في تحميل التصنيفات. الرجاء المحاولة مرة أخرى.");
       console.error("Error fetching categories:", err);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -89,7 +87,11 @@ export default function MenuPage() {
           {categories.map((category) => (
             <Button
               key={category.category_id}
-              variant={category.category_name === selectedCategory ? "default" : "outline"}
+              variant={
+                category.category_name === selectedCategory
+                  ? "default"
+                  : "outline"
+              }
               className="rounded-full cursor-pointer"
               onClick={() => handleCategoryClick(category.category_name)}
             >

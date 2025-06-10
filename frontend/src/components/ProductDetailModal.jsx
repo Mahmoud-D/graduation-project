@@ -36,18 +36,18 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
   if (!dish) return null;
 
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent 
+      <DialogContent
         className="max-w-5xl w-[90vw]" // Increased width
         role="dialog"
         aria-modal="true"
       >
         <DialogHeader className="relative">
-          <DialogTitle 
-            id="dish-modal-title" 
+          <DialogTitle
+            id="dish-modal-title"
             className="text-2xl font-bold text-right"
           >
             {dish.name}
@@ -55,13 +55,13 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div 
+          <div
             className="relative h-[300px]"
             role="img"
             aria-label={`صورة ${dish.name}`}
           >
             <Image
-              src={`http://localhost:5000/${dish.image_path}` || "/placeholder-dish.png"}
+              src={`http://localhost:3000/${dish.image_path}` || "/placeholder-dish.png"}
               alt={dish.name}
               fill
               className="object-cover rounded-lg"
@@ -77,23 +77,23 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
 
           <div className="flex flex-col justify-between">
             <div>
-              <p 
+              <p
                 className="text-lg mb-4"
                 role="contentinfo"
                 aria-label="وصف الطبق"
               >
                 {dish.description}
               </p>
-              
+
               <div className="flex items-center justify-between mb-4">
-                <span 
+                <span
                   className="text-2xl font-bold text-primary"
                   aria-label="السعر"
                 >
                   {dish.price} جنيه
                 </span>
                 {dish.isSpicy && (
-                  <span 
+                  <span
                     className="bg-red-500 text-white px-3 py-1 rounded-full text-sm"
                     role="status"
                     aria-label="هذا الطبق حار"
@@ -104,7 +104,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
               </div>
 
               {dish.categories && (
-                <div 
+                <div
                   className="flex flex-wrap gap-2 mb-4"
                   role="group"
                   aria-label="فئات الطبق"
@@ -121,7 +121,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
                 </div>
               )}
 
-              <div 
+              <div
                 className="flex items-center justify-center space-x-4 border rounded-lg p-2 mb-4"
                 role="group"
                 aria-label="اختيار الكمية"
@@ -136,7 +136,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span 
+                <span
                   className="text-xl font-semibold w-12 text-center"
                   role="spinbutton"
                   aria-valuemin="1"
