@@ -57,8 +57,7 @@ exports.update = async (id, name, description) => {
   }
 };
 
-// حذف فئة
-exports.delete = async (id) => {
+ exports.delete = async (id) => {
   try {
     const query = sql`
       DELETE FROM categories WHERE id = ${id} RETURNING id
@@ -66,6 +65,25 @@ exports.delete = async (id) => {
     const result = await query;
     if (result.length === 0) return null; // إذا لم يتم العثور على الفئة
     return true; // النجاح في الحذف
+  } catch (err) {
+    console.error('❌ Error deleting category:', err);
+    throw err;
+  }
+};
+
+
+
+ exports.getstatsCategories = async () => {
+  try {
+    const query = sql`
+       SELECT name, COUNT(*) AS count
+  FROM categories
+  GROUP BY name
+  ORDER BY count DESC;
+    `;
+    const result = await query;
+ 
+    return result; 
   } catch (err) {
     console.error('❌ Error deleting category:', err);
     throw err;

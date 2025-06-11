@@ -8,6 +8,7 @@ const dishRoutes = require("./routes/dishRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const orderDishRoutes = require("./routes/orderDishRoutes");
 const authRoutes = require("./routes/authRoutes");
+ const reportsRoutes = require("./routes/reportsRoutes.js");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
 const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
@@ -69,6 +70,7 @@ app.use("/api/distinctive-dishes", distinctiveDishRoutes);
 
 app.use("/api/orderDishes", orderDishRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/reports", reportsRoutes);
 
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {

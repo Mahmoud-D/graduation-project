@@ -62,3 +62,22 @@ exports.deleteCategory = async (req, res) => {
     res.status(500).json({ message: "حدث خطأ أثناء حذف الفئة", error });
   }
 };
+
+
+
+
+
+exports.deleteCategory = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedCategory = await Category.delete(id);
+    if (deletedCategory) {
+      res.json({ message: "تم حذف الفئة بنجاح" });
+    } else {
+      res.status(404).json({ message: "الفئة غير موجودة" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "حدث خطأ أثناء حذف الفئة", error });
+  }
+};
