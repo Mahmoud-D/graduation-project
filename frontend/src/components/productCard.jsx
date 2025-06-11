@@ -20,17 +20,19 @@ export default function ProductCard({ dish }) {
     });
   };
 
-  return (
-    <>
-      <Card 
+
+    return (
+    <> 
+      <Card
         className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="relative h-48">
           <Image
-            src={`http://localhost:5000/${dish.image_path}` || "/placeholder-dish.png"}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/${dish.image_path}` || "/placeholder-dish.png"}
             alt={dish.name}
             fill
+            unoptimized
             className="object-cover"
           />
           {dish.isSpicy && (
@@ -49,7 +51,7 @@ export default function ProductCard({ dish }) {
             </div>
           </div>
           <p className="text-dark-shade/70 mb-4">{dish.description}</p>
-          <Button 
+          <Button
             className="w-full bg-primary hover:bg-primary/90 cursor-pointer"
             onClick={(e) => handleAddToCart(e, dish)}
           >
@@ -58,7 +60,7 @@ export default function ProductCard({ dish }) {
         </CardContent>
       </Card>
 
-      <ProductDetailModal 
+      <ProductDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         dish={dish}

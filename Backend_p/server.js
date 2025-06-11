@@ -35,8 +35,8 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: `http://localhost:${PORT}`, // أو مصفوفة للأصول المسموحة
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "*", 
+   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
