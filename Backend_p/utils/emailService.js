@@ -1,4 +1,12 @@
- 
+// https://developers.brevo.com/reference/getemailcampaign
+
+// Address	Heliopolis, Cairo
+// Zipcode	11757
+// City	Cairo
+// Country	Egypt
+
+
+
 const nodemailer = require("nodemailer");
 
 
