@@ -104,7 +104,7 @@ export default function MenuPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {selectedDishes.map((dish) => (
             <ProductCard key={dish.id} dish={dish} />
-          ))}
+          ))} 
         </div>
 
         {selectedDishes.length === 0 && (

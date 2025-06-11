@@ -33,8 +33,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const corsOptions = {
-  origin: "http://localhost:3000", // أو مصفوفة للأصول المسموحة
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "*", 
+   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };

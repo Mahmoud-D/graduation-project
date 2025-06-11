@@ -20,17 +20,19 @@ export default function ProductCard({ dish }) {
     });
   };
 
-  return (
-    <>
+
+    return (
+    <> 
       <Card
         className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="relative h-48">
           <Image
-            src={`http://localhost:3000/${dish.image_path}` || "/placeholder-dish.png"}
+            src={`${process.env.NEXT_PUBLIC_API_URL}/${dish.image_path}` || "/placeholder-dish.png"}
             alt={dish.name}
             fill
+            unoptimized
             className="object-cover"
           />
           {dish.isSpicy && (
