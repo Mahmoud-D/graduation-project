@@ -49,6 +49,20 @@ class User {
       throw new Error("خطأ في جلب المستخدمين");
     }
   }
+  static async getUserGrowthReport() {
+    try {
+      const results = await sql`SELECT 
+    DATE(created_at) AS signup_date,
+    COUNT(*) AS new_users
+FROM users
+GROUP BY signup_date
+ORDER BY signup_date;`;
+      return results;
+    } catch (err) {
+      console.error("❌ Error getting all users:", err);
+      throw new Error("خطأ في جلب المستخدمين");
+    }
+  }
 
   static async getById(id) {
     try {
