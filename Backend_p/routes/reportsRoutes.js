@@ -13,6 +13,10 @@ router.get("/ReviewsOverTimebyDay",   verifyToken,   checkRole(["admin"]),   rep
 router.get("/RatingDistributionHistogram",   verifyToken,   checkRole(["admin"]),   reportsController.RatingDistributionHistogram);
 router.get("/getUsersWithMostReviews",   verifyToken,   checkRole(["admin"]),   reportsController.getUsersWithMostReviews);
 router.get("/getTopRatedDishes",   verifyToken,   checkRole(["admin"]),   reportsController.getTopRatedDishes);
+router.get("/getTotalOrdersPerDay",   verifyToken,   checkRole(["admin"]),   reportsController.getTotalOrdersPerDay);
+router.get("/getTopUsersByOrders",   verifyToken,   checkRole(["admin"]),   reportsController.getTopUsersByOrders);
+router.get("/getTopSellingDishes",   verifyToken,   checkRole(["admin"]),   reportsController.getTopSellingDishes);
+router.get("/getDailyDishesSales",   verifyToken,   checkRole(["admin"]),   reportsController.getDailyDishesSales);
 
  
  

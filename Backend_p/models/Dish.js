@@ -300,6 +300,44 @@ const Dish = {
       console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
+  },
+
+
+
+  getTopSellingDishes: async (dishId, categoryId) => {
+    const query = sql`
+  SELECT d.name AS dish_name, SUM(oi.quantity) AS total_sold
+FROM order_items oi
+JOIN dishes d ON oi.dish_id = d.id
+GROUP BY d.name
+ORDER BY total_sold DESC
+LIMIT 10;
+
+    `;
+
+    try {
+      const result = await query;
+      return result;
+    } catch (err) {
+      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
+    }
+  },
+  getDailyDishesSales: async (dishId, categoryId) => {
+    const query = sql`
+SELECT DATE(created_at) AS date, SUM(quantity) AS total_dishes_sold  
+FROM order_items  
+GROUP BY date  
+ORDER BY date;
+    `;
+
+    try {
+      const result = await query;
+      return result;
+    } catch (err) {
+      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
+    }
   }
 };
 

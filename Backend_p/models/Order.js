@@ -208,6 +208,40 @@ const Order = {
     } catch (err) {
       throw err;
     }
+  },
+  getTotalOrdersPerDay: async () => {
+    try {
+
+      const result = await sql`
+ SELECT DATE(created_at) AS order_date, COUNT(*) AS total_orders  
+FROM orders  
+GROUP BY order_date  
+ORDER BY order_date;
+      `;
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  },
+  getTopUsersByOrders: async () => {
+    try {
+
+      const result = await sql`
+SELECT 
+  o.user_id, 
+  u.name AS user_name, 
+  COUNT(*) AS total_orders  
+FROM orders o
+JOIN users u ON o.user_id = u.id
+GROUP BY o.user_id, u.name  
+ORDER BY total_orders DESC  
+LIMIT 10;
+
+      `;
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 };
 

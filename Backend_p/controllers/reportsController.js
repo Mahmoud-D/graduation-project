@@ -1,6 +1,8 @@
+const Order = require('../models/Order');
 const Review = require('../models/Review');
 const User = require('../models/User');  
 const Category = require('../models/category');  
+const Dish = require("../models/Dish"); // استيراد موديل الطبق
 
 
 
@@ -73,6 +75,44 @@ exports.getUsersWithMostReviews = async (req, res) => {
 exports.getTopRatedDishes = async (req, res) => {
   try {
     const data = await Review.getTopRatedDishes();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'حدث خطأ' });
+  }
+};
+
+
+
+
+exports.getTotalOrdersPerDay = async (req, res) => {
+  try {
+    const data = await Order.getTotalOrdersPerDay();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'حدث خطأ' });
+  }
+};
+
+
+exports.getTopUsersByOrders = async (req, res) => {
+  try {
+    const data = await Order.getTopUsersByOrders();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'حدث خطأ' });
+  }
+};
+exports.getTopSellingDishes = async (req, res) => {
+  try {
+    const data = await Dish.getTopSellingDishes();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'حدث خطأ' });
+  }
+};
+exports.getDailyDishesSales = async (req, res) => {
+  try {
+    const data = await Dish.getDailyDishesSales();
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: 'حدث خطأ' });
