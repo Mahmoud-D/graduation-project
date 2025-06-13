@@ -56,4 +56,26 @@ const EmailSchema = z.object({
       .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
 
   });
-  module.exports = { registerSchema,EmailSchema,passwordValidate };
+
+
+  const loginSchema = z.object({
+    email: z
+      .string()
+      .email("تنسيق البريد الإلكتروني غير صحيح")
+      .transform((email) => email.toLowerCase()),
+    password: z
+      .string()
+      .min(6, "كلمة المرور يجب أن تكون على الأقل مكونة من 6 أحرف")
+      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
+      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
+      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
+  })
+
+const isEnteredEmailSchema = z.object({
+  email: z
+    .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase()),
+})
+
+  module.exports = { registerSchema,EmailSchema,passwordValidate ,loginSchema,isEnteredEmailSchema};

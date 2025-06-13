@@ -51,7 +51,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.get("/uploads/:imageName", imageController.checkImageExists);
+app.get("/api/uploads/:imageName", imageController.checkImageExists);
 
 app.post("/api/execute-sql", executeSqlQuery);
 
