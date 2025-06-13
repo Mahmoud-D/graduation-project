@@ -112,78 +112,89 @@ const Dish = {
     if (ids.length === 0) return [];
   
     try {
-      // استعلام معدل خصيصًا لـ Supabase
       const result = await sql`
-        WITH active_promotions AS (
-          SELECT 
-            dish_id,
-            discount_percentage,
-            start_date,
-            end_date,
-            created_at,
-            ROW_NUMBER() OVER (
-              PARTITION BY dish_id 
-              ORDER BY created_at DESC, discount_percentage DESC
-            ) AS rn
-          FROM promotions
-          WHERE is_active = true
-            AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
-        )
-        SELECT 
-          d.id,
-          d.name,
-          d.description,
-          d.price AS old_price,
-          d.image_path,
-          d.created_at,
-          COALESCE(AVG(r.rating), 0) AS average_rating,
-          COALESCE(STRING_AGG(c.name, ','), '') AS categories,
-          p.discount_percentage,
-          CASE
-            WHEN p.discount_percentage IS NOT NULL
-            THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
-            ELSE d.price
-          END AS price,
-          p.start_date AS promotion_start,
-          p.end_date AS promotion_end,
-          CASE
-            WHEN p.discount_percentage IS NULL THEN 'no promotion'
-            ELSE 'active'
-          END AS promotion_status
-        FROM dishes d
-        LEFT JOIN reviews r ON d.id = r.dish_id
-        LEFT JOIN dish_categories dc ON d.id = dc.dish_id
-        LEFT JOIN categories c ON dc.category_id = c.id
-        LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
-        WHERE d.id IN (${sql(ids)})
-        GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
-      `;
-  
-      return result.map(dish => ({
-        id: dish.id,
-        name: dish.name,
-        description: dish.description,
-        price: parseFloat(dish.price),
-        old_price: parseFloat(dish.old_price),
-        image_path: dish.image_path,
-        created_at: dish.created_at,
-        average_rating: parseFloat(dish.average_rating).toFixed(1),
-        categories: dish.categories ? dish.categories.split(',').filter(Boolean) : [],
-        ...(dish.discount_percentage && {
-          promotion: {
-            discount_percentage: parseFloat(dish.discount_percentage),
-            final_price: parseFloat(dish.price),
-            start_date: dish.promotion_start,
-            end_date: dish.promotion_end,
-            status: dish.promotion_status
-          }
-        })
-      }));
-  
+      SELECT * from dishes
+      WHERE id = ANY(${ids})
+      `
+      return result;
     } catch (err) {
-      console.error("PostgreSQL Error:", err);
+      console.error("Error in getDishesByIds:", err);
       throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
     }
+
+    //try {
+    //  // استعلام معدل خصيصًا لـ Supabase
+    //  const result = await sql`
+    //    WITH active_promotions AS (
+    //      SELECT 
+    //        dish_id,
+    //        discount_percentage,
+    //        start_date,
+    //        end_date,
+    //        created_at,
+    //        ROW_NUMBER() OVER (
+    //          PARTITION BY dish_id 
+    //          ORDER BY created_at DESC, discount_percentage DESC
+    //        ) AS rn
+    //      FROM promotions
+    //      WHERE is_active = true
+    //        AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+    //    )
+    //    SELECT 
+    //      d.id,
+    //      d.name,
+    //      d.description,
+    //      d.price AS old_price,
+    //      d.image_path,
+    //      d.created_at,
+    //      COALESCE(AVG(r.rating), 0) AS average_rating,
+    //      COALESCE(STRING_AGG(c.name, ','), '') AS categories,
+    //      p.discount_percentage,
+    //      CASE
+    //        WHEN p.discount_percentage IS NOT NULL
+    //        THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
+    //        ELSE d.price
+    //      END AS price,
+    //      p.start_date AS promotion_start,
+    //      p.end_date AS promotion_end,
+    //      CASE
+    //        WHEN p.discount_percentage IS NULL THEN 'no promotion'
+    //        ELSE 'active'
+    //      END AS promotion_status
+    //    FROM dishes d
+    //    LEFT JOIN reviews r ON d.id = r.dish_id
+    //    LEFT JOIN dish_categories dc ON d.id = dc.dish_id
+    //    LEFT JOIN categories c ON dc.category_id = c.id
+    //    LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
+    //    WHERE d.id IN (${sql(ids)})
+    //    GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
+    //  `;
+  
+    //  return result.map(dish => ({
+    //    id: dish.id,
+    //    name: dish.name,
+    //    description: dish.description,
+    //    price: parseFloat(dish.price),
+    //    old_price: parseFloat(dish.old_price),
+    //    image_path: dish.image_path,
+    //    created_at: dish.created_at,
+    //    average_rating: parseFloat(dish.average_rating).toFixed(1),
+    //    categories: dish.categories ? dish.categories.split(',').filter(Boolean) : [],
+    //    ...(dish.discount_percentage && {
+    //      promotion: {
+    //        discount_percentage: parseFloat(dish.discount_percentage),
+    //        final_price: parseFloat(dish.price),
+    //        start_date: dish.promotion_start,
+    //        end_date: dish.promotion_end,
+    //        status: dish.promotion_status
+    //      }
+    //    })
+    //  }));
+  
+    //} catch (err) {
+    //  console.error("PostgreSQL Error:", err);
+    //  throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
+    //}
   } ,
   
   // getById: async (id) => {

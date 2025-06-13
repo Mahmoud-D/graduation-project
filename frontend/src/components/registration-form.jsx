@@ -203,7 +203,7 @@ export function RegistrationForm({ className, ...props }) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/auth/register`,
+        `http://localhost:5000/api/auth/register`,
         {
           method: "POST",
           headers: {
@@ -227,7 +227,7 @@ export function RegistrationForm({ className, ...props }) {
       setShowVerificationMessage(true);
 
     } catch (err) {
-      setErrors(prev => ({ ...prev, general: err.message }));
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }

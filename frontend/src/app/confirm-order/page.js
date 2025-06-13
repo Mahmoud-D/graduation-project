@@ -70,7 +70,7 @@ const formSchema = z.object({
 });
 
 export default function EnhancedPaymentPage() {
-  const { items } = useCart();
+  const { items, clearCart } = useCart();
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -79,6 +79,7 @@ export default function EnhancedPaymentPage() {
   const total = subtotal + shippingFee;
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderNumber, setOrderNumber] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
 
   const form = useForm({
@@ -94,17 +95,20 @@ export default function EnhancedPaymentPage() {
   });
 
   function getAuthHeaders() {
-  const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  };
-}
-  
+    const token = localStorage.getItem("token");
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
   const createOrder = async (payload) => {
     const res = await fetch("http://localhost:5000/api/orders", {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify(payload),
     });
 
@@ -117,27 +121,25 @@ export default function EnhancedPaymentPage() {
   };
 
   const onSubmit = async (data) => {
-    console.log("data", data);
-    console.log("items", items);
-    
-     const orderPayload = {
-          total_amount: total,
-          payment_method: data.paymentMethod,
-          delivery_address: data.address,
-          city: data.city,
-          phone_number: data.phone,
-          coupon_id: null,
-        status: "pending"
-  
-      }
+    const dishes = items.map((item) => ({dishId: item.id, quantity: item.quantity}));
+    const orderPayload = {
+      dishes,
+      payment_method: data.paymentMethod,
+      delivery_address: data.address,
+      city: data.city,
+      phone_number: data.phone,
+      coupon_id: null,
+      status: "pending",
+    };
 
-      const res = await createOrder(orderPayload);
-      console.log("res", res);
-      
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setIsOrderConfirmed(true);
+    const res = await createOrder(orderPayload);
+    if (res?.ok) {
+      setIsSubmitting(false);
+      setOrderNumber(res.orderId);
+      clearCart();
+      setIsOrderConfirmed(true);
+    }
   };
 
   if (isOrderConfirmed) {
@@ -161,7 +163,7 @@ export default function EnhancedPaymentPage() {
               <div className="flex items-center justify-center gap-2 text-lg font-semibold text-gray-700 mb-4">
                 <Package className="w-5 h-5" />
                 رقم الطلب: #ORD-
-                {Math.random().toString(36).substr(2, 9).toUpperCase()}
+                {orderNumber}
               </div>
               <div className="flex items-center justify-center gap-2 text-gray-600">
                 <Clock className="w-4 h-4" />
@@ -218,6 +220,7 @@ export default function EnhancedPaymentPage() {
             املأ البيانات المطلوبة لإتمام عملية الشراء
           </p>
         </div>
+                        <button onClick={onSubmit}>fetch</button>
 
         <Form {...form}>
           <form
