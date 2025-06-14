@@ -38,7 +38,7 @@ exports.verifyToken = async (req, res, next) => {
 
     // استعلام للحصول على المستخدم
     const users = await sql`
-      SELECT id, name, email, role ,is_verified
+      SELECT id, name, email, role ,is_verified, is_active
       FROM users 
       WHERE id = ${userId}
     `;
@@ -62,7 +62,12 @@ if (!users[0].is_verified) {
   });
 }
 
-
+if (!users[0].is_active) {
+  return res.status(401).json({ 
+    message: ' المستخدم غير مفعل يرجى التواصل مع خدمة العملاء   ' ,
+    error: 'user_not_verified' 
+  });
+}
 
 
     req.user = users[0]; // استرجاع أول مستخدم من النتيجة
