@@ -120,7 +120,12 @@ export function LoginForm({ className, ...props }) {
     try {
       const response = await authEndpoints.login(formData.email, formData.password);
       if (response.success) {
-      router.push("/");
+        const savedFormData = localStorage.getItem('orderFormData');
+        if (savedFormData) {
+          router.push('/confirm-order');
+        } else {
+          router.push("/");
+        }
       } else {
         // Handle API error responses
         setErrors(prev => ({

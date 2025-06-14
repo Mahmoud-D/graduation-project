@@ -1,7 +1,7 @@
 // app/payment/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,6 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
+import authService from "@/app/api/endPonts/auth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -68,6 +70,7 @@ const formSchema = z.object({
 });
 
 export default function EnhancedPaymentPage() {
+  const router = useRouter();
   const { items, clearCart } = useCart();
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -92,6 +95,15 @@ export default function EnhancedPaymentPage() {
     mode: "onChange",
   });
 
+  useEffect(() => {
+    const savedFormData = localStorage.getItem('orderFormData');
+    if (savedFormData) {
+      const parsedData = JSON.parse(savedFormData);
+      form.reset(parsedData);
+      localStorage.removeItem('orderFormData'); // Clear saved data after restoring
+    }
+  }, [form]);
+
   function getAuthHeaders() {
     const token = localStorage.getItem("token");
     return {
@@ -111,7 +123,6 @@ export default function EnhancedPaymentPage() {
     });
 
     if (!res.ok) {
-      // pull out the error message from your controller
       const err = await res.json();
       throw new Error(err.message || "Failed to create order");
     }
@@ -119,6 +130,12 @@ export default function EnhancedPaymentPage() {
   };
 
   const onSubmit = async (data) => {
+    if (!authService.isAuthenticated()) {
+      localStorage.setItem('orderFormData', JSON.stringify(data));
+      router.push('/login');
+      return;
+    }
+
     const dishes = items.map((item) => ({dishId: item.id, quantity: item.quantity}));
     const orderPayload = {
       dishes,
@@ -131,12 +148,18 @@ export default function EnhancedPaymentPage() {
     };
 
     setIsSubmitting(true);
-    const res = await createOrder(orderPayload);
-    if (res?.ok) {
+    try {
+      const res = await createOrder(orderPayload);
+      if (res?.ok) {
+        setOrderNumber(res.orderId);
+        clearCart();
+        setIsOrderConfirmed(true);
+      }
+    } catch (error) {
+      // Handle error appropriately
+      console.error('Order creation failed:', error);
+    } finally {
       setIsSubmitting(false);
-      setOrderNumber(res.orderId);
-      clearCart();
-      setIsOrderConfirmed(true);
     }
   };
 
