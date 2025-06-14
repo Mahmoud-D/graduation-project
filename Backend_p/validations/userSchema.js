@@ -65,27 +65,28 @@ const EmailSchema = z.object({
     .string()
     .email("تنسيق البريد الإلكتروني غير صحيح")
     .transform((email) => email.toLowerCase())
-    .refine(
-      async (email) => {
-        const user = await findByEmail(email);
-  
-        if (!user) return true; // ✅ مفيش يوزر بنفس الإيميل → التسجيل مسموح
-  
-         if (!user.is_active) {
-          throw new Error("الحساب غير نشط. يرجى التواصل مع الدعم.");
-        }
-  
-        if (!user.is_verified) {
-          throw new Error("يرجى تفعيل بريدك الإلكتروني قبل المتابعة.");
-        }
-  
-        // ✅ لو المستخدم موجود ومفعّل ونشط → ممنوع التسجيل
-        return false;
-      },
-      {
-        message: "البريد الإلكتروني موجود بالفعل.",
+    .superRefine(async (email, ctx) => {
+      const user = await findByEmail(email);
+
+      if (!user) return;
+
+      if (!user.is_active) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "الحساب غير نشط. يرجى التواصل مع الدعم.",
+        });
+      } else if (!user.is_verified) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "يرجى تفعيل بريدك الإلكتروني قبل المتابعة.",
+        });
+      } else {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "البريد الإلكتروني موجود بالفعل.",
+        });
       }
-    )
+    })
 ,  
     password: z
       .string()
