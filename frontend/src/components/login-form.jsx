@@ -127,11 +127,17 @@ export function LoginForm({ className, ...props }) {
           router.push("/");
         }
       } else {
-        // Handle API error responses
-        setErrors(prev => ({
-          ...prev,
-          general: response.message || "فشل تسجيل الدخول، يرجى التحقق من بيانات الاعتماد الخاصة بك"
-        }));
+        if (response.data?.errors?.[0]?.message) {
+          setErrors(prev => ({
+            ...prev,
+            general: response.data?.errors[0].message
+          }));
+        } else {
+          setErrors(prev => ({
+            ...prev,
+            general: response.message || "فشل تسجيل الدخول، يرجى التحقق من بيانات الاعتماد الخاصة بك"
+          }));
+        }
       }
     } catch (err) {
       setErrors(prev => ({
