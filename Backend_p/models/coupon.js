@@ -23,11 +23,19 @@ const getCoupons = async (couponCode) => {
 // استرجاع الكوبونات حسب الفلتر
 const getCouponsByFilter = async (code) => {
     try {
-        const query = code
-          ? `SELECT * FROM coupons WHERE code LIKE ${sql.val(`%${code}%`)} AND is_active = 1`
-          : `SELECT * FROM coupons WHERE is_active = 1`;
-
-        const result = await sql.query(query);
+        let result;
+        if (code) {
+            result = await sql`
+                SELECT * FROM coupons 
+                WHERE code LIKE ${'%' + code + '%'} 
+                AND is_active = TRUE
+            `;
+        } else {
+            result = await sql`
+                SELECT * FROM coupons 
+                WHERE is_active = TRUE
+            `;
+        }
         return result;
     } catch (error) {
         console.error("Error while fetching filtered coupons:", error);
@@ -37,8 +45,7 @@ const getCouponsByFilter = async (code) => {
 
 // استرجاع كوبون حسب ID
 const getCouponById = async (id) => {
-    const query = `SELECT * FROM coupons WHERE id = ${sql.val(id)}`;
-    const result = await sql.query(query);
+    const result = await sql`SELECT * FROM coupons WHERE id = ${id}`;
     return result;
 };
 

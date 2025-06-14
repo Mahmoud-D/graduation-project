@@ -33,7 +33,7 @@ const createOrder = async (req, res) => {
   try {
     const {
       dishes,
-      coupon_code,
+      coupon_id,
       payment_method,
       delivery_address,
       city,
@@ -45,15 +45,20 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "No dishes provided" });
     }
 
-    // 2. Fetch dishes details from database
     const dbDishes = await getDishesByIds(dishes.map((d) => d.dishId));
-    const totalAmount = dbDishes.reduce((total, dish) => {
+    let totalAmount = dbDishes.reduce((total, dish) => {
       const dishData = dishes.find((d) => d.dishId === dish.id);
       if (dishData && dishData.quantity) {
         return total + dish.price * dishData.quantity;
       }
       return total;
     }, 0);
+    const coupon = await couponModel.getCouponById(coupon_id);
+    if (coupon) {
+      totalAmount -= (totalAmount * coupon[0].discount_value) / 100;
+    }
+    if (totalAmount < 500) totalAmount += 35; // Add delivery fees if total is less than 500
+
     const orderData = {
       dishes,
       user_id: req.user.id,
@@ -63,7 +68,8 @@ const createOrder = async (req, res) => {
       city,
       phone_number,
       total_amount: totalAmount,
-      delivery_fees: totalAmount >= 500 ? 0 : 35
+      delivery_fees: totalAmount >= 500 ? 0 : 35,
+      coupon_id
     };
     
     const { id: orderId } = await Order.create(orderData);

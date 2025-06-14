@@ -1,5 +1,5 @@
 // models/Order.js
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 const Order = {
   getAllOrdersWithDishes: async () => {
@@ -26,10 +26,6 @@ const Order = {
 
   getAll: async () => {
 
-    console.log('getAll');
-    
-
-
     try {
       const results = await sql`
         SELECT 
@@ -45,15 +41,15 @@ const Order = {
         GROUP BY o.id;
       `;
 
-      return results.map(order => ({
+      return results.map((order) => ({
         ...order,
-        dishes: order.dishes.split(', ').map(d => {
-          const [name, quantity] = d.split(' (');
+        dishes: order.dishes.split(", ").map((d) => {
+          const [name, quantity] = d.split(" (");
           return {
             dish_name: name,
-            quantity: parseInt(quantity.replace(')', ''), 10)
+            quantity: parseInt(quantity.replace(")", ""), 10),
           };
-        })
+        }),
       }));
     } catch (err) {
       throw err;
@@ -129,7 +125,7 @@ const Order = {
           price: row.price,
           quantity: row.quantity,
           discount_percentage: row.discount_percentage,
-          final_price: row.final_price
+          final_price: row.final_price,
         };
 
         acc.dishes.push(dishData);
@@ -159,27 +155,38 @@ const Order = {
         GROUP BY o.id;
       `;
 
-      return results.map(order => ({
+      return results.map((order) => ({
         ...order,
-        dishes: order.dishes.split(', ').map(d => {
-          const [name, quantity] = d.split(' (');
+        dishes: order.dishes.split(", ").map((d) => {
+          const [name, quantity] = d.split(" (");
           return {
             dish_name: name,
-            quantity: parseInt(quantity.replace(')', ''), 10)
+            quantity: parseInt(quantity.replace(")", ""), 10),
           };
-        })
+        }),
       }));
     } catch (err) {
       throw err;
     }
   },
 
-  create: async ({ user_id, status = "pending", payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes }) => {
+  create: async ({
+    user_id,
+    status = "pending",
+    payment_method,
+    delivery_address,
+    city,
+    phone_number,
+    total_amount,
+    delivery_fees,
+    dishes,
+    coupon_id,
+  }) => {
     const now = new Date();
     try {
       const result = await sql`
-        INSERT INTO orders (user_id, status, created_at, updated_at, payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes)
-        VALUES (${user_id}, ${status}, ${now}, ${now}, ${payment_method}, ${delivery_address}, ${city}, ${phone_number}, ${total_amount}, ${delivery_fees}, ${dishes})
+        INSERT INTO orders (user_id, status, created_at, updated_at, payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes, coupon_id)
+        VALUES (${user_id}, ${status}, ${now}, ${now}, ${payment_method}, ${delivery_address}, ${city}, ${phone_number}, ${total_amount}, ${delivery_fees}, ${dishes}, ${coupon_id})
         RETURNING id;
       `;
       return { id: result[0].id, user_id, status };
@@ -216,7 +223,6 @@ const Order = {
   },
   getTotalOrdersPerDay: async () => {
     try {
-
       const result = await sql`
  SELECT DATE(created_at) AS order_date, COUNT(*) AS total_orders  
 FROM orders  
@@ -230,7 +236,6 @@ ORDER BY order_date;
   },
   getTopUsersByOrders: async () => {
     try {
-
       const result = await sql`
 SELECT 
   o.user_id, 
@@ -247,7 +252,7 @@ LIMIT 10;
     } catch (err) {
       throw err;
     }
-  }
+  },
 };
 
 module.exports = Order;
