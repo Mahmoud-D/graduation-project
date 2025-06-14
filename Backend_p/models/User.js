@@ -10,18 +10,19 @@ class User {
     this.role = role;
   }
 
-  async hashPassword() {
+  static async hashPassword(password) {
     const saltRounds = 10;
     try {
-      return await bcrypt.hash(this.password, saltRounds);
+      return await bcrypt.hash(password, saltRounds);
     } catch (error) {
       throw new Error("خطأ في تشفير كلمة المرور");
     }
   }
+  
 
   async create() {
     try {
-      const hashedPassword = await this.hashPassword();
+      const hashedPassword = await this.constructor.hashPassword(this.password);
       const result = await sql`
         INSERT INTO users (name, email, password, role, created_at)
         VALUES (${this.name}, ${this.email}, ${hashedPassword}, ${this.role}, NOW())

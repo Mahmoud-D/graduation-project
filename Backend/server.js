@@ -1,6 +1,40 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+
+
+
+console.log('*');
+console.log(' *');
+console.log('  *');
+console.log( '   *');
+  console.log('    *');
+  
+
+
+
+
+console.log('this backend is old go to backend_p');
+
+
+
+console.log('*');
+console.log(' *');
+console.log('  *');
+console.log( '   *');
+  console.log('    *');
+  
+
+return
+
+
+
+
+
+
+
+
+
 const fs = require('fs'); // نحتاج مكتبة fs لفحص وجود الملف
 // Import routes
 const userRoutes = require('./routes/userRoutes'); // تأكد من إنشاء routes لمستخدميك
@@ -25,6 +59,9 @@ const app = express();
 app.use(bodyParser.json());
 const User = require('./models/User');
 const db = require('./config/db');
+
+
+
 
 
 

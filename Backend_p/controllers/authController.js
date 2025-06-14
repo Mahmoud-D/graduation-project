@@ -106,6 +106,12 @@ exports.login = async (req, res) => {
 exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
+
+  console.log(req.body);
+
+  // return
+  
+
   try {
      const newUser = new User(name, email, password, role || "user");
     const userId = await newUser.create(); 
@@ -348,7 +354,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     // 3. تحديث كلمة السر
-    const hashedPassword = await User.hashPasswordStatic(newPassword);
+    const hashedPassword = await User.hashPassword(newPassword);
     await User.update(user.id, { password: hashedPassword });
 
     res.status(200).json({ message: "تم تغيير كلمة المرور بنجاح" });
