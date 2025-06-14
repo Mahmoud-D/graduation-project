@@ -197,6 +197,22 @@ const Dish = {
     //}
   } ,
   
+  findById: async (id) => {
+    if (!id) {
+      throw new Error("Invalid dish ID");
+    }
+
+    try {
+      const result = await sql`
+        SELECT * FROM dishes WHERE id = ${id}
+      `;
+      return result[0] || null;
+    } catch (err) {
+      console.error("Error in findById:", err);
+      throw new Error("Failed to retrieve dish: " + err.message);
+    }
+  },
+
   // getById: async (id) => {
   //   const dishSql = sql`
   //     SELECT 
