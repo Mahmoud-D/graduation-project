@@ -14,6 +14,8 @@ const registerSchema = z.object({
     .transform((email) => email.toLowerCase()) 
     .refine(async (email) => {
       const userExists = await findByEmail(email);
+      console.log(userExists);
+      
       return !userExists;
     }, "البريد الإلكتروني موجود بالفعل."),
   password: z
@@ -60,9 +62,31 @@ const EmailSchema = z.object({
 
   const loginSchema = z.object({
     email: z
-      .string()
-      .email("تنسيق البريد الإلكتروني غير صحيح")
-      .transform((email) => email.toLowerCase()),
+    .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase())
+    .refine(
+      async (email) => {
+        const user = await findByEmail(email);
+  
+        if (!user) return true; // ✅ مفيش يوزر بنفس الإيميل → التسجيل مسموح
+  
+         if (!user.is_active) {
+          throw new Error("الحساب غير نشط. يرجى التواصل مع الدعم.");
+        }
+  
+        if (!user.is_verified) {
+          throw new Error("يرجى تفعيل بريدك الإلكتروني قبل المتابعة.");
+        }
+  
+        // ✅ لو المستخدم موجود ومفعّل ونشط → ممنوع التسجيل
+        return false;
+      },
+      {
+        message: "البريد الإلكتروني موجود بالفعل.",
+      }
+    )
+,  
     password: z
       .string()
       .min(6, "كلمة المرور يجب أن تكون على الأقل مكونة من 6 أحرف")
