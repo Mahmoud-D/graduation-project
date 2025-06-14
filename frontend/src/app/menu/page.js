@@ -32,9 +32,13 @@ export default function MenuPage() {
 
   const fetchDishes = async () => {
     try {
+<<<<<<< HEAD
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/dishes`
       );
+=======
+      const response = await fetch(`http://localhost:5000/api/dishes`);
+>>>>>>> c1fd98203e8ce0c2f9a72b0c34404060a2f6496b
       if (!response.ok) {
         throw new Error("Failed to fetch dishes");
       }
@@ -51,7 +55,7 @@ export default function MenuPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/categories`);
+      const response = await fetch(`http://localhost:5000/api/categories`);
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }

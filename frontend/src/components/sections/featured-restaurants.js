@@ -54,7 +54,7 @@ export default function MenuCategories() {
   const fetchDishes = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/distinctive-dishes`
+        `http://localhost:5000/api/distinctive-dishes`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch dishes");
@@ -134,7 +134,7 @@ export default function MenuCategories() {
                 {/* صورة الطبق */}
                 <div className="relative h-48">
                   <Image
-                    src={`http://localhost:3000/${offer.image_path}`}
+                    src={`http://localhost:5000/api/${offer.image_path}`}
                     alt={offer.name}
                     fill
                     className="object-cover"

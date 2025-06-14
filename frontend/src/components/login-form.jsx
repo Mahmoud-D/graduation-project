@@ -119,10 +119,7 @@ export function LoginForm({ className, ...props }) {
     
     try {
       const response = await authEndpoints.login(formData.email, formData.password);
-      
       if (response.success) {
-      // Save token to localStorage
-      localStorage.setItem("token", response.token);
       router.push("/");
       } else {
         // Handle API error responses
