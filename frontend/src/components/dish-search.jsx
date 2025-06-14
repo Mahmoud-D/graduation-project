@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { debounce } from "lodash";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,6 +7,21 @@ export default function DishSearchDropdown() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Add click outside handler
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setQuery("");
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Debounced fetch for search
   const fetchDishes = useMemo(
@@ -41,7 +56,7 @@ export default function DishSearchDropdown() {
   }, [query, fetchDishes]);
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="relative w-full max-w-md mx-auto" ref={dropdownRef}>
       <input
         type="search"
         value={query}
