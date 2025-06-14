@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
           <main className="pt-16">
             {children}
           </main>
-          <Cart />
+          <Cart  />
         </CartProvider>
       </body>
     </html>

@@ -31,15 +31,42 @@ const couponModel = require("../models/coupon");
 
 const createOrder = async (req, res) => {
   try {
-    const { dishes, coupon_code } = req.body;
+    const {
+      dishes,
+      coupon_code,
+      payment_method,
+      delivery_address,
+      city,
+      phone_number,
+      status,
+    } = req.body;
 
     if (!dishes || dishes.length === 0) {
-      return res.status(400).json({ message: 'No dishes provided' });
+      return res.status(400).json({ message: "No dishes provided" });
     }
 
-    // 1. Validate dishes
     // 2. Fetch dishes details from database
-    const dbDishes = await getDishesByIds(dishIds);
+    const dbDishes = await getDishesByIds(dishes.map((d) => d.dishId));
+    const totalAmount = dbDishes.reduce((total, dish) => {
+      const dishData = dishes.find((d) => d.dishId === dish.id);
+      if (dishData && dishData.quantity) {
+        return total + dish.price * dishData.quantity;
+      }
+      return total;
+    }, 0);
+    const orderData = {
+      dishes,
+      user_id: req.user.id,
+      status: status || "pending",
+      payment_method,
+      delivery_address,
+      city,
+      phone_number,
+      total_amount: totalAmount,
+      delivery_fees: totalAmount >= 500 ? 0 : 35
+    };
+    
+    const { id: orderId } = await Order.create(orderData);
 
     // 3. Check promotions
     // 4. Calculate subtotal
@@ -47,17 +74,16 @@ const createOrder = async (req, res) => {
     // 6. Insert order into database
     // 7. Insert order items
 
-    res.status(201).json({ message: 'Order created successfully (pending payment)' });
-
+    res
+      .status(201)
+      .json({ ok: true, message: "Order created successfully", orderId });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
 module.exports = { createOrder };
-
-
 
 // const createOrder = async (req, res) => {
 //   const { status, dishes, coupon_code } = req.body;
@@ -94,11 +120,7 @@ module.exports = { createOrder };
 //   }
 // };
 
-
- 
-
 const getAllOrders = async (req, res) => {
-   
   try {
     const orders = await Order.getAll();
     return res.status(200).json(orders);
@@ -107,14 +129,6 @@ const getAllOrders = async (req, res) => {
     return res.status(500).json({ message: "Error fetching orders" });
   }
 };
-
-
-
-
- 
- 
-
- 
 
 // جلب تفاصيل الطلب بناءً على الـ id
 const getOrderDetails = async (req, res) => {
@@ -125,7 +139,7 @@ const getOrderDetails = async (req, res) => {
     return res.status(200).json({ order });
   } catch (err) {
     console.error(err);
-    
+
     if (err.message.includes("not found")) {
       return res.status(404).json({ message: err.message });
     }
@@ -133,7 +147,6 @@ const getOrderDetails = async (req, res) => {
     return res.status(500).json({ message: "Error fetching order details" });
   }
 };
-
 
 const updateOrder = async (req, res) => {
   const { id } = req.params;
@@ -148,7 +161,6 @@ const updateOrder = async (req, res) => {
 
     // لو الدالة Order.update عملت reject برسالة
     return res.status(404).json({ message: `Order with ID ${id} not found` });
-
   } catch (err) {
     console.error(err);
 
@@ -159,7 +171,6 @@ const updateOrder = async (req, res) => {
     return res.status(500).json({ message: "Error updating order" });
   }
 };
-
 
 // حذف طلب
 const deleteOrder = async (req, res) => {
@@ -192,7 +203,6 @@ const deleteOrder = async (req, res) => {
   }
 };
 
-
 const getMyOrders = async (req, res) => {
   const userId = req.user.id; // تأكد أنك مستخرج user من التوكن أو السيشن
 
@@ -205,12 +215,11 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createOrder,
   getAllOrders,
   getOrderDetails,
   updateOrder,
   deleteOrder,
-  getMyOrders
+  getMyOrders,
 };

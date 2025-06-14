@@ -1,11 +1,21 @@
-"use client"
-import React, { useState } from 'react';
-import { useCart } from "@/context/CartContext"
-import { ShoppingCart, X, Plus, Minus, Trash } from 'lucide-react';
+"use client";
+import React, { useState } from "react";
+import { useCart } from "@/context/CartContext";
+import { ShoppingCart, X, Plus, Minus, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Cart() {
-  const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clearCart } = useCart();
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -14,9 +24,9 @@ export default function Cart() {
   return (
     <div className="relative">
       {/* Cart Icon Button */}
-      <button 
+      <button
         onClick={toggleCart}
-        className="fixed top-4 left-4 bg-orange-500 text-white p-2 rounded-full shadow-lg z-50 flex items-center justify-center"
+        className="fixed top-4 left-4 bg-orange-500 text-white p-2 rounded-full shadow-lg z-50 flex items-center justify-center cursor-pointer"
       >
         <ShoppingCart className="h-6 w-6" />
         {totalItems > 0 && (
@@ -27,16 +37,19 @@ export default function Cart() {
       </button>
 
       {/* Cart Sidebar */}
-      <div 
+      <div
         className={`fixed top-0 left-0 w-full md:w-96 h-full bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Cart Header */}
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="text-xl font-bold">سلة المشتريات</h2>
-            <button onClick={toggleCart} className="p-1 rounded-full hover:bg-gray-100">
+            <button
+              onClick={toggleCart}
+              className="p-1 rounded-full hover:bg-gray-100"
+            >
               <X className="h-6 w-6" />
             </button>
           </div>
@@ -54,7 +67,11 @@ export default function Cart() {
                   <li key={item.id} className="flex border-b pb-4">
                     <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                       {item.image ? (
-                        <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-gray-400">
                           لا توجد صورة
@@ -64,24 +81,28 @@ export default function Cart() {
                     <div className="mr-4 flex-grow">
                       <div className="flex justify-between">
                         <h3 className="font-medium">{item.name}</h3>
-                        <p className="font-medium">{item.price * item.quantity} جنيه</p>
+                        <p className="font-medium">
+                          {item.price * item.quantity} جنيه
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500">{item.price} جنيه للقطعة</p>
+                      <p className="text-sm text-gray-500">
+                        {item.price} جنيه للقطعة
+                      </p>
                       <div className="flex items-center mt-2">
-                        <button 
+                        <button
                           onClick={() => removeItem(item)}
                           className="p-1 rounded-full hover:bg-gray-100"
                         >
                           <Minus className="h-4 w-4" />
                         </button>
                         <span className="mx-2">{item.quantity}</span>
-                        <button 
-                          onClick={() => addItem({...item, quantity: 1})}
+                        <button
+                          onClick={() => addItem({ ...item, quantity: 1 })}
                           className="p-1 rounded-full hover:bg-gray-100"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => updateQuantity(item.id, 0)}
                           className="mr-4 p-1 text-red-500 hover:bg-red-50 rounded-full"
                         >
@@ -101,18 +122,24 @@ export default function Cart() {
               <span className="font-medium">المجموع</span>
               <span className="font-bold">{totalPrice} جنيه</span>
             </div>
-            <button 
+            <button
               disabled={items.length === 0}
-              className={`w-full py-3 rounded-md text-center text-white font-medium ${
-                items.length === 0 ? 'bg-gray-300' : 'bg-orange-500 hover:bg-orange-600'
+              className={`w-full py-3 rounded-md text-center text-white font-medium cursor-pointer ${
+                items.length === 0
+                  ? "bg-gray-300"
+                  : "bg-orange-500 hover:bg-orange-600"
               }`}
+              onClick={() => {
+                toggleCart();
+                router.push("/confirm-order");
+              }}
             >
-              إتمام الطلب
+              تابع للدفع
             </button>
             {items.length > 0 && (
-              <button 
+              <button
                 onClick={clearCart}
-                className="w-full mt-2 py-2 rounded-md text-center text-gray-500 hover:bg-gray-100"
+                className="w-full mt-2 py-2 rounded-md text-center text-gray-500 hover:bg-gray-100 cursor-pointer"
               >
                 إفراغ السلة
               </button>

@@ -169,12 +169,12 @@ const Order = {
     }
   },
 
-  create: async ({ user_id, status='pending' }) => {
+  create: async ({ user_id, status = "pending", payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes }) => {
     const now = new Date();
     try {
       const result = await sql`
-        INSERT INTO orders (user_id, status, created_at, updated_at)
-        VALUES (${user_id}, ${status}, ${now}, ${now})
+        INSERT INTO orders (user_id, status, created_at, updated_at, payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes)
+        VALUES (${user_id}, ${status}, ${now}, ${now}, ${payment_method}, ${delivery_address}, ${city}, ${phone_number}, ${total_amount}, ${delivery_fees}, ${dishes})
         RETURNING id;
       `;
       return { id: result[0].id, user_id, status };

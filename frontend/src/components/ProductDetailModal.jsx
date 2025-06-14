@@ -61,7 +61,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
             aria-label={`صورة ${dish.name}`}
           >
             <Image
-              src={`http://localhost:3000/${dish.image_path}` || "/placeholder-dish.png"}
+              src={`http://localhost:5000/${dish.image_path}` || "/placeholder-dish.png"}
               alt={dish.name}
               fill
               className="object-cover rounded-lg"
