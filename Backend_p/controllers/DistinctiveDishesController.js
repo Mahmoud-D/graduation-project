@@ -1,8 +1,7 @@
 const DistinctiveDishModel = require("../models/DistinctiveDish");
 
 class DistinctiveDishesController {
-  // الحصول على الأطباق المميزة (للمستخدمين)
-  async getFeaturedDishes(req, res) {
+   async getFeaturedDishes(req, res) {
     try {
       const dishes = await DistinctiveDishModel.getActiveDishesOnly();
       res.json({ success: true, data: dishes });

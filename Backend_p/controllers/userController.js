@@ -66,11 +66,20 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.deactivateUser = async (req, res) => {
+  
   try {
     const { id } = req.params;
-    await User.deactivate(id);
-    res.json({ message: 'تم حذف المستخدم بنجاح' });
+
+
+    console.log(id);
+
+     
+    
+    await User.toggleActiveStatus(id);
+    res.json({ message: 'تم التعديل المستخدم بنجاح' });
   } catch (error) {
-    res.status(500).json({ message: 'حدث خطأ أثناء حذف المستخدم' });
+    console.log(error);
+    
+    res.status(500).json({ message: 'حدث خطأ أثناء  التعديل المستخدم' ,error});
   }
 };

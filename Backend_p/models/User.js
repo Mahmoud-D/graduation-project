@@ -137,6 +137,11 @@ ORDER BY signup_date;`;
   }
 
   static async toggleActiveStatus(id) {
+
+console.log('========');
+
+    console.log(id);
+     
     try {
       const user = await sql`SELECT is_active FROM users WHERE id = ${id}`;
       if (!user.length) {
@@ -150,8 +155,10 @@ ORDER BY signup_date;`;
   
       return newStatus; // ممكن ترجعه علشان تعرف إذا اتفعل أو اتعطل
     } catch (err) {
-      console.error("❌ Error toggling user status:", err);
-      throw new Error("خطأ في تحديث حالة المستخدم");
+
+      console.log("❌ Error toggling user status:", err);
+      
+       throw new Error(Error);
     }
   }
   
