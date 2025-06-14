@@ -80,11 +80,6 @@ const EmailSchema = z.object({
           code: z.ZodIssueCode.custom,
           message: "يرجى تفعيل بريدك الإلكتروني قبل المتابعة.",
         });
-      } else {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "البريد الإلكتروني موجود بالفعل.",
-        });
       }
     })
 ,  

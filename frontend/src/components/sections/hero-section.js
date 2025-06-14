@@ -1,10 +1,13 @@
+"use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Navigation from "./navigation";
 import Link from "next/link";
+import DishSearch from "@/components/dish-search";
 
 export default function HeroSection() {
+    const [results, setResults] = useState([]);
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-dark-shade">
       {/* Navigation */}
@@ -34,15 +37,7 @@ export default function HeroSection() {
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4 mb-8">
-          <Input
-            type="text"
-            placeholder="ابحث عن وجبتك المفضلة"
-            className="bg-white/90 text-dark-shade text-right h-12"
-            style={{ color: "black" }} 
-          />
-          <Button className="bg-primary hover:bg-primary/90 h-12 px-8">
-            ابحث
-          </Button>
+           <DishSearch onResults={setResults} />     
         </div>
 
         {/* CTA Buttons */}

@@ -203,11 +203,7 @@ export function RegistrationForm({ className, ...props }) {
 
     try {
       const response = await fetch(
-<<<<<<< HEAD
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-=======
         `http://localhost:5000/api/auth/register`,
->>>>>>> c1fd98203e8ce0c2f9a72b0c34404060a2f6496b
         {
           method: "POST",
           headers: {

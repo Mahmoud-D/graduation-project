@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { useCart } from '../context/CartContext';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function ProductDetailModal({ isOpen, onClose, dish }) {
   const { addItem } = useCart();
@@ -23,8 +24,8 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
       id: dish.id,
       name: dish.name,
       price: parseFloat(dish.price),
-      image: dish.image_path || '/placeholder-dish.png', // Also fixed image path
-      quantity: quantity // This should now properly pass the quantity to cart
+      image: dish.image_path || '/placeholder-dish.png',
+      quantity: quantity
     });
     onClose();
   };
@@ -41,7 +42,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
       onOpenChange={onClose}
     >
       <DialogContent
-        className="max-w-5xl w-[90vw]" // Increased width
+        className="max-w-5xl w-[90vw]"
         role="dialog"
         aria-modal="true"
       >
@@ -157,13 +158,24 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
               </div>
             </div>
 
-            <Button
-              className="w-full bg-primary hover:bg-primary/90 cursor-pointer"
-              onClick={handleAddToCart}
-              aria-label={`إضافة ${quantity} ${dish.name} إلى السلة بسعر ${dish.price * quantity} جنيه`}
-            >
-              أضف إلى السلة - {(dish.price * quantity).toFixed(2)} جنيه
-            </Button>
+            <div className="space-y-4">
+              <Button
+                className="w-full bg-primary hover:bg-primary/90 cursor-pointer"
+                onClick={handleAddToCart}
+                aria-label={`إضافة ${quantity} ${dish.name} إلى السلة بسعر ${dish.price * quantity} جنيه`}
+              >
+                أضف إلى السلة - {(dish.price * quantity).toFixed(2)} جنيه
+              </Button>
+              
+              <Link href={`/menu/${dish.id}`} className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                >
+                  رؤية التقييمات
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </DialogContent>
