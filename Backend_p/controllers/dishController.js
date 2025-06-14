@@ -6,16 +6,22 @@ exports.getAllDishes = async (req, res) => {
     category,
     minPrice,
     maxPrice,
-    name
+    name, 
+    q
   } = req.query;
 
   try {
-    const dishes = await Dish.getAll({
-      category,
-      minPrice,
-      maxPrice,
-      name
-    });
+    let dishes;
+    if (q) {
+      dishes = await Dish.search(q);
+    } else { 
+        dishes = await Dish.getAll({
+        category,
+        minPrice,
+        maxPrice,
+        name
+      });
+    }
 
     res.json(dishes);
   } catch (error) {

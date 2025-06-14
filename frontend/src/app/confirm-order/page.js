@@ -48,9 +48,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "الاسم يجب أن يكون على الأقل حرفين." })
     .max(50, { message: "الاسم طويل جداً." })
-    .regex(/^[\u0600-\u06FF\s]+$/, {
-      message: "يجب أن يحتوي الاسم على أحرف عربية فقط.",
-    }),
+    .regex(/^[a-zA-Z\u0600-\u06FF\s]+$/, "الاسم يجب أن يحتوي فقط على حروف عربية أو إنجليزية ومسافات"),
   address: z
     .string()
     .min(10, {
@@ -252,7 +250,7 @@ export default function EnhancedPaymentPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-base font-semibold text-gray-700">
                           <User className="w-4 h-4" />
-                          الاسم الكامل
+                          اسم المستخدم
                         </FormLabel>
                         <FormControl>
                           <Input

@@ -313,8 +313,28 @@ const Dish = {
     }
   },
 
-
-
+search: async (keyword) => {
+  const pattern = `%${keyword}%`;
+  try {
+    const results = await sql`
+      SELECT id, name, description, price, image_path
+      FROM dishes
+      WHERE translate(
+              translate(lower(name), 'أإآ', 'ااا'),
+              'ى', 'ي'
+            ) ILIKE translate(
+              translate(lower(${pattern}), 'أإآ', 'ااا'),
+              'ى', 'ي'
+            )
+      ORDER BY name
+      LIMIT 50;
+    `;
+    return results;
+  } catch (err) {
+    throw err;
+  }
+},
+  
   getTopSellingDishes: async (dishId, categoryId) => {
     const query = sql`
   SELECT d.name AS dish_name, SUM(oi.quantity) AS total_sold
