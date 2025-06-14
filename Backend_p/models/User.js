@@ -82,7 +82,6 @@ ORDER BY signup_date;`;
       throw new Error("خطأ في مقارنة كلمة المرور");
     }
   }
-
   static async initTable() {
     const sqlQuery = `
       CREATE TABLE IF NOT EXISTS users (
@@ -136,6 +135,35 @@ ORDER BY signup_date;`;
       throw new Error("خطأ في حذف المستخدم");
     }
   }
+
+  static async toggleActiveStatus(id) {
+
+console.log('========');
+
+    console.log(id);
+     
+    try {
+      const user = await sql`SELECT is_active FROM users WHERE id = ${id}`;
+      if (!user.length) {
+        throw new Error("المستخدم غير موجود");
+      }
+  
+      const currentStatus = user[0].is_active;
+      const newStatus = !currentStatus;
+  
+      await sql`UPDATE users SET is_active = ${newStatus} WHERE id = ${id}`;
+  
+      return newStatus; // ممكن ترجعه علشان تعرف إذا اتفعل أو اتعطل
+    } catch (err) {
+
+      console.log("❌ Error toggling user status:", err);
+      
+       throw new Error(Error);
+    }
+  }
+  
+  
+
 }
 
 module.exports = User;
