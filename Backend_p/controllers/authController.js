@@ -58,7 +58,7 @@ exports.login = async (req, res) => {
         role: user.role 
       }, 
       process.env.JWT_SECRET, 
-      { expiresIn: "1h" }
+      { expiresIn: process.env.JWT_EXPIRATION }
     );
 
     // إرجاع الاستجابة الناجحة

@@ -70,6 +70,8 @@ const EmailSchema = z.object({
 
       if (!user) return;
 
+ 
+
       if (!user.is_active) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

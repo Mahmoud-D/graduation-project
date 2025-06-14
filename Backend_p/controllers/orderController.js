@@ -30,6 +30,20 @@ const couponModel = require("../models/coupon");
 // orderController.js
 
 const createOrder = async (req, res) => {
+  console.log('=================');
+  console.log('=================');
+
+  console.log('=================');
+
+  console.log('=================');
+
+  console.log('=================');
+
+  console.log('=================');
+
+  console.log('=================');
+
+  
   try {
     const {
       dishes,
@@ -40,6 +54,11 @@ const createOrder = async (req, res) => {
       phone_number,
       status,
     } = req.body;
+
+    console.log(req.body);
+
+    return
+    
 
     if (!dishes || dishes.length === 0) {
       return res.status(400).json({ message: "No dishes provided" });
@@ -64,9 +83,14 @@ const createOrder = async (req, res) => {
       phone_number,
       total_amount: totalAmount,
       delivery_fees: totalAmount >= 500 ? 0 : 35
+     
+      
     };
     
-    const { id: orderId } = await Order.create(orderData);
+    
+
+     const { id: orderId } = await Order.create(orderData);
+      
 
     // 3. Check promotions
     // 4. Calculate subtotal
