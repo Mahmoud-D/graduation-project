@@ -15,7 +15,7 @@ const Order = {
           d.name AS dish_name,
           od.quantity
         FROM orders o
-        JOIN order_dishes od ON o.id = od.order_id
+        JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id;
       `;
       return results;
@@ -25,6 +25,11 @@ const Order = {
   },
 
   getAll: async () => {
+
+    console.log('getAll');
+    
+
+
     try {
       const results = await sql`
         SELECT 
@@ -35,7 +40,7 @@ const Order = {
           o.updated_at,
           STRING_AGG(d.name || ' (' || od.quantity || ')', ', ') AS dishes
         FROM orders o
-        JOIN order_dishes od ON o.id = od.order_id
+        JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id
         GROUP BY o.id;
       `;
@@ -85,7 +90,7 @@ const Order = {
 
         FROM orders o
         JOIN users u ON o.user_id = u.id
-        JOIN order_dishes od ON o.id = od.order_id
+        JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id
         LEFT JOIN promotions p 
           ON d.id = p.dish_id 
@@ -148,7 +153,7 @@ const Order = {
           o.updated_at,
           STRING_AGG(d.name || ' (' || od.quantity || ')', ', ') AS dishes
         FROM orders o
-        JOIN order_dishes od ON o.id = od.order_id
+        JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id
         WHERE o.user_id = ${userId}
         GROUP BY o.id;
