@@ -1,4 +1,4 @@
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 // Get all dishes
 const Dish = {
@@ -70,7 +70,7 @@ const Dish = {
 
     try {
       const result = await query;
-      return result.map(dish => {
+      return result.map((dish) => {
         const baseDish = {
           id: dish.id,
           name: dish.name,
@@ -79,8 +79,10 @@ const Dish = {
           old_price: dish.old_price,
           image_path: dish.image_path,
           created_at: dish.created_at,
-          average_rating: dish.average_rating ? parseFloat(dish.average_rating).toFixed(1) : null,
-          categories: dish.categories ? dish.categories.split(',') : []
+          average_rating: dish.average_rating
+            ? parseFloat(dish.average_rating).toFixed(1)
+            : null,
+          categories: dish.categories ? dish.categories.split(",") : [],
         };
 
         if (dish.discount_percentage) {
@@ -91,11 +93,11 @@ const Dish = {
               final_price: dish.price,
               start_date: dish.promotion_start,
               end_date: dish.promotion_end,
-              status: dish.promotion_status
-            }
+              status: dish.promotion_status,
+            },
           };
         }
-        
+
         return baseDish;
       });
     } catch (err) {
@@ -106,96 +108,99 @@ const Dish = {
   // Get dish by ID
   getDishesByIds: async (ids) => {
     if (!Array.isArray(ids)) {
-      throw new Error("يجب تقديم مصفوفة من IDs صالحة");
+      if (typeof ids === 'string') {
+        try {
+          ids = JSON.parse(ids);
+          if (!Array.isArray(ids)) ids = [Number(ids)];
+        } catch {
+          ids = ids.split(',').map(x => Number(x.trim()));
+        }
+      } else if (typeof ids === 'number') {
+        ids = [ids];
+      } else {
+        throw new Error("يجب تقديم مصفوفة من IDs صالحة");
+      }
     }
+  
+    ids = ids.map(Number).filter((x) => !isNaN(x));
   
     if (ids.length === 0) return [];
   
+   
     try {
       const result = await sql`
-      SELECT * from dishes
-      WHERE id = ANY(${ids})
-      `
-      return result;
+        WITH active_promotions AS (
+          SELECT 
+            dish_id,
+            discount_percentage,
+            start_date,
+            end_date,
+            created_at,
+            ROW_NUMBER() OVER (
+              PARTITION BY dish_id 
+              ORDER BY created_at DESC, discount_percentage DESC
+            ) AS rn
+          FROM promotions
+          WHERE is_active = true
+            AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+        )
+        SELECT 
+          d.id,
+          d.name,
+          d.description,
+          d.price AS old_price,
+          d.image_path,
+          d.created_at,
+          COALESCE(AVG(r.rating), 0) AS average_rating,
+          COALESCE(STRING_AGG(DISTINCT c.name, ','), '') AS categories,
+          p.discount_percentage,
+          CASE
+            WHEN p.discount_percentage IS NOT NULL
+            THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
+            ELSE d.price
+          END AS price,
+          p.start_date AS promotion_start,
+          p.end_date AS promotion_end,
+          CASE
+            WHEN p.discount_percentage IS NULL THEN 'no promotion'
+            ELSE 'active'
+          END AS promotion_status
+        FROM dishes d
+        LEFT JOIN reviews r ON d.id = r.dish_id
+        LEFT JOIN dish_categories dc ON d.id = dc.dish_id
+        LEFT JOIN categories c ON dc.category_id = c.id
+        LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
+        WHERE d.id = ANY(${sql`${ids}`})
+        GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
+      `;
+  
+      return result.map((dish) => ({
+        id: dish.id,
+        name: dish.name,
+        description: dish.description,
+        price: parseFloat(dish.price),
+        old_price: parseFloat(dish.old_price),
+        image_path: dish.image_path,
+        created_at: dish.created_at,
+        average_rating: parseFloat(dish.average_rating).toFixed(1),
+        categories: dish.categories
+          ? dish.categories.split(",").filter(Boolean)
+          : [],
+        ...(dish.discount_percentage && {
+          promotion: {
+            discount_percentage: parseFloat(dish.discount_percentage),
+            final_price: parseFloat(dish.price),
+            start_date: dish.promotion_start,
+            end_date: dish.promotion_end,
+            status: dish.promotion_status,
+          },
+        }),
+      }));
     } catch (err) {
-      console.error("Error in getDishesByIds:", err);
+      console.error("PostgreSQL Error:", err);
       throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
     }
-
-    //try {
-    //  // استعلام معدل خصيصًا لـ Supabase
-    //  const result = await sql`
-    //    WITH active_promotions AS (
-    //      SELECT 
-    //        dish_id,
-    //        discount_percentage,
-    //        start_date,
-    //        end_date,
-    //        created_at,
-    //        ROW_NUMBER() OVER (
-    //          PARTITION BY dish_id 
-    //          ORDER BY created_at DESC, discount_percentage DESC
-    //        ) AS rn
-    //      FROM promotions
-    //      WHERE is_active = true
-    //        AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
-    //    )
-    //    SELECT 
-    //      d.id,
-    //      d.name,
-    //      d.description,
-    //      d.price AS old_price,
-    //      d.image_path,
-    //      d.created_at,
-    //      COALESCE(AVG(r.rating), 0) AS average_rating,
-    //      COALESCE(STRING_AGG(c.name, ','), '') AS categories,
-    //      p.discount_percentage,
-    //      CASE
-    //        WHEN p.discount_percentage IS NOT NULL
-    //        THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
-    //        ELSE d.price
-    //      END AS price,
-    //      p.start_date AS promotion_start,
-    //      p.end_date AS promotion_end,
-    //      CASE
-    //        WHEN p.discount_percentage IS NULL THEN 'no promotion'
-    //        ELSE 'active'
-    //      END AS promotion_status
-    //    FROM dishes d
-    //    LEFT JOIN reviews r ON d.id = r.dish_id
-    //    LEFT JOIN dish_categories dc ON d.id = dc.dish_id
-    //    LEFT JOIN categories c ON dc.category_id = c.id
-    //    LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
-    //    WHERE d.id IN (${sql(ids)})
-    //    GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
-    //  `;
-  
-    //  return result.map(dish => ({
-    //    id: dish.id,
-    //    name: dish.name,
-    //    description: dish.description,
-    //    price: parseFloat(dish.price),
-    //    old_price: parseFloat(dish.old_price),
-    //    image_path: dish.image_path,
-    //    created_at: dish.created_at,
-    //    average_rating: parseFloat(dish.average_rating).toFixed(1),
-    //    categories: dish.categories ? dish.categories.split(',').filter(Boolean) : [],
-    //    ...(dish.discount_percentage && {
-    //      promotion: {
-    //        discount_percentage: parseFloat(dish.discount_percentage),
-    //        final_price: parseFloat(dish.price),
-    //        start_date: dish.promotion_start,
-    //        end_date: dish.promotion_end,
-    //        status: dish.promotion_status
-    //      }
-    //    })
-    //  }));
-  
-    //} catch (err) {
-    //  console.error("PostgreSQL Error:", err);
-    //  throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
-    //}
-  } ,
+  },
   
   findById: async (id) => {
     if (!id) {
@@ -215,7 +220,7 @@ const Dish = {
 
   // getById: async (id) => {
   //   const dishSql = sql`
-  //     SELECT 
+  //     SELECT
   //       d.id,
   //       d.name,
   //       d.description,
@@ -231,7 +236,7 @@ const Dish = {
   //   const commentsSql = sql`SELECT comment FROM reviews WHERE dish_id = ${id}`;
 
   //   const categoriesSql = sql`
-  //     SELECT c.id, c.name 
+  //     SELECT c.id, c.name
   //     FROM categories c
   //     INNER JOIN dish_categories dc ON c.id = dc.category_id
   //     WHERE dc.dish_id = ${id}
@@ -268,7 +273,7 @@ const Dish = {
       const result = await sqlQuery;
       return result[0].id;
     } catch (err) {
-      console.error('Error in create dish:', err);
+      console.error("Error in create dish:", err);
       throw err;
     }
   },
@@ -285,7 +290,7 @@ const Dish = {
       const result = await query;
       return result.rowCount;
     } catch (err) {
-      console.error('Error in update dish:', err);
+      console.error("Error in update dish:", err);
       throw err;
     }
   },
@@ -298,21 +303,20 @@ const Dish = {
       const result = await query;
       return result;
     } catch (err) {
-
-     if (err.code === '23503') { // Foreign key violation code
-      throw {
-        success: false,
-        error: 'CANNOT_DELETE_RELATED_RECORDS_EXIST',
-         message: 'لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق'
-      };
-    }
-
+      if (err.code === "23503") {
+        // Foreign key violation code
+        throw {
+          success: false,
+          error: "CANNOT_DELETE_RELATED_RECORDS_EXIST",
+          message: "لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق",
+        };
+      }
 
       console.error("Error in delete:", err);
       throw err;
     }
   },
- 
+
   // Link dish to a category
   linkCategory: async (dishId, categoryId) => {
     const query = sql`
@@ -324,15 +328,18 @@ const Dish = {
       const result = await query;
       return result.rowCount;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
   },
 
-search: async (keyword) => {
-  const pattern = `%${keyword}%`;
-  try {
-    const results = await sql`
+  search: async (keyword) => {
+    const pattern = `%${keyword}%`;
+    try {
+      const results = await sql`
       SELECT id, name, description, price, image_path
       FROM dishes
       WHERE translate(
@@ -345,12 +352,12 @@ search: async (keyword) => {
       ORDER BY name
       LIMIT 50;
     `;
-    return results;
-  } catch (err) {
-    throw err;
-  }
-},
-  
+      return results;
+    } catch (err) {
+      throw err;
+    }
+  },
+
   getTopSellingDishes: async (dishId, categoryId) => {
     const query = sql`
   SELECT d.name AS dish_name, SUM(oi.quantity) AS total_sold
@@ -366,7 +373,10 @@ LIMIT 10;
       const result = await query;
       return result;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
   },
@@ -382,11 +392,13 @@ ORDER BY date;
       const result = await query;
       return result;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
-  }
+  },
 };
 
 module.exports = Dish;
-

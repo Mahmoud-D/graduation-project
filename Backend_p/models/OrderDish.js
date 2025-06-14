@@ -1,18 +1,15 @@
-// 4. إنشاء موديل OrderDish (جدول ربط الأطباق بالطلبات)
-
-// models/OrderDish.js
-// models/OrderDish.js
-// models/OrderDish.js
+ 
 
 const sql = require('../config/db');
 
 const OrderDish = {
 
-  // ✅ إضافة طبق واحد للطلب
   addDishToOrder: async (orderId, dishId, quantity) => {
     try {
+
+
       const result = await sql`
-        INSERT INTO order_dishes (order_id, dish_id, quantity)
+        INSERT INTO order_items (order_id, dish_id, quantity)
         VALUES (${orderId}, ${dishId}, ${quantity})
         RETURNING id
       `;
@@ -27,7 +24,6 @@ const OrderDish = {
     }
   },
 
-  // ✅ جلب كل الأطباق المرتبطة بطلب
   getByOrderId: async (orderId) => {
     try {
       const result = await sql`
@@ -44,7 +40,6 @@ const OrderDish = {
     }
   },
 
-  // ✅ حذف الأطباق المرتبطة بطلب معين
   deleteByOrderId: async (orderId) => {
     try {
       const result = await sql`

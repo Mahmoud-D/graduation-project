@@ -30,20 +30,13 @@ const couponModel = require("../models/coupon");
 // orderController.js
 
 const createOrder = async (req, res) => {
-  console.log('=================');
-  console.log('=================');
+  console.log("=================");
+  console.log("=================");
+  console.log("=================");
+  console.log("=================");
+  console.log("=================");
+  console.log("=================");
 
-  console.log('=================');
-
-  console.log('=================');
-
-  console.log('=================');
-
-  console.log('=================');
-
-  console.log('=================');
-
-  
   try {
     const {
       dishes,
@@ -55,17 +48,20 @@ const createOrder = async (req, res) => {
       status,
     } = req.body;
 
-    console.log(req.body);
-
-    return
-    
-
     if (!dishes || dishes.length === 0) {
       return res.status(400).json({ message: "No dishes provided" });
     }
 
+
+    
+
     // 2. Fetch dishes details from database
     const dbDishes = await getDishesByIds(dishes.map((d) => d.dishId));
+
+   
+
+
+    // 3.  The function calculates the total price of all dishes by multiplying the price of each dish by its ordered quantity and adding the results together.
     const totalAmount = dbDishes.reduce((total, dish) => {
       const dishData = dishes.find((d) => d.dishId === dish.id);
       if (dishData && dishData.quantity) {
@@ -73,24 +69,89 @@ const createOrder = async (req, res) => {
       }
       return total;
     }, 0);
+
+
+   
+
+
+  
+ 
+
+    let finalAmount =0
+    let coupon = null;
+    if (coupon_code) {
+      try {
+         coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: err.message || "Invalid or expired coupon" });
+      }
+    
+      let  discount = totalAmount * (coupon.discount_value / 100);
+      finalAmount = totalAmount - discount;
+    }
+
+
     const orderData = {
-      dishes,
+      dishes: dbDishes,
       user_id: req.user.id,
       status: status || "pending",
       payment_method,
       delivery_address,
       city,
       phone_number,
-      total_amount: totalAmount,
-      delivery_fees: totalAmount >= 500 ? 0 : 35
-     
-      
+      total_amount: finalAmount, // بعد الخصم
+      delivery_fees: totalAmount >= 500 ? 0 : 35,
+      coupon_id: coupon?.id || null,
     };
-    
-    
+
+
+  
+
+
+    // const orderDatadata = await Order.create(orderData);
+
+
 
      const { id: orderId } = await Order.create(orderData);
-      
+
+    for (let dish of dishes) {
+      await OrderDish.addDishToOrder(
+        orderId,
+        dish.dishId,
+        dish.quantity
+      );
+    }
+
+
+ 
+
+let applyCouponToOrder
+    if (coupon_code) {
+       applyCouponToOrder = await couponModel.applyCouponToOrder(
+        orderId,
+        coupon.id,
+        req.user.id
+      );
+    
+  }
+
+
+
+
+    const order1 = await Order.getById(orderId);
+
+
+    return res
+    .status(201)
+    .json({ message: "Order created successfully  2",order1 });
+
+    // .json({ message: "Order created successfully!",order,applyCouponToOrder, dbDishes,totalAmount ,finalAmount,coupon });
+
+
+    return res.status(400).json({ order });
+    console.log(applyCouponToOrder);
 
     // 3. Check promotions
     // 4. Calculate subtotal
@@ -103,11 +164,11 @@ const createOrder = async (req, res) => {
       .json({ ok: true, message: "Order created successfully", orderId });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error", error });
   }
 };
 
-module.exports = { createOrder };
+// module.exports = { createOrder };
 
 // const createOrder = async (req, res) => {
 //   const { status, dishes, coupon_code } = req.body;
