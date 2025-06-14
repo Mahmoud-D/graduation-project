@@ -112,7 +112,7 @@ exports.register = async (req, res) => {
 
     const token = generateToken(userId);
 
-    const frontendUrl =  req.headers.origin || process.env.FRONTEND_URL; // fallback إذا لم يكن موجودًا في الـ headers
+    const frontendUrl =  process.env.FRONTEND_URL; // fallback إذا لم يكن موجودًا في الـ headers
     const verificationLink = `${frontendUrl}/verify-email?token=${token}`;
 
 console.log(verificationLink);
