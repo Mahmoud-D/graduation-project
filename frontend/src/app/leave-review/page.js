@@ -27,7 +27,7 @@ export default function LeaveReviewPage() {
     try {
       const response = await fetch("http://localhost:5000/api/reviews", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: JSON.stringify(form),
       });
 

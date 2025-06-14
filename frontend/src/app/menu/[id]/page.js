@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-
+import ReviewSection from "@/components/ReviewSection";
 
 export default function MenuItemPage() {
   const { id } = useParams();
@@ -100,24 +100,30 @@ export default function MenuItemPage() {
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">التصنيفات</h2>
               <div className="flex flex-wrap gap-2">
-                {/*{dish.categories.map((category, index) => (
+                {dish.categories && dish.categories.map((category, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-gray-100 rounded-full text-sm"
                   >
                     {category}
                   </span>
-                ))}*/}
+                ))}
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-8">
               <Button className="flex-1" size="lg" onClick={() => addItem({ ...dish, quantity: 1 })}>
                 إضافة إلى السلة
               </Button>
               <Button variant="outline" className="flex-1" size="lg">
                 مشاركة
               </Button>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12 border-t pt-8">
+              <h2 className="text-2xl font-bold mb-6">التقييمات</h2>
+              <ReviewSection dishId={dish.id} />
             </div>
           </div>
         </div>
