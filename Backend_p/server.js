@@ -25,6 +25,7 @@ const imageController = require("./controllers/imageController");
 const { executeSqlQuery } = require("./controllers/sqlController");
 
 const cors = require("cors");
+const { testPayPalConnection } = require("./utils/paypal.js");
 
 const app = express();
 
@@ -72,6 +73,12 @@ app.use("/api/orderDishes", orderDishRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes);
 
+
+
+app.get("/api/test-paypal", async (req, res) => {
+  const result = await testPayPalConnection();
+  res.json(result);
+})
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {
 //   const email = req.query.email;

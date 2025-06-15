@@ -4,6 +4,7 @@ const { getDishesByIds } = require("../models/Dish");
 const Order = require("../models/Order");
 const OrderDish = require("../models/OrderDish");
 const couponModel = require("../models/coupon");
+const { capturePayment } = require("../utils/paypal");
 
 // const createOrder = async (req, res) => {
 //   const {  status, dishes } = req.body;
@@ -93,6 +94,21 @@ const createOrder = async (req, res) => {
     }
 
 
+
+       if (payment_method === "paypal") {
+        if (!paypal_order_id) {
+          return res.status(400).json({ message: "Missing PayPal order ID" });
+        }
+  
+        try {
+          const captureResult = await capturePayment(paypal_order_id);
+          console.log("✅ PayPal Payment Captured:", captureResult);
+        } catch (error) {
+          console.error("❌ PayPal Capture Failed:", error.message);
+          return res.status(400).json({ message: "PayPal payment failed" });
+        }
+      }
+
     const orderData = {
       dishes: dbDishes,
       user_id: req.user.id,
@@ -111,6 +127,9 @@ const createOrder = async (req, res) => {
 
 
     // const orderDatadata = await Order.create(orderData);
+
+   
+
 
 
 
