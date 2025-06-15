@@ -138,13 +138,6 @@ const addCouponToOrder = async (couponId, userId, orderId) => {
 
 // ✅ 8. Apply coupon to order
 const applyCouponToOrder = async (orderId, couponId, userId) => {
-
-  console.log(orderId, couponId, userId);
-
-   
-  
-
-
   try {
     // 1. ربط الكوبون بالأوردر
     await sql`
@@ -202,11 +195,10 @@ const getCouponByCode = async (couponCode, userId) => {
       AND coupon_id = ${coupon.id}
   `;
 
- 
-  
-
   if (Number(userResult[0].useruses) >= coupon.user_max_uses) {
-    throw new Error("لقد استخدمت هذا الكوبون من قبل، ولا يمكنك استخدامه مرة أخرى");
+    throw new Error(
+      "لقد استخدمت هذا الكوبون من قبل، ولا يمكنك استخدامه مرة أخرى"
+    );
   }
 
   return coupon;

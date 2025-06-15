@@ -116,7 +116,7 @@ export default function EnhancedPaymentPage() {
       delivery_address: data.address,
       city: data.city,
       phone_number: data.phone,
-      coupon_id: couponData?.[0]?.code || null,
+      coupon_code: couponData?.[0]?.code || null,
       status: "pending",
     };
 
@@ -149,13 +149,44 @@ export default function EnhancedPaymentPage() {
     try {
       const response = await fetch(`http://localhost:5000/api/coupons/${code}`);
       const data = await response.json();
+      if (response.ok) {
+        const coupon = data[0];
+        const myOrders = await fetch(
+          "http://localhost:5000/api/orders/my-orders",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const ordersData = await myOrders.json();
+        const isCouponUsed = ordersData.orders.find(
+          (o) => o.coupon_id === coupon.id
+        );
 
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid coupon code");
+        if (isCouponUsed) {
+          setCouponError("هذا الكوبون تم استخدامه بالفعل في طلب سابق");
+          setCouponData(null);
+          setIsValidatingCoupon(false);
+          return;
+        }
+        if (coupon.is_expired) {
+          setCouponError("هذا الكوبون منتهي الصلاحية");
+          setCouponData(null);
+        } else if (coupon.max_uses <= coupon.current_uses) {
+          console.log("max_uses iside");
+          setCouponError("هذا الكوبون تم استخدامه الحد الأقصى من المرات");
+          setCouponData(null);
+        } else {
+          setCouponData(data);
+          setCouponError(null);
+        }
+      } else {
+        setCouponError(data.message || "كوبون غير صالح");
+        setCouponData(null);
       }
-
-      setCouponData(data);
-      setCouponError(null);
     } catch (error) {
       setCouponData(null);
       setCouponError(error.message);
