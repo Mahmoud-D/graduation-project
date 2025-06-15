@@ -50,7 +50,10 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "الاسم يجب أن يكون على الأقل حرفين." })
     .max(50, { message: "الاسم طويل جداً." })
-    .regex(/^[a-zA-Z\u0600-\u06FF\s]+$/, "الاسم يجب أن يحتوي فقط على حروف عربية أو إنجليزية ومسافات"),
+    .regex(
+      /^[a-zA-Z\u0600-\u06FF\s]+$/,
+      "الاسم يجب أن يحتوي فقط على حروف عربية أو إنجليزية ومسافات"
+    ),
   address: z
     .string()
     .min(10, {
@@ -67,6 +70,7 @@ const formSchema = z.object({
   paymentMethod: z.enum(["cash"], {
     required_error: "يجب اختيار طريقة الدفع.",
   }),
+  couponCode: z.string().optional(),
 });
 
 export default function EnhancedPaymentPage() {
@@ -77,11 +81,13 @@ export default function EnhancedPaymentPage() {
     0
   );
   const shippingFee = 35;
-  const total = subtotal + shippingFee;
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [couponData, setCouponData] = useState(null);
+  const [couponError, setCouponError] = useState(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -91,26 +97,19 @@ export default function EnhancedPaymentPage() {
       city: "",
       phone: "",
       paymentMethod: "cash",
+      couponCode: "",
     },
     mode: "onChange",
   });
 
   useEffect(() => {
-    const savedFormData = localStorage.getItem('orderFormData');
+    const savedFormData = localStorage.getItem("orderFormData");
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       form.reset(parsedData);
-      localStorage.removeItem('orderFormData'); // Clear saved data after restoring
+      localStorage.removeItem("orderFormData"); // Clear saved data after restoring
     }
   }, [form]);
-
-  function getAuthHeaders() {
-    const token = localStorage.getItem("token");
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-  }
 
   const createOrder = async (payload) => {
     const res = await fetch("http://localhost:5000/api/orders", {
@@ -131,19 +130,22 @@ export default function EnhancedPaymentPage() {
 
   const onSubmit = async (data) => {
     if (!authService.isAuthenticated()) {
-      localStorage.setItem('orderFormData', JSON.stringify(data));
-      router.push('/login');
+      localStorage.setItem("orderFormData", JSON.stringify(data));
+      router.push("/login");
       return;
     }
 
-    const dishes = items.map((item) => ({dishId: item.id, quantity: item.quantity}));
+    const dishes = items.map((item) => ({
+      dishId: item.id,
+      quantity: item.quantity,
+    }));
     const orderPayload = {
       dishes,
       payment_method: data.paymentMethod,
       delivery_address: data.address,
       city: data.city,
       phone_number: data.phone,
-      coupon_id: null,
+      coupon_id: couponData?.[0]?.code || null,
       status: "pending",
     };
 
@@ -151,17 +153,69 @@ export default function EnhancedPaymentPage() {
     try {
       const res = await createOrder(orderPayload);
       if (res?.ok) {
-        setOrderNumber(res.orderId);
+        setOrderNumber(res.order1?.order_id);
         clearCart();
         setIsOrderConfirmed(true);
       }
     } catch (error) {
       // Handle error appropriately
-      console.error('Order creation failed:', error);
+      console.error("Order creation failed:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const validateCoupon = async (code) => {
+    if (!code) {
+      setCouponData(null);
+      setCouponError(null);
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/coupons/${code}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid coupon code");
+      }
+
+      setCouponData(data);
+      setCouponError(null);
+    } catch (error) {
+      setCouponData(null);
+      setCouponError(error.message);
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  // Add this function to calculate discount
+  const calculateDiscount = () => {
+    if (couponData && couponData[0].discount_value) {
+      return subtotal * (couponData[0].discount_value / 100);
+    }
+    return 0;
+  };
+
+  // Modify the calculateTotal function
+  const calculateTotal = () => {
+    let finalTotal = subtotal;
+    const discountAmount = calculateDiscount();
+    finalTotal = finalTotal - discountAmount;
+
+    // Add shipping fee if order is less than 500
+    if (finalTotal < 500) {
+      finalTotal += shippingFee;
+    }
+    return finalTotal;
+  };
+
+  const total = calculateTotal();
+  const discountAmount = calculateDiscount();
 
   if (isOrderConfirmed) {
     return (
@@ -241,7 +295,6 @@ export default function EnhancedPaymentPage() {
             املأ البيانات المطلوبة لإتمام عملية الشراء
           </p>
         </div>
-                        <button onClick={onSubmit}>fetch</button>
 
         <Form {...form}>
           <form
@@ -350,6 +403,81 @@ export default function EnhancedPaymentPage() {
                       )}
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg border-0 overflow-hidden">
+                <div>
+                  <div className="bg-white rounded-t-lg">
+                    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
+                      <CardTitle className="flex items-center gap-3 text-2xl text-gray-800">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+                          <Package className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <span>كود الخصم</span>
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        أدخل كود الخصم إذا كان لديك
+                      </CardDescription>
+                    </CardHeader>
+                  </div>
+                </div>
+                <CardContent className="p-8">
+                  <div className="flex gap-4">
+                    <FormField
+                      control={form.control}
+                      name="couponCode"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input
+                              placeholder="أدخل كود الخصم"
+                              className="h-12 text-lg border-2 focus:border-purple-500 transition-colors"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500" />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        validateCoupon(form.getValues("couponCode"))
+                      }
+                      className="h-12 px-6 bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {isValidatingCoupon ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        "تطبيق"
+                      )}
+                    </Button>
+                  </div>
+
+                  {isValidatingCoupon && (
+                    <div className="mt-4 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                      <p className="text-gray-600 mt-2">
+                        جاري التحقق من الكوبون...
+                      </p>
+                    </div>
+                  )}
+
+                  {couponError && (
+                    <Alert variant="destructive" className="mt-4">
+                      <AlertDescription>{couponError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {couponData && (
+                    <Alert className="mt-4 bg-green-50 border-green-200">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-800">
+                        تم تطبيق الخصم بنجاح! {discountAmount} جنيه
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardContent>
               </Card>
 
@@ -486,6 +614,24 @@ export default function EnhancedPaymentPage() {
                         <span className="text-gray-600">المجموع الفرعي</span>
                         <span className="font-semibold">{subtotal} جنيه</span>
                       </div>
+                      {couponData && (
+                        <>
+                          <div className="flex justify-between text-lg text-green-600">
+                            <span>الخصم</span>
+                            <span className="font-semibold">
+                              {discountAmount} جنيه
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-lg">
+                            <span className="text-gray-600">
+                              المجموع بعد الخصم
+                            </span>
+                            <span className="font-semibold">
+                              {subtotal - discountAmount} جنيه
+                            </span>
+                          </div>
+                        </>
+                      )}
                       <div className="flex justify-between text-lg">
                         <span className="text-gray-600">رسوم الشحن</span>
                         <span className="font-semibold">
@@ -499,9 +645,7 @@ export default function EnhancedPaymentPage() {
                     <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg">
                       <div className="flex justify-between font-bold text-2xl text-gray-800">
                         <span>الإجمالي</span>
-                        <span className="text-purple-600">
-                          {subtotal >= 500 ? subtotal : total} جنيه
-                        </span>
+                        <span className="text-purple-600">{total} جنيه</span>
                       </div>
                     </div>
 

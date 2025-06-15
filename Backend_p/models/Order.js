@@ -25,7 +25,6 @@ const Order = {
   },
 
   getAll: async () => {
-    console.log("getAll");
 
     try {
       const results = await sql`

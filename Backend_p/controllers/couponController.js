@@ -53,8 +53,7 @@ const createCoupon = async (req, res) => {
 
 
 const getCoupons = async (req, res) => {
-  const { code } = req.query;
-console.log("code", code);
+  const { code } = req.params;
 
   try {
       const coupons = await couponModel.getCouponsByFilter(code);

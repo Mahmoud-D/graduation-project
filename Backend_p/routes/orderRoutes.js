@@ -12,7 +12,8 @@ const validator = require('../middleware/validate.middleware');
 // Get all orders
 
  // Create new order
-router.post("/", OrderController.createOrder);
+router.post("/",verifyToken, OrderController.createOrder);
+
 // // Get order by ID
 router.get('/my-orders', verifyToken, OrderController.getMyOrders);
 router.get("/:id", OrderController.getOrderDetails);

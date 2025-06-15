@@ -31,13 +31,6 @@ const { capturePayment } = require("../utils/paypal");
 // orderController.js
 
 const createOrder = async (req, res) => {
-  console.log("=================");
-  console.log("=================");
-  console.log("=================");
-  console.log("=================");
-  console.log("=================");
-  console.log("=================");
-
   try {
     const {
       dishes,
@@ -53,14 +46,8 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "No dishes provided" });
     }
 
-
-    
-
     // 2. Fetch dishes details from database
     const dbDishes = await getDishesByIds(dishes.map((d) => d.dishId));
-
-   
-
 
     // 3.  The function calculates the total price of all dishes by multiplying the price of each dish by its ordered quantity and adding the results together.
     const totalAmount = dbDishes.reduce((total, dish) => {
@@ -71,43 +58,34 @@ const createOrder = async (req, res) => {
       return total;
     }, 0);
 
-
-   
-
-
-  
- 
-
-    let finalAmount =0
+    let finalAmount = 0;
     let coupon = null;
     if (coupon_code) {
       try {
-         coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
+        coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
       } catch (err) {
         return res
           .status(400)
           .json({ message: err.message || "Invalid or expired coupon" });
       }
-    
-      let  discount = totalAmount * (coupon.discount_value / 100);
+
+      let discount = totalAmount * (coupon.discount_value / 100);
       finalAmount = totalAmount - discount;
     }
 
-
-
-       if (payment_method === "paypal") {
-        if (!paypal_order_id) {
-          return res.status(400).json({ message: "Missing PayPal order ID" });
-        }
-  
-        try {
-          const captureResult = await capturePayment(paypal_order_id);
-          console.log("✅ PayPal Payment Captured:", captureResult);
-        } catch (error) {
-          console.error("❌ PayPal Capture Failed:", error.message);
-          return res.status(400).json({ message: "PayPal payment failed" });
-        }
+    if (payment_method === "paypal") {
+      if (!paypal_order_id) {
+        return res.status(400).json({ message: "Missing PayPal order ID" });
       }
+
+      try {
+        const captureResult = await capturePayment(paypal_order_id);
+        console.log("✅ PayPal Payment Captured:", captureResult);
+      } catch (error) {
+        console.error("❌ PayPal Capture Failed:", error.message);
+        return res.status(400).json({ message: "PayPal payment failed" });
+      }
+    }
 
     const orderData = {
       dishes: dbDishes,
@@ -122,65 +100,26 @@ const createOrder = async (req, res) => {
       coupon_id: coupon?.id || null,
     };
 
-
-  
-
-
-    // const orderDatadata = await Order.create(orderData);
-
-   
-
-
-
-
-     const { id: orderId } = await Order.create(orderData);
+    const { id: orderId } = await Order.create(orderData);
 
     for (let dish of dishes) {
-      await OrderDish.addDishToOrder(
-        orderId,
-        dish.dishId,
-        dish.quantity
-      );
+      await OrderDish.addDishToOrder(orderId, dish.dishId, dish.quantity);
     }
 
-
- 
-
-let applyCouponToOrder
+    let applyCouponToOrder;
     if (coupon_code) {
-       applyCouponToOrder = await couponModel.applyCouponToOrder(
+      applyCouponToOrder = await couponModel.applyCouponToOrder(
         orderId,
         coupon.id,
         req.user.id
       );
-    
-  }
-
-
-
+    }
 
     const order1 = await Order.getById(orderId);
 
-
     return res
-    .status(201)
-    .json({ message: "Order created successfully  2",order1 });
-
-    // .json({ message: "Order created successfully!",order,applyCouponToOrder, dbDishes,totalAmount ,finalAmount,coupon });
-
-
-    return res.status(400).json({ order });
-    console.log(applyCouponToOrder);
-
-    // 3. Check promotions
-    // 4. Calculate subtotal
-    // 5. Apply coupon if any
-    // 6. Insert order into database
-    // 7. Insert order items
-
-    res
       .status(201)
-      .json({ ok: true, message: "Order created successfully", orderId });
+      .json({ok: true, message: "Order created successfully  2", order1 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error });
