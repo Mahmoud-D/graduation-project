@@ -109,7 +109,7 @@ export default function MenuCategories() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center justify-items-center mx-auto max-w-6xl">
           {dishes.map((dish) => (
-            <ProductCard key={dish.id} dish={dish} />
+            <ProductCard key={dish.dish_id} dish={dish} />
           ))}
         </div>
         <div className="text-center mt-12">
