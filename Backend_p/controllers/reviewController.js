@@ -1,18 +1,23 @@
-const Review = require('../models/Review');
+const Review = require("../models/Review");
 
 // POST /api/reviews
 const createReview = async (req, res) => {
-    console.log(req.user.id);
-    
-  const {  dish_id, rating, comment } = req.body;
+  const { dish_id, rating, comment } = req.body;
 
   if (!req.user.id || !dish_id || !rating) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
-    const newReview = await Review.create({ user_id:req.user.id, dish_id, rating, comment });
-    return res.status(201).json({ message: "Review created", review: newReview });
+    const newReview = await Review.create({
+      user_id: req.user.id,
+      dish_id,
+      rating,
+      comment,
+    });
+    return res
+      .status(201)
+      .json({ message: "Review created", review: newReview });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error creating review" });
@@ -34,5 +39,5 @@ const getReviewsByDish = async (req, res) => {
 
 module.exports = {
   createReview,
-  getReviewsByDish
+  getReviewsByDish,
 };
