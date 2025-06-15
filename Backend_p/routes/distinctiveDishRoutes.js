@@ -4,7 +4,7 @@ const controller = require("../controllers/DistinctiveDishesController");
 const { verifyToken } = require("../middleware/auth");
 const checkRole = require("../middleware/checkRole");
 
-router.get("/", controller.getFeaturedDishes);
+router.get("/", controller.getTopOrderedDishes);
 router.get("/admin",verifyToken, checkRole(["admin"]), controller.getFeaturedDishesForAdmin);
 
 // رواتب للمشرفين (تتطلب مصادقة وتفويض)

@@ -1,10 +1,20 @@
 const DistinctiveDishModel = require("../models/DistinctiveDish");
 
 class DistinctiveDishesController {
-   async getFeaturedDishes(req, res) {
+  async getFeaturedDishes(req, res) {
     try {
       const dishes = await DistinctiveDishModel.getActiveDishesOnly();
       res.json({ success: true, data: dishes });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  async getTopOrderedDishes(req, res) {
+    try {
+      const topOrderedDishes =
+        await DistinctiveDishModel.getMostOrderedDishes();
+      res.json({ success: true, data: topOrderedDishes });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

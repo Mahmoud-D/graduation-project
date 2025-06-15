@@ -1,10 +1,15 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { X, Minus, Plus } from "lucide-react";
-import Image from 'next/image';
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useCart } from '../context/CartContext';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useCart } from "../context/CartContext";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function ProductDetailModal({ isOpen, onClose, dish }) {
   const { addItem } = useCart();
@@ -18,14 +23,13 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
       setImageError(false);
     }
   }, [isOpen]);
-
   const handleAddToCart = () => {
     addItem({
-      id: dish.id,
+      id: dish.dish_id || dish.id || dish.id,
       name: dish.name,
       price: parseFloat(dish.price),
-      image: dish.image_path || '/placeholder-dish.png',
-      quantity: quantity
+      image: dish.image_path || "/placeholder-dish.png",
+      quantity: quantity,
     });
     onClose();
   };
@@ -62,7 +66,10 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
             aria-label={`صورة ${dish.name}`}
           >
             <Image
-              src={`http://localhost:5000/${dish.image_path}` || "/placeholder-dish.png"}
+              src={
+                `http://localhost:5000/${dish.image_path}` ||
+                "/placeholder-dish.png"
+              }
               alt={dish.name}
               fill
               className="object-cover rounded-lg"
@@ -162,17 +169,16 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
               <Button
                 className="w-full bg-primary hover:bg-primary/90 cursor-pointer"
                 onClick={handleAddToCart}
-                aria-label={`إضافة ${quantity} ${dish.name} إلى السلة بسعر ${dish.price * quantity} جنيه`}
+                aria-label={`إضافة ${quantity} ${dish.name} إلى السلة بسعر ${
+                  dish.price * quantity
+                } جنيه`}
               >
                 أضف إلى السلة - {(dish.price * quantity).toFixed(2)} جنيه
               </Button>
-              
-              <Link href={`/menu/${dish.id}`} className="w-full">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                >
-                  رؤية التقييمات
+
+              <Link href={`/menu/${dish.dish_id || dish.id}`} className="w-full">
+                <Button variant="outline" className="w-full">
+                 التفاصيل
                 </Button>
               </Link>
             </div>
