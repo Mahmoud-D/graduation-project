@@ -16,10 +16,7 @@ const createCoupon = async (req, res) => {
   } = req.body;
 
   try {
-      // التحقق من المدخلات
-      if (!code || !discount_type || !discount_value || !start_date || !end_date) {
-          return res.status(400).json({ message: "جميع الحقول ضرورية: code, discount_type, discount_value, start_date, end_date" });
-      }
+     
 
       // التحقق من أن الكود فريد
       const existingCoupon = await couponModel.getCoupons(code);
@@ -27,8 +24,7 @@ const createCoupon = async (req, res) => {
           return res.status(400).json({ message: "الكود المدخل موجود بالفعل" });
       }
 
-      // إنشاء الكوبون
-      const result = await couponModel.createCoupon({
+       const result = await couponModel.createCoupon({
           code, 
           discount_type, 
           discount_value, 
@@ -47,12 +43,11 @@ const createCoupon = async (req, res) => {
       });
   } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-          // إذا كان الخطأ بسبب الكود المكرر
-          return res.status(400).json({ message: "الكود المدخل موجود بالفعل" });
+           return res.status(400).json({ message: "الكود المدخل موجود بالفعل" });
       }
 
-      console.error(error);
-      res.status(500).json({ message: "حدث خطأ في النظام أثناء إنشاء الكوبون" });
+      console.error('error', error);
+      res.status(500).json({ message: "حدث خطأ في النظام أثناء إنشاء الكوبون" , error: error.message });
   }
 };
 

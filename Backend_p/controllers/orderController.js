@@ -4,6 +4,7 @@ const { getDishesByIds } = require("../models/Dish");
 const Order = require("../models/Order");
 const OrderDish = require("../models/OrderDish");
 const couponModel = require("../models/coupon");
+const { capturePayment } = require("../utils/paypal");
 
 // const createOrder = async (req, res) => {
 //   const {  status, dishes } = req.body;
@@ -33,7 +34,7 @@ const createOrder = async (req, res) => {
   try {
     const {
       dishes,
-      coupon_id,
+      coupon_code,
       payment_method,
       delivery_address,
       city,
@@ -45,51 +46,87 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "No dishes provided" });
     }
 
+    // 2. Fetch dishes details from database
     const dbDishes = await getDishesByIds(dishes.map((d) => d.dishId));
-    let totalAmount = dbDishes.reduce((total, dish) => {
+
+    // 3.  The function calculates the total price of all dishes by multiplying the price of each dish by its ordered quantity and adding the results together.
+    const totalAmount = dbDishes.reduce((total, dish) => {
       const dishData = dishes.find((d) => d.dishId === dish.id);
       if (dishData && dishData.quantity) {
         return total + dish.price * dishData.quantity;
       }
       return total;
     }, 0);
-    const coupon = await couponModel.getCouponById(coupon_id);
-    if (coupon) {
-      totalAmount -= (totalAmount * coupon[0].discount_value) / 100;
+
+    let finalAmount = 0;
+    let coupon = null;
+    if (coupon_code) {
+      try {
+        coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
+      } catch (err) {
+        return res
+          .status(400)
+          .json({ message: err.message || "Invalid or expired coupon" });
+      }
+
+      let discount = totalAmount * (coupon.discount_value / 100);
+      finalAmount = totalAmount - discount;
     }
-    if (totalAmount < 500) totalAmount += 35; // Add delivery fees if total is less than 500
+
+    if (payment_method === "paypal") {
+      if (!paypal_order_id) {
+        return res.status(400).json({ message: "Missing PayPal order ID" });
+      }
+
+      try {
+        const captureResult = await capturePayment(paypal_order_id);
+        console.log("✅ PayPal Payment Captured:", captureResult);
+      } catch (error) {
+        console.error("❌ PayPal Capture Failed:", error.message);
+        return res.status(400).json({ message: "PayPal payment failed" });
+      }
+    }
 
     const orderData = {
-      dishes,
+      dishes: dbDishes,
       user_id: req.user.id,
       status: status || "pending",
       payment_method,
       delivery_address,
       city,
       phone_number,
-      total_amount: totalAmount,
+      total_amount: finalAmount, // بعد الخصم
       delivery_fees: totalAmount >= 500 ? 0 : 35,
-      coupon_id
+      coupon_id: coupon?.id || null,
     };
-    
+
     const { id: orderId } = await Order.create(orderData);
 
-    // 3. Check promotions
-    // 4. Calculate subtotal
-    // 5. Apply coupon if any
-    // 6. Insert order into database
-    // 7. Insert order items
+    for (let dish of dishes) {
+      await OrderDish.addDishToOrder(orderId, dish.dishId, dish.quantity);
+    }
 
-    res
+    let applyCouponToOrder;
+    if (coupon_code) {
+      applyCouponToOrder = await couponModel.applyCouponToOrder(
+        orderId,
+        coupon.id,
+        req.user.id
+      );
+    }
+
+    const order1 = await Order.getById(orderId);
+
+    return res
       .status(201)
-      .json({ ok: true, message: "Order created successfully", orderId });
+      .json({ok: true, message: "Order created successfully  2", order1 });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error", error });
   }
 };
 
-module.exports = { createOrder };
+// module.exports = { createOrder };
 
 // const createOrder = async (req, res) => {
 //   const { status, dishes, coupon_code } = req.body;

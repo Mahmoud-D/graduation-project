@@ -145,7 +145,7 @@ export default function EnhancedPaymentPage() {
       delivery_address: data.address,
       city: data.city,
       phone_number: data.phone,
-      coupon_id: couponData[0]?.id || null,
+      coupon_id: couponData?.[0]?.code || null,
       status: "pending",
     };
 
@@ -153,7 +153,7 @@ export default function EnhancedPaymentPage() {
     try {
       const res = await createOrder(orderPayload);
       if (res?.ok) {
-        setOrderNumber(res.orderId);
+        setOrderNumber(res.order1?.order_id);
         clearCart();
         setIsOrderConfirmed(true);
       }

@@ -1,161 +1,227 @@
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 // إنشاء كوبون
 const createCoupon = async (couponData) => {
-    const { code, discount_type, discount_value, min_order, start_date, end_date, max_uses } = couponData;
-    const query = `
-      INSERT INTO coupons (code, discount_type, discount_value, min_order, start_date, end_date, max_uses)
-      VALUES (${sql.val(code)}, ${sql.val(discount_type)}, ${sql.val(discount_value)}, ${sql.val(min_order)}, ${sql.val(start_date)}, ${sql.val(end_date)}, ${sql.val(max_uses)})
+  const {
+    code,
+    discount_value,
+    min_order,
+    start_date,
+    end_date,
+    max_uses,
+    user_max_uses = 1, // لو مش جاي من الـ frontend
+    is_active = true,
+    current_uses = 0,
+  } = couponData;
+
+  const result = await sql`
+      INSERT INTO coupons (
+        code,
+         discount_value,
+        min_order,
+        start_date,
+        end_date,
+        max_uses,
+        user_max_uses,
+        is_active,
+        current_uses
+      )
+      VALUES (
+        ${code},
+         ${discount_value},
+        ${min_order},
+        ${start_date},
+        ${end_date},
+        ${max_uses},
+        ${user_max_uses},
+        ${is_active},
+        ${current_uses}
+      )
+      RETURNING *;
     `;
-    const result = await sql.query(query);
-    return result;
+
+  return result[0]; // بيرجع أول كوبون بعد الإدخال
 };
 
-// استرجاع جميع الكوبونات أو كوبون معين
 const getCoupons = async (couponCode) => {
-    const query = couponCode
-      ? `SELECT id FROM coupons WHERE code = ${sql.val(couponCode)}`
-      : `SELECT id FROM coupons`;
-    const result = await sql.query(query);
-    return result.length > 0 ? result[0].id : null;
+  let result;
+
+  if (couponCode) {
+    result = await sql`
+        SELECT id FROM coupons WHERE code = ${couponCode}
+      `;
+  } else {
+    result = await sql`
+        SELECT id FROM coupons
+      `;
+  }
+
+  return result.length > 0 ? result[0].id : null;
 };
 
-// استرجاع الكوبونات حسب الفلتر
+// ✅ 1. Get coupons by optional filter (code)
 const getCouponsByFilter = async (code) => {
-    try {
-        let result;
-        if (code) {
-            result = await sql`
-                SELECT * FROM coupons 
-                WHERE code LIKE ${'%' + code + '%'} 
-                AND is_active = TRUE
-            `;
-        } else {
-            result = await sql`
-                SELECT * FROM coupons 
-                WHERE is_active = TRUE
-            `;
-        }
-        return result;
-    } catch (error) {
-        console.error("Error while fetching filtered coupons:", error);
-        throw error;
-    }
-};
-
-// استرجاع كوبون حسب ID
-const getCouponById = async (id) => {
-    const result = await sql`SELECT * FROM coupons WHERE id = ${id}`;
+  try {
+    const result = code
+      ? await sql`SELECT * FROM coupons WHERE code ILIKE ${
+          "%" + code + "%"
+        } AND is_active = true`
+      : await sql`SELECT * FROM coupons `;
     return result;
+  } catch (error) {
+    console.error("Error while fetching filtered coupons:", error);
+    throw error;
+  }
 };
 
-// تحديث كوبون
+// ✅ 2. Get coupon by ID
+const getCouponById = async (id) => {
+  const result = await sql`SELECT * FROM coupons WHERE id = ${id}`;
+  return result[0]; // رجع أول نتيجة بس
+};
+
+// ✅ 3. Update coupon
 const updateCoupon = async (id, couponData) => {
-    const { code, discount_type, discount_value, min_order, start_date, end_date, max_uses, is_active } = couponData;
-    const query = `
+  const {
+    code,
+    discount_value,
+    min_order,
+    start_date,
+    end_date,
+    max_uses,
+    is_active,
+  } = couponData;
+
+  await sql`
       UPDATE coupons 
-      SET code = ${sql.val(code)}, discount_type = ${sql.val(discount_type)}, discount_value = ${sql.val(discount_value)}, 
-          min_order = ${sql.val(min_order)}, start_date = ${sql.val(start_date)}, end_date = ${sql.val(end_date)}, 
-          max_uses = ${sql.val(max_uses)}, is_active = ${sql.val(is_active)}
-      WHERE id = ${sql.val(id)}
+      SET code = ${code},
+           discount_value = ${discount_value},
+          min_order = ${min_order},
+          start_date = ${start_date},
+          end_date = ${end_date},
+          max_uses = ${max_uses},
+          is_active = ${is_active}
+      WHERE id = ${id}
     `;
-    await sql.query(query);
 };
 
-// حذف كوبون
+// ✅ 4. Delete coupon
 const deleteCoupon = async (id) => {
-    const query = `DELETE FROM coupons WHERE id = ${sql.val(id)}`;
-    await sql.query(query);
+  await sql`DELETE FROM coupons WHERE id = ${id}`;
 };
 
-// الحصول على عدد استخدامات الكوبون
+// ✅ 5. Get total uses for a coupon
 const getCouponUses = async (couponId) => {
-    const query = `SELECT COUNT(*) as count FROM coupon_uses WHERE coupon_id = ${sql.val(couponId)}`;
-    const result = await sql.query(query);
-    return result[0].count;
+  const result = await sql`
+      SELECT COUNT(*) AS count FROM coupon_uses WHERE coupon_id = ${couponId}
+    `;
+  return Number(result[0].count);
 };
 
-// الحصول على عدد استخدامات الكوبون من قبل مستخدم معين
+// ✅ 6. Get total uses by user for a coupon
 const getUserCouponUses = async (couponId, userId) => {
-    const query = `SELECT COUNT(*) as count FROM coupon_uses WHERE coupon_id = ${sql.val(couponId)} AND user_id = ${sql.val(userId)}`;
-    const result = await sql.query(query);
-    return result[0].count;
+  const result = await sql`
+      SELECT COUNT(*) AS count FROM coupon_uses 
+      WHERE coupon_id = ${couponId} AND user_id = ${userId}
+    `;
+  return Number(result[0].count);
 };
 
-// إضافة كوبون إلى الطلب (جدول coupon_uses)
-const addCouponToOrder = (couponId, userId, orderId) => {
-    const useDate = new Date(); // تاريخ ووقت الاستخدام الحالي
-    const query = `
+// ✅ 7. Add coupon to order
+const addCouponToOrder = async (couponId, userId, orderId) => {
+  const useDate = new Date();
+  await sql`
       INSERT INTO coupon_uses (coupon_id, user_id, order_id, use_date)
-      VALUES (${sql.val(couponId)}, ${sql.val(userId)}, ${sql.val(orderId)}, ${sql.val(useDate)})
+      VALUES (${couponId}, ${userId}, ${orderId}, ${useDate})
     `;
-    return sql.query(query);
 };
 
-// تطبيق الكوبون على الطلب
-const applyCouponToOrder = (orderId, couponId, userId) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            // إضافة سجل إلى جدول coupon_uses
-            await sql.query(`
-              INSERT INTO coupon_uses (coupon_id, user_id, order_id, use_date)
-              VALUES (${sql.val(couponId)}, ${sql.val(userId)}, ${sql.val(orderId)}, NOW())
-            `);
+// ✅ 8. Apply coupon to order
+const applyCouponToOrder = async (orderId, couponId, userId) => {
 
-            // تحديث جدول الكوبونات لزيادة العدد الحالي للاستخدامات
-            await sql.query(`
-              UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ${sql.val(couponId)}
-            `);
+  console.log(orderId, couponId, userId);
 
-            resolve("Coupon applied successfully");
-        } catch (err) {
-            console.error("Error applying coupon to order:", err);
-            reject("Error applying coupon to order: " + err.message);
-        }
-    });
+   
+  
+
+
+  try {
+    // 1. ربط الكوبون بالأوردر
+    await sql`
+      UPDATE orders 
+      SET coupon_id = ${couponId}
+      WHERE id = ${orderId} AND user_id = ${userId}
+    `;
+
+    // 2. تحديث عدد الاستخدامات
+    await sql`
+      UPDATE coupons 
+      SET current_uses = current_uses + 1 
+      WHERE id = ${couponId}
+    `;
+
+    return "Coupon applied successfully";
+  } catch (err) {
+    console.error("Error applying coupon to order:", err);
+    throw new Error("Error applying coupon to order: " + err.message);
+  }
 };
 
-// جلب الكوبون حسب الكود
+// ✅ 9. Get coupon by code and validate limits
 const getCouponByCode = async (couponCode, userId) => {
-    const query = `
+  const result = await sql`
       SELECT * FROM coupons 
-      WHERE code = ${sql.val(couponCode)} AND is_active = 1 AND start_date <= NOW() AND end_date >= NOW()}
+      WHERE code = ${couponCode} 
+        AND is_active = true 
+        AND start_date <= NOW() 
+        AND end_date >= NOW()
     `;
-    const result = await sql.query(query);
-    
-    if (result.length === 0) {
-        return null; // الكوبون غير موجود أو انتهت صلاحيته
-    }
 
-    const coupon = result[0];
+  if (result.length === 0) {
+    throw new Error("الكوبون غير موجود");
+  }
 
-    // التحقق من أن الكوبون لم يتجاوز الحد الأقصى لاستخدامه
-    if (coupon.current_uses >= coupon.max_uses) {
-        return "Coupon limit reached"; // إذا تم الوصول للحد الأقصى للاستخدام
-    }
+  const coupon = result[0];
 
-    // التحقق من أن المستخدم لم يتجاوز الحد الأقصى لاستخدامه لهذا الكوبون
-    const userResults = await sql.query(`
-      SELECT COUNT(*) AS userUses FROM coupon_uses WHERE coupon_id = ${sql.val(coupon.id)} AND user_id = ${sql.val(userId)}
-    `);
+  if (coupon.current_uses >= coupon.max_uses) {
+    throw new Error("انتهت صلاحية هذا الكوبون");
+  }
 
-    if (userResults[0].userUses >= coupon.user_max_uses) {
-        return "User has exceeded coupon usage limit"; // إذا تم تجاوز الحد الأقصى لاستخدام الكوبون
-    }
+  // const userResult = await sql`
+  //   SELECT COUNT(*) AS userUses FROM coupon_uses
+  //   WHERE coupon_id = ${coupon.id} AND user_id = ${userId}
+  // `;
 
-    return coupon; // الكوبون صالح ويمكن استخدامه
+  // if (Number(userResult[0].useruses) >= coupon.user_max_uses) {
+  //   return "User has exceeded coupon usage limit";
+  // }
+  const userResult = await sql`
+    SELECT COUNT(*) AS userUses
+    FROM orders
+    WHERE user_id = ${userId}
+      AND coupon_id = ${coupon.id}
+  `;
+
+ 
+  
+
+  if (Number(userResult[0].useruses) >= coupon.user_max_uses) {
+    throw new Error("لقد استخدمت هذا الكوبون من قبل، ولا يمكنك استخدامه مرة أخرى");
+  }
+
+  return coupon;
 };
 
 module.exports = {
-    createCoupon,
-    getCoupons,
-    getCouponsByFilter,
-    getCouponById,
-    updateCoupon,
-    deleteCoupon,
-    getCouponUses,
-    getUserCouponUses,
-    addCouponToOrder,
-    applyCouponToOrder,
-    getCouponByCode
+  createCoupon,
+  getCoupons,
+  getCouponsByFilter,
+  getCouponById,
+  updateCoupon,
+  deleteCoupon,
+  getCouponUses,
+  getUserCouponUses,
+  addCouponToOrder,
+  applyCouponToOrder,
+  getCouponByCode,
 };

@@ -57,14 +57,28 @@ const Order = {
   },
 
   getById: async (id) => {
+
+ 
+
+     
+
+
     try {
       const results = await sql`
         SELECT 
           o.id AS order_id,
-          o.user_id,
-          o.status,
-          o.created_at,
-          o.updated_at,
+    o.user_id,
+    o.status,
+    o.created_at,
+    o.updated_at,
+    o.coupon_id,
+    o.total_amount,
+    o.payment_method,
+    o.delivery_address,
+    o.city,
+    o.phone_number,
+    o.notes,
+    o.delivery_fees,
 
           u.name AS user_name,
           u.email AS user_email,
@@ -88,12 +102,17 @@ const Order = {
         JOIN users u ON o.user_id = u.id
         JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id
-        LEFT JOIN promotions p 
-          ON d.id = p.dish_id 
-          AND p.is_active = TRUE
-          AND NOW() BETWEEN p.start_date AND p.end_date
-        LEFT JOIN coupon_uses cu ON cu.order_id = o.id
-        LEFT JOIN coupons c ON cu.coupon_id = c.id
+
+      LEFT JOIN (
+  SELECT DISTINCT ON (dish_id) *
+  FROM promotions
+  WHERE is_active = TRUE
+    AND NOW() BETWEEN start_date AND end_date
+  ORDER BY dish_id, start_date DESC
+) p ON d.id = p.dish_id
+
+
+LEFT JOIN coupons c ON o.coupon_id = c.id
         WHERE o.id = ${id};
       `;
 
@@ -111,8 +130,21 @@ const Order = {
             updated_at: row.updated_at,
             user_name: row.user_name,
             user_email: row.user_email,
-            coupon_code: row.coupon_code,
+             coupon_code: row.coupon_code,
             coupon_discount_value: row.coupon_discount_value,
+
+
+
+             coupon_id: row.coupon_id,
+            total_amount: row.total_amount,
+            payment_method: row.payment_method,
+            delivery_address: row.delivery_address,
+            city: row.city,
+            phone_number: row.phone_number,
+            notes: row.notes,
+            delivery_fees: row.delivery_fees,
+
+
             dishes: [],
           };
         }
@@ -178,22 +210,36 @@ const Order = {
     city,
     phone_number,
     total_amount,
-    delivery_fees,
-    dishes,
-    coupon_id,
+    delivery_fees
   }) => {
     const now = new Date();
+  
     try {
-      const result = await sql`
-        INSERT INTO orders (user_id, status, created_at, updated_at, payment_method, delivery_address, city, phone_number, total_amount, delivery_fees, dishes, coupon_id)
-        VALUES (${user_id}, ${status}, ${now}, ${now}, ${payment_method}, ${delivery_address}, ${city}, ${phone_number}, ${total_amount}, ${delivery_fees}, ${dishes}, ${coupon_id})
-        RETURNING id;
+      // 1. أنشئ الأوردر وارجع البيانات كلها
+      const [order] = await sql`
+        INSERT INTO orders (
+          user_id, status, created_at, updated_at, 
+          payment_method, delivery_address, city, 
+          phone_number, total_amount, delivery_fees
+        )
+        VALUES (
+          ${user_id}, ${status}, ${now}, ${now}, 
+          ${payment_method}, ${delivery_address}, ${city}, 
+          ${phone_number}, ${total_amount}, ${delivery_fees}
+        )
+        RETURNING *;
       `;
-      return { id: result[0].id, user_id, status };
+  
+ 
+  
+       return {
+        ...order,
+       };
+  
     } catch (err) {
       throw err;
     }
-  },
+  },  
 
   update: async (id, status) => {
     try {
