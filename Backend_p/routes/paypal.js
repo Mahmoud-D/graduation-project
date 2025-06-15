@@ -9,8 +9,6 @@ router.post("/capture", async (req, res) => {
         return res.status(400).json({ message: "Payment not completed" });
       }
   
-      // ⚠️ كرر الخطوات لإنشاء الطلب فعليًا في قاعدة البيانات (نفس الكود اللي فوق تقريبًا)
-      // أو يفضل إعادة استخدام دالة createOrder ولكن بدون جزء PayPal
   
       return res.status(200).json({ message: "Payment captured successfully", data: capture });
     } catch (err) {

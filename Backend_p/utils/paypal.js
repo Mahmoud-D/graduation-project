@@ -49,7 +49,6 @@ const testPayPalConnection = async () => {
   }
 };
 
-// ✅ الطريقة الصح للتصدير في CommonJS
 module.exports = {
   generateAccessToken,
   capturePayment,

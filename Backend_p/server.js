@@ -12,20 +12,19 @@ const authRoutes = require("./routes/authRoutes");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
 const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
-
+// paypalRoutes
+const paypalRoutes = require("./routes/paypalRoutes");
 
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const couponUsesRoutes = require("./routes/couponUsesRoutes");
 const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
-// import paypalRoutes from './routes/paypalRoutes.js';
-
+ 
 const imageController = require("./controllers/imageController");
 
 const { executeSqlQuery } = require("./controllers/sqlController");
 
 const cors = require("cors");
-const { testPayPalConnection } = require("./utils/paypal.js");
 
 const app = express();
 
@@ -67,18 +66,20 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/apply-coupon", couponUsesRoutes);
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
-// app.use('/api/paypal', paypalRoutes);
-
+ 
 app.use("/api/orderDishes", orderDishRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/paypal", paypalRoutes);
 
 
 
-app.get("/api/test-paypal", async (req, res) => {
-  const result = await testPayPalConnection();
-  res.json(result);
-})
+
+
+
+
+
+
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {
 //   const email = req.query.email;
