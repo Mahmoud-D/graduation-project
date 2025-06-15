@@ -1,4 +1,4 @@
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 // Get all dishes
 const Dish = {
@@ -70,7 +70,7 @@ const Dish = {
 
     try {
       const result = await query;
-      return result.map(dish => {
+      return result.map((dish) => {
         const baseDish = {
           id: dish.id,
           name: dish.name,
@@ -79,8 +79,10 @@ const Dish = {
           old_price: dish.old_price,
           image_path: dish.image_path,
           created_at: dish.created_at,
-          average_rating: dish.average_rating ? parseFloat(dish.average_rating).toFixed(1) : null,
-          categories: dish.categories ? dish.categories.split(',') : []
+          average_rating: dish.average_rating
+            ? parseFloat(dish.average_rating).toFixed(1)
+            : null,
+          categories: dish.categories ? dish.categories.split(",") : [],
         };
 
         if (dish.discount_percentage) {
@@ -91,11 +93,11 @@ const Dish = {
               final_price: dish.price,
               start_date: dish.promotion_start,
               end_date: dish.promotion_end,
-              status: dish.promotion_status
-            }
+              status: dish.promotion_status,
+            },
           };
         }
-        
+
         return baseDish;
       });
     } catch (err) {
@@ -106,13 +108,26 @@ const Dish = {
   // Get dish by ID
   getDishesByIds: async (ids) => {
     if (!Array.isArray(ids)) {
-      throw new Error("يجب تقديم مصفوفة من IDs صالحة");
+      if (typeof ids === 'string') {
+        try {
+          ids = JSON.parse(ids);
+          if (!Array.isArray(ids)) ids = [Number(ids)];
+        } catch {
+          ids = ids.split(',').map(x => Number(x.trim()));
+        }
+      } else if (typeof ids === 'number') {
+        ids = [ids];
+      } else {
+        throw new Error("يجب تقديم مصفوفة من IDs صالحة");
+      }
     }
+  
+    ids = ids.map(Number).filter((x) => !isNaN(x));
   
     if (ids.length === 0) return [];
   
+   
     try {
-      // استعلام معدل خصيصًا لـ Supabase
       const result = await sql`
         WITH active_promotions AS (
           SELECT 
@@ -137,7 +152,7 @@ const Dish = {
           d.image_path,
           d.created_at,
           COALESCE(AVG(r.rating), 0) AS average_rating,
-          COALESCE(STRING_AGG(c.name, ','), '') AS categories,
+          COALESCE(STRING_AGG(DISTINCT c.name, ','), '') AS categories,
           p.discount_percentage,
           CASE
             WHEN p.discount_percentage IS NOT NULL
@@ -155,11 +170,11 @@ const Dish = {
         LEFT JOIN dish_categories dc ON d.id = dc.dish_id
         LEFT JOIN categories c ON dc.category_id = c.id
         LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
-        WHERE d.id IN (${sql(ids)})
+        WHERE d.id = ANY(${sql`${ids}`})
         GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
       `;
   
-      return result.map(dish => ({
+      return result.map((dish) => ({
         id: dish.id,
         name: dish.name,
         description: dish.description,
@@ -168,27 +183,44 @@ const Dish = {
         image_path: dish.image_path,
         created_at: dish.created_at,
         average_rating: parseFloat(dish.average_rating).toFixed(1),
-        categories: dish.categories ? dish.categories.split(',').filter(Boolean) : [],
+        categories: dish.categories
+          ? dish.categories.split(",").filter(Boolean)
+          : [],
         ...(dish.discount_percentage && {
           promotion: {
             discount_percentage: parseFloat(dish.discount_percentage),
             final_price: parseFloat(dish.price),
             start_date: dish.promotion_start,
             end_date: dish.promotion_end,
-            status: dish.promotion_status
-          }
-        })
+            status: dish.promotion_status,
+          },
+        }),
       }));
-  
     } catch (err) {
       console.error("PostgreSQL Error:", err);
       throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
     }
-  } ,
+  },
   
+  findById: async (id) => {
+    if (!id) {
+      throw new Error("Invalid dish ID");
+    }
+
+    try {
+      const result = await sql`
+        SELECT * FROM dishes WHERE id = ${id}
+      `;
+      return result[0] || null;
+    } catch (err) {
+      console.error("Error in findById:", err);
+      throw new Error("Failed to retrieve dish: " + err.message);
+    }
+  },
+
   // getById: async (id) => {
   //   const dishSql = sql`
-  //     SELECT 
+  //     SELECT
   //       d.id,
   //       d.name,
   //       d.description,
@@ -204,7 +236,7 @@ const Dish = {
   //   const commentsSql = sql`SELECT comment FROM reviews WHERE dish_id = ${id}`;
 
   //   const categoriesSql = sql`
-  //     SELECT c.id, c.name 
+  //     SELECT c.id, c.name
   //     FROM categories c
   //     INNER JOIN dish_categories dc ON c.id = dc.category_id
   //     WHERE dc.dish_id = ${id}
@@ -241,7 +273,7 @@ const Dish = {
       const result = await sqlQuery;
       return result[0].id;
     } catch (err) {
-      console.error('Error in create dish:', err);
+      console.error("Error in create dish:", err);
       throw err;
     }
   },
@@ -258,7 +290,7 @@ const Dish = {
       const result = await query;
       return result.rowCount;
     } catch (err) {
-      console.error('Error in update dish:', err);
+      console.error("Error in update dish:", err);
       throw err;
     }
   },
@@ -271,21 +303,20 @@ const Dish = {
       const result = await query;
       return result;
     } catch (err) {
-
-     if (err.code === '23503') { // Foreign key violation code
-      throw {
-        success: false,
-        error: 'CANNOT_DELETE_RELATED_RECORDS_EXIST',
-         message: 'لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق'
-      };
-    }
-
+      if (err.code === "23503") {
+        // Foreign key violation code
+        throw {
+          success: false,
+          error: "CANNOT_DELETE_RELATED_RECORDS_EXIST",
+          message: "لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق",
+        };
+      }
 
       console.error("Error in delete:", err);
       throw err;
     }
   },
- 
+
   // Link dish to a category
   linkCategory: async (dishId, categoryId) => {
     const query = sql`
@@ -297,12 +328,35 @@ const Dish = {
       const result = await query;
       return result.rowCount;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
   },
 
-
+  search: async (keyword) => {
+    const pattern = `%${keyword}%`;
+    try {
+      const results = await sql`
+      SELECT id, name, description, price, image_path
+      FROM dishes
+      WHERE translate(
+              translate(lower(name), 'أإآ', 'ااا'),
+              'ى', 'ي'
+            ) ILIKE translate(
+              translate(lower(${pattern}), 'أإآ', 'ااا'),
+              'ى', 'ي'
+            )
+      ORDER BY name
+      LIMIT 50;
+    `;
+      return results;
+    } catch (err) {
+      throw err;
+    }
+  },
 
   getTopSellingDishes: async (dishId, categoryId) => {
     const query = sql`
@@ -319,7 +373,10 @@ LIMIT 10;
       const result = await query;
       return result;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
   },
@@ -335,11 +392,13 @@ ORDER BY date;
       const result = await query;
       return result;
     } catch (err) {
-      console.error(`❌ Error linking dish ${dishId} with category ${categoryId}:`, err);
+      console.error(
+        `❌ Error linking dish ${dishId} with category ${categoryId}:`,
+        err
+      );
       throw new Error("فشل ربط الطبق بالفئة، تأكد من أن الفئة موجودة.");
     }
-  }
+  },
 };
 
 module.exports = Dish;
-

@@ -14,6 +14,8 @@ const registerSchema = z.object({
     .transform((email) => email.toLowerCase()) 
     .refine(async (email) => {
       const userExists = await findByEmail(email);
+      console.log(userExists);
+      
       return !userExists;
     }, "البريد الإلكتروني موجود بالفعل."),
   password: z
@@ -56,4 +58,46 @@ const EmailSchema = z.object({
       .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
 
   });
-  module.exports = { registerSchema,EmailSchema,passwordValidate };
+
+
+  const loginSchema = z.object({
+    email: z
+    .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase())
+    .superRefine(async (email, ctx) => {
+      const user = await findByEmail(email);
+
+      if (!user) return;
+
+ 
+
+      if (!user.is_active) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "الحساب غير نشط. يرجى التواصل مع الدعم.",
+        });
+      } else if (!user.is_verified) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "يرجى تفعيل بريدك الإلكتروني قبل المتابعة.",
+        });
+      }
+    })
+,  
+    password: z
+      .string()
+      .min(6, "كلمة المرور يجب أن تكون على الأقل مكونة من 6 أحرف")
+      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
+      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
+      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
+  })
+
+const isEnteredEmailSchema = z.object({
+  email: z
+    .string()
+    .email("تنسيق البريد الإلكتروني غير صحيح")
+    .transform((email) => email.toLowerCase()),
+})
+
+  module.exports = { registerSchema,EmailSchema,passwordValidate ,loginSchema,isEnteredEmailSchema};

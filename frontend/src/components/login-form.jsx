@@ -119,17 +119,25 @@ export function LoginForm({ className, ...props }) {
     
     try {
       const response = await authEndpoints.login(formData.email, formData.password);
-      
       if (response.success) {
-      // Save token to localStorage
-      localStorage.setItem("token", response.token);
-      router.push("/");
+        const savedFormData = localStorage.getItem('orderFormData');
+        if (savedFormData) {
+          router.push('/confirm-order');
+        } else {
+          router.push("/");
+        }
       } else {
-        // Handle API error responses
-        setErrors(prev => ({
-          ...prev,
-          general: response.message || "فشل تسجيل الدخول، يرجى التحقق من بيانات الاعتماد الخاصة بك"
-        }));
+        if (response.data?.errors?.[0]?.message) {
+          setErrors(prev => ({
+            ...prev,
+            general: response.data?.errors[0].message
+          }));
+        } else {
+          setErrors(prev => ({
+            ...prev,
+            general: response.message || "فشل تسجيل الدخول، يرجى التحقق من بيانات الاعتماد الخاصة بك"
+          }));
+        }
       }
     } catch (err) {
       setErrors(prev => ({

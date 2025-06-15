@@ -31,4 +31,5 @@ router.get("/", DishController.getAllDishes);
 
 router.get("/getDishesByIds", DishController.getDishById);
 
+router.get("/:id", DishController.getDishByIdParam);
 module.exports = router;

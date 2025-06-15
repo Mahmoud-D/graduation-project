@@ -11,6 +11,8 @@ router.get("/:id", verifyToken,   checkRole(["admin"]),userController.getUserByI
 router.put('/:id', userController.updateUser);
 
 router.delete('/:id', verifyToken,   checkRole(["admin"]),userController.deleteUser);
+router.put('/deactivateUser/:id', userController.deactivateUser);
+
 router.post('/', verifyToken,   checkRole(["admin"]),userController.createUser);
 
 module.exports = router;

@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: process.env.JWT_EXPIRATION,
     });
     res.json({ token });
   } catch (error) {
@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
   
  
     const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: process.env.JWT_EXPIRATION,
     });
 
     res.status(201).json({ message: "تم إنشاء المستخدم بنجاح", userId, token });

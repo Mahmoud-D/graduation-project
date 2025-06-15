@@ -1,31 +1,56 @@
-import dotenv from 'dotenv';
-dotenv.config();
+const axios = require("axios");
 
-// لو انت شغال Node v18 أو أعلى، مفيش داعي تثبت fetch، جاهز معاك
-// لو أقل من كده، ثبّت: npm install node-fetch
-import fetch from 'node-fetch';
+const PAYPAL_API = "https://api-m.sandbox.paypal.com"; // Use "api-m.paypal.com" for live
+const CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const CLIENT_SECRET = process.env.PAYPAL_SECRET;
 
-const base = 'https://api-m.sandbox.paypal.com'; // رابط الساندبوكس
-
-export const getAccessToken = async () => {
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-
-  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-
-  const response = await fetch(`${base}/v1/oauth2/token`, {
-    method: 'POST',
+// Step 1: Create access token
+const generateAccessToken = async () => {
+  const response = await axios({
+    url: `${PAYPAL_API}/v1/oauth2/token`,
+    method: "post",
     headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: 'grant_type=client_credentials',
+    auth: {
+      username: CLIENT_ID,
+      password: CLIENT_SECRET,
+    },
+    data: "grant_type=client_credentials",
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to get access token from PayPal');
-  }
+  return response.data.access_token;
+};
 
-  const data = await response.json();
-  return data.access_token;
+// Step 2: Capture payment
+const capturePayment = async (orderId) => {
+  const accessToken = await generateAccessToken();
+
+  const response = await axios({
+    url: `${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`,
+    method: "post",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response.data;
+};
+
+const testPayPalConnection = async () => {
+  try {
+    const token = await generateAccessToken();
+    console.log("✅ PayPal Access Token Generated Successfully:", token);
+    return { success: true, token };
+  } catch (err) {
+    console.error("❌ Failed to connect to PayPal:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+module.exports = {
+  generateAccessToken,
+  capturePayment,
+  testPayPalConnection,
 };

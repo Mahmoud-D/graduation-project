@@ -6,16 +6,22 @@ exports.getAllDishes = async (req, res) => {
     category,
     minPrice,
     maxPrice,
-    name
+    name, 
+    q
   } = req.query;
 
   try {
-    const dishes = await Dish.getAll({
-      category,
-      minPrice,
-      maxPrice,
-      name
-    });
+    let dishes;
+    if (q) {
+      dishes = await Dish.search(q);
+    } else { 
+        dishes = await Dish.getAll({
+        category,
+        minPrice,
+        maxPrice,
+        name
+      });
+    }
 
     res.json(dishes);
   } catch (error) {
@@ -37,13 +43,20 @@ exports.getDishById = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
+exports.getDishByIdParam = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const dish = await Dish.findById(id);
+    
+    if (!dish) {
+      return res.status(404).json({ message: "Dish not found" });
+    }
+    
+    res.status(200).json(dish);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching dish", error: error.message });
+  }
+};
 
 exports.createDish = (req, res) => {
   upload.single('image')(req, res, async (err) => {
@@ -119,13 +132,7 @@ exports.updateDish = async (req, res) => {
   }
 };
 
-
-
-
-
 exports.deleteDish = async (req, res) => {
-
-  
   try {
     const dish = await Dish.getById(req.params.id);
      if (!dish) {
