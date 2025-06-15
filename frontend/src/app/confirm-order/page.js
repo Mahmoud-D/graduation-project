@@ -4,18 +4,14 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   CreditCard,
   Package,
   Ship,
-  CheckCircle2,
   MapPin,
   Phone,
   User,
-  Clock,
   Shield,
-  ArrowLeft,
   Loader2,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -40,38 +36,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Image from "next/image";
+import { paymentFormSchema } from "./paymentFormSchema";
+import OrderSummary from "./OrderSummary";
+import CheckoutSteps from "./CheckoutSteps";
+import OrderSuccess from "./OrderSuccess";
+import CouponInput from "./CouponInput";
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "الاسم يجب أن يكون على الأقل حرفين." })
-    .max(50, { message: "الاسم طويل جداً." })
-    .regex(
-      /^[a-zA-Z\u0600-\u06FF\s]+$/,
-      "الاسم يجب أن يحتوي فقط على حروف عربية أو إنجليزية ومسافات"
-    ),
-  address: z
-    .string()
-    .min(10, {
-      message: "العنوان يجب أن يكون مفصلاً أكثر (10 أحرف على الأقل).",
-    })
-    .max(200, { message: "العنوان طويل جداً." }),
-  city: z
-    .string()
-    .min(2, { message: "اسم المدينة مطلوب." })
-    .max(30, { message: "اسم المدينة طويل جداً." }),
-  phone: z.string().regex(/^01[0-2,5]{1}[0-9]{8}$/, {
-    message: "رقم الهاتف يجب أن يكون مصري صحيح (01xxxxxxxxx).",
-  }),
-  paymentMethod: z.enum(["cash"], {
-    required_error: "يجب اختيار طريقة الدفع.",
-  }),
-  couponCode: z.string().optional(),
-});
+
+// أضف هذه الاستيرادات في أعلى الملف
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { CheckCircle2 } from "lucide-react";
+
+
 
 export default function EnhancedPaymentPage() {
   const router = useRouter();
@@ -89,8 +67,10 @@ export default function EnhancedPaymentPage() {
   const [couponError, setCouponError] = useState(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
+
+  
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -112,20 +92,33 @@ export default function EnhancedPaymentPage() {
   }, [form]);
 
   const createOrder = async (payload) => {
-    const res = await fetch("http://localhost:5000/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(payload),
-    });
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Failed to create order");
+
+    console.log("payload", payload);
+
+    // return
+    
+
+
+    try {
+      const res = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+   
+      return res.json();
+    } catch (error) {
+      console.error("Error creating order:", error);
+      throw error;
     }
-    return res.json();
+
+     
+   
   };
 
   const onSubmit = async (data) => {
@@ -248,83 +241,13 @@ export default function EnhancedPaymentPage() {
   const discountAmount = calculateDiscount();
 
   if (isOrderConfirmed) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl text-center shadow-2xl border-0">
-          <CardHeader className="pb-8 pt-16">
-            <div className="relative">
-              <div className="absolute inset-0 bg-green-100 rounded-full w-32 h-32 mx-auto animate-pulse"></div>
-              <CheckCircle2 className="w-24 h-24 text-green-500 mx-auto relative animate-bounce" />
-            </div>
-            <CardTitle className="text-4xl font-bold text-gray-800 mt-8">
-              تم تأكيد طلبك بنجاح! 🎉
-            </CardTitle>
-            <CardDescription className="text-xl text-gray-600 mt-4">
-              شكراً لك على ثقتك بنا
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-16">
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <div className="flex items-center justify-center gap-2 text-lg font-semibold text-gray-700 mb-4">
-                <Package className="w-5 h-5" />
-                رقم الطلب: #ORD-
-                {orderNumber}
-              </div>
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <Clock className="w-4 h-4" />
-                المدة المتوقعة للتسليم: 1 ساعة
-              </div>
-            </div>
-
-            <Alert className="bg-blue-50 border-blue-200 mb-8">
-              <Shield className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                سنتواصل معك عند خروج الطلب من المطعم
-              </AlertDescription>
-            </Alert>
-
-            <Button
-              onClick={() => (window.location.href = "/")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              العودة للصفحة الرئيسية
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <OrderSuccess orderNumber={orderNumber} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto p-4 md:p-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                1
-              </div>
-              <span className="mr-3 font-medium">معلومات الشحن</span>
-            </div>
-            <div className="w-16 h-1 bg-blue-200"></div>
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-semibold">
-                2
-              </div>
-              <span className="mr-3 text-gray-600">تأكيد الطلب</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            إتمام الطلب
-          </h1>
-          <p className="text-gray-600 text-lg">
-            املأ البيانات المطلوبة لإتمام عملية الشراء
-          </p>
-        </div>
+        <CheckoutSteps currentStep={currentStep} />
 
         <Form {...form}>
           <form
@@ -437,78 +360,14 @@ export default function EnhancedPaymentPage() {
               </Card>
 
               <Card className="shadow-lg border-0 overflow-hidden">
-                <div>
-                  <div className="bg-white rounded-t-lg">
-                    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <CardTitle className="flex items-center gap-3 text-2xl text-gray-800">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
-                          <Package className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <span>كود الخصم</span>
-                      </CardTitle>
-                      <CardDescription className="text-gray-600">
-                        أدخل كود الخصم إذا كان لديك
-                      </CardDescription>
-                    </CardHeader>
-                  </div>
-                </div>
-                <CardContent className="p-8">
-                  <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="couponCode"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <Input
-                              placeholder="أدخل كود الخصم"
-                              className="h-12 text-lg border-2 focus:border-purple-500 transition-colors"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500" />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        validateCoupon(form.getValues("couponCode"))
-                      }
-                      className="h-12 px-6 bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      {isValidatingCoupon ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        "تطبيق"
-                      )}
-                    </Button>
-                  </div>
-
-                  {isValidatingCoupon && (
-                    <div className="mt-4 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                      <p className="text-gray-600 mt-2">
-                        جاري التحقق من الكوبون...
-                      </p>
-                    </div>
-                  )}
-
-                  {couponError && (
-                    <Alert variant="destructive" className="mt-4">
-                      <AlertDescription>{couponError}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  {couponData && (
-                    <Alert className="mt-4 bg-green-50 border-green-200">
-                      <CheckCircle2 className="h-4 w-4 text-green-600" />
-                      <AlertDescription className="text-green-800">
-                        تم تطبيق الخصم بنجاح! {discountAmount} جنيه
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
+                <CouponInput
+                  form={form}
+                  validateCoupon={validateCoupon}
+                  isValidatingCoupon={isValidatingCoupon}
+                  couponData={couponData}
+                  couponError={couponError}
+                  discountAmount={discountAmount}
+                />
               </Card>
 
               <Card className="shadow-lg border-0 overflow-hidden">
@@ -533,6 +392,9 @@ export default function EnhancedPaymentPage() {
                     name="paymentMethod"
                     render={({ field }) => (
                       <FormItem>
+
+
+                        
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -559,11 +421,102 @@ export default function EnhancedPaymentPage() {
                               متاح
                             </Badge>
                           </FormItem>
+
+                          <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-blue-200 bg-blue-50 p-6 hover:bg-blue-100 transition-colors">
+          <FormControl>
+            <RadioGroupItem value="paypal" className="text-blue-600" />
+          </FormControl>
+          <div className="flex-1">
+            <FormLabel className="font-semibold text-lg cursor-pointer">
+              💳 الدفع باستخدام بايبال
+            </FormLabel>
+            <p className="text-sm text-gray-600 mt-1">
+              سيتم توجيهك للدفع عبر حسابك على PayPal
+            </p>
+          </div>
+          <Badge variant="secondary" className="bg-blue-600 text-white">
+            آمن وسريع
+          </Badge>
+        </FormItem>
                         </RadioGroup>
+
+
+
                         <FormMessage className="pt-2 text-red-500" />
+
+
+
+
+
+
+
+
+
+                        
                       </FormItem>
                     )}
                   />
+           {form.watch("paymentMethod") === "paypal" && (
+  <PayPalScriptProvider
+    options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
+  >
+    <PayPalButtons
+      style={{ layout: "vertical", color: "blue", shape: "pill", label: "paypal" }}
+      createOrder={(data, actions) => {
+        return actions.order.create({
+          purchase_units: [
+            {
+              amount: {
+                value: total.toFixed(2), // total calculated already
+              },
+            },
+          ],
+        });
+      }}
+      onApprove={async (data, actions) => {
+        const details = await actions.order.capture();
+        const shipping = details?.purchase_units?.[0]?.shipping;
+        const orderPayload = {
+          dishes: items.map((item) => ({
+            dishId: item.id,
+            quantity: item.quantity,
+          })),
+          paypal_order_id:data.orderID ,
+          payment_method: "paypal",
+          delivery_address: shipping?.address?.address_line_1 || "N/A",
+          city: shipping?.address?.admin_area_2 || "N/A",
+          phone_number: "N/A",
+          coupon_code: couponData?.[0]?.code || null,
+          status: "paid",
+        };
+        setIsSubmitting(true);
+        try {
+          const res = await createOrder(orderPayload);
+          if (res?.ok) {
+            setOrderNumber(res.order1?.order_id);
+            clearCart();
+            setIsOrderConfirmed(true);
+          }
+        } catch (err) {
+          console.error("Error after PayPal payment:", err);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }}
+      onCancel={() => {
+        alert("تم إلغاء عملية الدفع عبر PayPal");
+      }}
+      onError={(err) => {
+        console.error("PayPal Checkout Error:", err);
+        alert("حدث خطأ أثناء الدفع عبر PayPal");
+      }}
+    />
+  </PayPalScriptProvider>
+)}
+
+
+
+
 
                   <Alert className="mt-6 bg-yellow-50 border-yellow-200">
                     <Shield className="h-4 w-4 text-yellow-600" />
@@ -574,7 +527,14 @@ export default function EnhancedPaymentPage() {
                 </CardContent>
               </Card>
 
-              <Button
+
+   
+
+
+
+
+
+             { form.watch("paymentMethod") !== "paypal" &&<Button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full text-xl py-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -587,110 +547,17 @@ export default function EnhancedPaymentPage() {
                 ) : (
                   <>✨ تأكيد الطلب الآن</>
                 )}
-              </Button>
+              </Button>}
             </div>
 
-            <div className="lg:col-span-1">
-              <div className="sticky top-24">
-                <Card className="shadow-2xl border-0 overflow-hidden">
-                  <div>
-                    <div className="bg-white rounded-t-lg">
-                      <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-                        <CardTitle className="flex items-center gap-3 text-2xl text-gray-800">
-                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
-                            <Package className="w-5 h-5 text-purple-600" />
-                          </div>
-                          <span>ملخص الطلب</span>
-                        </CardTitle>
-                      </CardHeader>
-                    </div>
-                  </div>
-                  <CardContent className="space-y-6 p-8">
-                    <div className="space-y-4">
-                      {items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex justify-between items-start p-4 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="relative w-8 h-8">
-                              <Image
-                                src="/placeholder-dish.png"
-                                alt={item.name}
-                                fill
-                                className="object-cover rounded-sm"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-800">
-                                {item.name}
-                              </h4>
-                              <p className="text-sm text-gray-500">
-                                الكمية: {item.quantity}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="font-bold text-purple-600">
-                            {item.price * item.quantity} جنيه
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Separator className="my-6" />
-
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-lg">
-                        <span className="text-gray-600">المجموع الفرعي</span>
-                        <span className="font-semibold">{subtotal} جنيه</span>
-                      </div>
-                      {couponData && (
-                        <>
-                          <div className="flex justify-between text-lg text-green-600">
-                            <span>الخصم</span>
-                            <span className="font-semibold">
-                              {discountAmount} جنيه
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-lg">
-                            <span className="text-gray-600">
-                              المجموع بعد الخصم
-                            </span>
-                            <span className="font-semibold">
-                              {subtotal - discountAmount} جنيه
-                            </span>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-between text-lg">
-                        <span className="text-gray-600">رسوم الشحن</span>
-                        <span className="font-semibold">
-                          {subtotal >= 500 ? 0 : shippingFee} جنيه
-                        </span>
-                      </div>
-                    </div>
-
-                    <Separator className="my-6" />
-
-                    <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg">
-                      <div className="flex justify-between font-bold text-2xl text-gray-800">
-                        <span>الإجمالي</span>
-                        <span className="text-purple-600">{total} جنيه</span>
-                      </div>
-                    </div>
-
-                    <div className="text-center pt-4">
-                      <Badge
-                        variant="outline"
-                        className="text-green-600 border-green-600"
-                      >
-                        🚚 شحن مجاني للطلبات أكثر من 500 جنيه
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+            <OrderSummary
+              items={items}
+              subtotal={subtotal}
+              discountAmount={discountAmount}
+              couponData={couponData}
+              shippingFee={shippingFee}
+              total={total}
+            />
           </form>
         </Form>
       </div>
