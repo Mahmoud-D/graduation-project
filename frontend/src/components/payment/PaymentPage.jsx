@@ -23,7 +23,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { OrderConfirmation } from "./OrderConfirmation";
 import { ShippingForm } from "./ShippingForm";
-import { CouponForm } from "./CouponForm";
+import { CouponForm } from "./CouponCodeCard";
 import { PaymentMethod } from "./PaymentMethod";
 import { OrderSummary } from "./OrderSummary";
 import { CheckoutStepper } from "./CheckoutStepper";

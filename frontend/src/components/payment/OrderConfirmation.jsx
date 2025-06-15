@@ -1,7 +1,19 @@
-import { CheckCircle2, Clock, Shield, ArrowLeft } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Alert, AlertDescription, Button } from "@/components/ui";
+import { CheckCircle2, Clock, Shield, ArrowLeft, Package } from "lucide-react";
+ 
 
-export const OrderConfirmation = ({ orderNumber, onReturnHome }) => {
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+
+ 
+
+
+export const OrderConfirmation = ({ orderNumber }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl text-center shadow-2xl border-0">
@@ -37,7 +49,7 @@ export const OrderConfirmation = ({ orderNumber, onReturnHome }) => {
           </Alert>
 
           <Button
-            onClick={onReturnHome}
+            onClick={() => (window.location.href = "/")}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
