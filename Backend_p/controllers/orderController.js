@@ -40,6 +40,7 @@ const createOrder = async (req, res) => {
       city,
       phone_number,
       status,
+      paypal_order_id
     } = req.body;
 
     if (!dishes || dishes.length === 0) {
@@ -73,19 +74,19 @@ const createOrder = async (req, res) => {
       finalAmount = totalAmount - discount;
     }
 
-    if (payment_method === "paypal") {
-      if (!paypal_order_id) {
-        return res.status(400).json({ message: "Missing PayPal order ID" });
-      }
+    // if (payment_method === "paypal") {
+    //   if (!paypal_order_id) {
+    //     return res.status(400).json({ message: "Missing PayPal order ID" });
+    //   }
 
-      try {
-        const captureResult = await capturePayment(paypal_order_id);
-        console.log("✅ PayPal Payment Captured:", captureResult);
-      } catch (error) {
-        console.error("❌ PayPal Capture Failed:", error.message);
-        return res.status(400).json({ message: "PayPal payment failed" });
-      }
-    }
+    //   try {
+    //     const captureResult = await capturePayment(paypal_order_id);
+    //     console.log("✅ PayPal Payment Captured:", captureResult);
+    //   } catch (error) {
+    //     console.error("❌ PayPal Capture Failed:", error);
+    //     return res.status(400).json({ message: "PayPal payment failed" });
+    //   }
+    // }
 
     const orderData = {
       dishes: dbDishes,

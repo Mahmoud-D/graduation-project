@@ -32,19 +32,20 @@ export default function OrderSummary({
 
           <CardContent className="space-y-6 p-8">
             <div className="space-y-4">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <div
-                  key={item.id}
+                  key={index}
                   className="flex justify-between items-start p-4 bg-gray-50 rounded-lg"
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative w-8 h-8">
-                      <Image
-                        src="/placeholder-dish.png"
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded-sm"
-                      />
+                    <Image
+  src="/placeholder-dish.png"
+  alt={item.name}
+  width={32}
+  height={32}
+  className="object-cover rounded-sm"
+/>
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800">{item.name}</h4>
