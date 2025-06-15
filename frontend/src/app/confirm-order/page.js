@@ -205,7 +205,6 @@ export default function EnhancedPaymentPage() {
           setCouponError("هذا الكوبون منتهي الصلاحية");
           setCouponData(null);
         } else if (coupon.max_uses <= coupon.current_uses) {
-          console.log("max_uses iside");
           setCouponError("هذا الكوبون تم استخدامه الحد الأقصى من المرات");
           setCouponData(null);
         } else {

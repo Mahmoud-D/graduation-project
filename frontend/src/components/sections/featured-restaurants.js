@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "lucide-react";
+import ProductCard from "../productCard";
 
 // Sample data - replace with real data later
 const menuCategories = [
@@ -105,177 +106,12 @@ export default function MenuCategories() {
           <h2 className="text-4xl font-bold text-dark-shade mb-4">
             الأعلى طلباََ
           </h2>
-          <p className="text-lg text-dark-shade/70">
-            اكتشف تشكيلتنا المتنوعة من الأطباق الشهية
-          </p>
         </div>
-
-        {/* Category Filter */}
-        {/* <div className="flex flex-wrap gap-3 justify-center mb-12">
-          {filterTypes.map((type) => (
-            <Button
-              key={type}
-              variant={type === "الكل" ? "default" : "outline"}
-              className="rounded-full"
-            >
-              {type}
-            </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center justify-items-center mx-auto max-w-6xl">
+          {dishes.map((dish) => (
+            <ProductCard key={dish.id} dish={dish} />
           ))}
-        </div> */}
-
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {dishes?.length > 0 ? (
-            dishes.map((offer) => (
-              <Card
-                key={offer.id}
-                className="overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                {/* صورة الطبق */}
-                <div className="relative h-48">
-                  <Image
-                    src={`http://localhost:5000/api/${offer.image_path}`}
-                    alt={offer.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-
-                <CardContent className="p-4 space-y-2">
-                  {/* عنوان الطبق والعرض */}
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-semibold text-dark-shade">
-                      {offer.name}
-                    </h3>
-                  </div>
-
-                  {/* عنوان العرض */}
-                  <div className="text-accent text-sm">
-                    {offer.featured_title}
-                  </div>
-
-                  {/* وصف الطبق */}
-                  {offer.description && (
-                    <p className="text-sm text-dark-shade/80">
-                      {offer.description}
-                    </p>
-                  )}
-
-                  {/* السعر */}
-                  <div className="text-dark-shade font-semibold">
-                    السعر: {parseFloat(offer.price).toFixed(2)} ج.م
-                  </div>
-
-                  {/* التقييم بنجوم */}
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <svg
-                        key={i}
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill={
-                          i < Math.round(offer.average_rating)
-                            ? "#FFD700"
-                            : "none"
-                        }
-                        viewBox="0 0 24 24"
-                        stroke="#FFD700"
-                        className="w-5 h-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                        />
-                      </svg>
-                    ))}
-                    <span className="text-sm text-dark-shade/70">
-                      ({parseFloat(offer.average_rating || 0).toFixed(1)})
-                    </span>
-                  </div>
-
-                  {/* تاريخ الانتهاء */}
-                  {offer.end_date && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-accent"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 4h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"
-                        />
-                      </svg>
-                      <span className="text-sm text-dark-shade/80">
-                        ينتهي في:{" "}
-                        <span className="font-semibold text-dark-shade">
-                          {formatArabicDate(offer.end_date)}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-
-                  {/* التصنيفات */}
-                  {offer.categories && offer.categories.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {offer.categories.map((cat) => (
-                        <span
-                          key={cat.id}
-                          className="bg-accent/10 text-accent text-xs px-2 py-1 rounded-full"
-                        >
-                          {cat.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-dark-shade/70 py-10">
-              لا توجد عروض متاحة حالياً
-            </div>
-          )}
-
-          {/* {menuCategories.map((category) => (
-            <Card
-              key={category.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={category.image}
-                  alt={category.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-semibold text-dark-shade">
-                    {category.name}
-                  </h3>
-                  <div className="flex items-center bg-primary/10 px-2 py-1 rounded-full">
-                    <span className="text-primary font-semibold">
-                      {category.itemsCount}
-                    </span>
-                    <span className="text-primary mr-1">وجبة</span>
-                  </div>
-                </div>
-                <div className="text-dark-shade/70">
-                  <span>{category.description}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))} */}
         </div>
-
-        {/* View More Button */}
         <div className="text-center mt-12">
           <Link href="/menu">
             <Button
