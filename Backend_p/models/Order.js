@@ -179,6 +179,7 @@ LEFT JOIN coupons c ON o.coupon_id = c.id
           o.status,
           o.created_at,
           o.updated_at,
+          o.coupon_id,
           STRING_AGG(d.name || ' (' || od.quantity || ')', ', ') AS dishes
         FROM orders o
         JOIN order_items od ON o.id = od.order_id
