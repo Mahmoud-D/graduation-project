@@ -2,24 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Backend",
-      "type": "shell",
-      "command": "npm run dev",
-      "options": {
-        "cwd": "${workspaceFolder}/Backend_p"
-      },
+      "type": "npm",
+      "script": "dev",
+      "path": "Backend",
       "problemMatcher": [],
-      "group": "build"
-    },
-    {
-      "label": "Start Frontend",
-      "type": "shell",
-      "command": "npm run dev",
-      "options": {
-        "cwd": "${workspaceFolder}/dashboard"
-      },
-      "problemMatcher": [],
-      "group": "build"
+      "label": "npm: dev - Backend_p",
+      "detail": "nodemon server.js"
     }
   ]
 }
