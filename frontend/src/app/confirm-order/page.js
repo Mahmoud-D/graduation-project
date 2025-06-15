@@ -73,14 +73,27 @@ export default function EnhancedPaymentPage() {
     mode: "onChange",
   });
 
-  useEffect(() => {
+// استبدل useEffect الحالي بهذا:
+useEffect(() => {
+  if (typeof window !== 'undefined') {
     const savedFormData = localStorage.getItem("orderFormData");
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       form.reset(parsedData);
-      localStorage.removeItem("orderFormData"); // Clear saved data after restoring
+      localStorage.removeItem("orderFormData");
     }
-  }, [form]);
+    
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`;
+    script.async = true;
+    script.onload = () => setPaypalReady(true);
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }
+}, [form]);
 
   const createOrder = async (payload) => {
     const res = await fetch("http://localhost:5000/api/orders", {

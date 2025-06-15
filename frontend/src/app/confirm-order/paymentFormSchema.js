@@ -21,8 +21,10 @@ export const paymentFormSchema =  z.object({
   phone: z.string().regex(/^01[0-2,5]{1}[0-9]{8}$/, {
     message: "رقم الهاتف يجب أن يكون مصري صحيح (01xxxxxxxxx).",
   }),
-  paymentMethod: z.enum(["cash"], {
-    required_error: "يجب اختيار طريقة الدفع.",
+  
+
+  paymentMethod: z.enum(["cash", "paypal"], {
+    required_error: "يجب اختيار طريقة الدفع",
   }),
   couponCode: z.string().optional(),
 });
