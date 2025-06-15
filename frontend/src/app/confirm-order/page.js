@@ -21,7 +21,8 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import authService from "@/app/api/endPonts/auth";
-
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+ 
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -67,7 +68,7 @@ const formSchema = z.object({
   phone: z.string().regex(/^01[0-2,5]{1}[0-9]{8}$/, {
     message: "رقم الهاتف يجب أن يكون مصري صحيح (01xxxxxxxxx).",
   }),
-  paymentMethod: z.enum(["cash"], {
+  paymentMethod: z.enum(["cash", "paypal"], {
     required_error: "يجب اختيار طريقة الدفع.",
   }),
   couponCode: z.string().optional(),
@@ -88,6 +89,8 @@ export default function EnhancedPaymentPage() {
   const [couponData, setCouponData] = useState(null);
   const [couponError, setCouponError] = useState(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [paypalReady, setPaypalReady] = useState(false);
+  const [{ isPending }] = usePayPalScriptReducer();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -107,9 +110,15 @@ export default function EnhancedPaymentPage() {
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       form.reset(parsedData);
-      localStorage.removeItem("orderFormData"); // Clear saved data after restoring
+      localStorage.removeItem("orderFormData");
     }
   }, [form]);
+
+  useEffect(() => {
+    if (!isPending) {
+      setPaypalReady(true);
+    }
+  }, [isPending]);
 
   const createOrder = async (payload) => {
     const res = await fetch("http://localhost:5000/api/orders", {
@@ -135,6 +144,14 @@ export default function EnhancedPaymentPage() {
       return;
     }
 
+    if (data.paymentMethod === "paypal") {
+      return; // Let PayPal button handle the submission
+    }
+
+    await processOrder(data);
+  };
+
+  const processOrder = async (data) => {
     const dishes = items.map((item) => ({
       dishId: item.id,
       quantity: item.quantity,
@@ -147,6 +164,7 @@ export default function EnhancedPaymentPage() {
       phone_number: data.phone,
       coupon_id: couponData?.[0]?.code || null,
       status: "pending",
+      total_amount: calculateTotal(),
     };
 
     setIsSubmitting(true);
@@ -158,10 +176,49 @@ export default function EnhancedPaymentPage() {
         setIsOrderConfirmed(true);
       }
     } catch (error) {
-      // Handle error appropriately
       console.error("Order creation failed:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const createPayPalOrder = async (data) => {
+    try {
+      const orderPayload = {
+        dishes: items.map((item) => ({
+          dishId: item.id,
+          quantity: item.quantity,
+        })),
+        payment_method: "paypal",
+        delivery_address: data.address,
+        city: data.city,
+        phone_number: data.phone,
+        coupon_id: couponData?.[0]?.code || null,
+        status: "pending",
+        total_amount: calculateTotal(),
+      };
+
+      const response = await createOrder(orderPayload);
+      if (response?.ok) {
+        return response.order1.order_id;
+      }
+      throw new Error("Failed to create order");
+    } catch (error) {
+      console.error("Error creating PayPal order:", error);
+      throw error;
+    }
+  };
+
+  const onPayPalApprove = async (data, actions) => {
+    try {
+      const details = await actions.order.capture();
+      setOrderNumber(details.id);
+      clearCart();
+      setIsOrderConfirmed(true);
+      return details;
+    } catch (error) {
+      console.error("PayPal approval error:", error);
+      throw error;
     }
   };
 
@@ -193,7 +250,6 @@ export default function EnhancedPaymentPage() {
     }
   };
 
-  // Add this function to calculate discount
   const calculateDiscount = () => {
     if (couponData && couponData[0].discount_value) {
       return subtotal * (couponData[0].discount_value / 100);
@@ -201,13 +257,11 @@ export default function EnhancedPaymentPage() {
     return 0;
   };
 
-  // Modify the calculateTotal function
   const calculateTotal = () => {
     let finalTotal = subtotal;
     const discountAmount = calculateDiscount();
     finalTotal = finalTotal - discountAmount;
 
-    // Add shipping fee if order is less than 500
     if (finalTotal < 500) {
       finalTotal += shippingFee;
     }
@@ -219,6 +273,7 @@ export default function EnhancedPaymentPage() {
 
   if (isOrderConfirmed) {
     return (
+ 
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl text-center shadow-2xl border-0">
           <CardHeader className="pb-8 pt-16">
@@ -263,10 +318,12 @@ export default function EnhancedPaymentPage() {
           </CardContent>
         </Card>
       </div>
+ 
     );
   }
 
   return (
+
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto p-4 md:p-8">
         <div className="mb-8">
@@ -529,11 +586,60 @@ export default function EnhancedPaymentPage() {
                               متاح
                             </Badge>
                           </FormItem>
+
+                          <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-blue-200 bg-blue-50 p-6 hover:bg-blue-100 transition-colors mt-4">
+                            <FormControl>
+                              <RadioGroupItem
+                                value="paypal"
+                                className="text-blue-600"
+                              />
+                            </FormControl>
+                            <div className="flex-1">
+                              <FormLabel className="font-semibold text-lg cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  <Image 
+                                    src="/paypal-logo.png" 
+                                    alt="PayPal" 
+                                    width={60} 
+                                    height={20} 
+                                    className="h-5 object-contain"
+                                  />
+                                </div>
+                              </FormLabel>
+                              <p className="text-sm text-gray-600 mt-1">
+                                الدفع عبر حساب PayPal الخاص بك
+                              </p>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-600 text-white"
+                            >
+                              متاح
+                            </Badge>
+                          </FormItem>
                         </RadioGroup>
                         <FormMessage className="pt-2 text-red-500" />
                       </FormItem>
                     )}
                   />
+
+                  {form.watch("paymentMethod") === "paypal" && paypalReady && (
+                    <div className="mt-6">
+                      <PayPalButtons
+                        style={{ layout: "vertical" }}
+                        createOrder={(data, actions) => {
+                          return createPayPalOrder(form.getValues())
+                            .then((orderId) => {
+                              return orderId;
+                            });
+                        }}
+                        onApprove={onPayPalApprove}
+                        onError={(err) => {
+                          console.error("PayPal error:", err);
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <Alert className="mt-6 bg-yellow-50 border-yellow-200">
                     <Shield className="h-4 w-4 text-yellow-600" />
@@ -544,20 +650,22 @@ export default function EnhancedPaymentPage() {
                 </CardContent>
               </Card>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full text-xl py-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                    جاري تأكيد الطلب...
-                  </>
-                ) : (
-                  <>✨ تأكيد الطلب الآن</>
-                )}
-              </Button>
+              {form.watch("paymentMethod") === "cash" && (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full text-xl py-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                      جاري تأكيد الطلب...
+                    </>
+                  ) : (
+                    <>✨ تأكيد الطلب الآن</>
+                  )}
+                </Button>
+              )}
             </div>
 
             <div className="lg:col-span-1">
@@ -665,5 +773,6 @@ export default function EnhancedPaymentPage() {
         </Form>
       </div>
     </div>
+
   );
 }

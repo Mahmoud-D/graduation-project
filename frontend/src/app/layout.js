@@ -3,6 +3,7 @@ import "./globals.css";
 import Navigation from "@/components/sections/navigation";
 import { CartProvider } from "@/context/CartContext";
 import Cart from "@/app/cart/page";
+import PayPalProvider from "@/components/PayPalProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+                <PayPalProvider>
+
         <CartProvider>
           <Navigation />
           <main className="pt-16">
@@ -32,6 +35,8 @@ export default function RootLayout({ children }) {
           </main>
           <Cart  />
         </CartProvider>
+                </PayPalProvider>
+
       </body>
     </html>
   );
