@@ -136,7 +136,12 @@ app.use("/api/paypal", paypalRoutes);
 // });
 
 
+app.use(express.static(path.join(__dirname, 'public')));
 
+// مسار لعرض صفحة HTML عند زيارة /status
+app.get('/status', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
+});
 
 app.get("/api", async (req, res) => {
   try {

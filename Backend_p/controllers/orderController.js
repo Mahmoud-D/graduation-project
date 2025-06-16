@@ -4,9 +4,8 @@ const { getDishesByIds } = require("../models/Dish");
 const Order = require("../models/Order");
 const OrderDish = require("../models/OrderDish");
 const couponModel = require("../models/coupon");
-const { capturePayment } = require("../utils/paypal");
-
-// const createOrder = async (req, res) => {
+const sendEmail = require("../utils/emailService");
+ // const createOrder = async (req, res) => {
 //   const {  status, dishes } = req.body;
 
 //   try {
@@ -29,6 +28,196 @@ const { capturePayment } = require("../utils/paypal");
 // };
 
 // orderController.js
+
+
+
+
+
+const sendOrderInvoiceEmail = async (orderData, email) => {
+
+   
+ 
+
+  try {
+    // تنسيق بيانات الفاتورة
+    const formattedDate = new Date(orderData.created_at).toLocaleDateString('ar-EG');
+    const totalBeforeDelivery = parseFloat(orderData.total_amount) - parseFloat(orderData.delivery_fees);
+    
+    // إنشاء محتوى HTML للفاتورة
+    const html = `
+    <html dir="rtl">
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+          }
+          .logo {
+            max-width: 150px;
+          }
+          .invoice-title {
+            color: #2c3e50;
+            margin-top: 10px;
+          }
+          .order-info {
+            margin: 20px 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+          th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+          }
+          th {
+            background-color: #f8f9fa;
+          }
+          .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #777;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="invoice-title">فاتورة شراء</h1>
+            <p>رقم الفاتورة: #${orderData.order_id}</p>
+            <p>تاريخ: ${formattedDate}</p>
+          </div>
+          
+          <div class="order-info " dir="rtl">
+            <h3>معلومات العميل:</h3>
+            <p>الاسم: ${orderData.user_name}</p>
+             <p>رقم الهاتف: ${orderData.phone_number}</p>
+            <p>عنوان التسليم: ${orderData.delivery_address}، ${orderData.city}</p>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>الصنف</th>
+                <th>الكمية</th>
+                <th>السعر</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orderData.dishes.map(dish => `
+                <tr>
+                  <td>${dish.name}</td>
+                  <td>${dish.quantity}</td>
+                  <td>${dish.final_price} ج.م</td>
+                  <td>${(dish.quantity * dish.final_price).toFixed(2)} ج.م</td>
+                </tr>
+              `).join('')}
+              <tr>
+                <td colspan="3">إجمالي الطلب</td>
+                <td>${totalBeforeDelivery.toFixed(2)} ج.م</td>
+              </tr>
+              <tr>
+                <td colspan="3">رسوم التوصيل</td>
+                <td>${orderData.delivery_fees} ج.م</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="3">المبلغ الإجمالي</td>
+                <td>${orderData.total_amount} ج.م</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="payment-method">
+            <h3>طريقة الدفع:</h3>
+            <p>${orderData.payment_method === 'cash' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان'}</p>
+          </div>
+          
+          <div class="footer">
+            <p>شكراً لاختياركم مطعمنا</p>
+
+            </div>
+        </div>
+      </body>
+    </html>
+    `;
+
+    // نص عادي للبريد الإلكتروني
+    const text = `
+    فاتورة شراء - مطعمنا
+    ---------------------
+    رقم الفاتورة: #${orderData.order_id}
+    التاريخ: ${formattedDate}
+    
+    معلومات العميل:
+    الاسم: ${orderData.user_name}
+     رقم الهاتف: ${orderData.phone_number}
+    عنوان التسليم: ${orderData.delivery_address}، ${orderData.city}
+    
+    تفاصيل الطلب:
+    ${orderData.dishes.map(dish => `
+    - ${dish.name} (${dish.quantity} x ${dish.final_price} ج.م) = ${(dish.quantity * dish.final_price).toFixed(2)} ج.م
+    `).join('')}
+    
+    إجمالي الطلب: ${totalBeforeDelivery.toFixed(2)} ج.م
+    رسوم التوصيل: ${orderData.delivery_fees} ج.م
+    المبلغ الإجمالي: ${orderData.total_amount} ج.م
+    
+    طريقة الدفع: ${orderData.payment_method === 'cash' ? 'الدفع عند الاستلام' : 'بطاقة ائتمان'}
+    
+    شكراً لاختياركم مطعمنا
+    `;
+
+    // إرسال البريد الإلكتروني
+    await sendEmail({
+      to: email, // استخدام البريد من بيانات الطلب
+      subject: `فاتورة طلبك #${orderData.order_id} من مطعمنا`,
+      text,
+      html,
+      category: "Order Invoice",
+      senderName: "مطعمنا"
+    });
+
+    console.log(`تم إرسال الفاتورة إلى ${email}`);
+  } catch (error) {
+    console.error('فشل إرسال بريد الفاتورة:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
 
 const createOrder = async (req, res) => {
   try {
@@ -117,6 +306,41 @@ const createOrder = async (req, res) => {
     }
 
     const order1 = await Order.getById(orderId);
+
+
+
+
+
+
+
+    await sendOrderInvoiceEmail(order1, req.user.email);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return res
       .status(201)
