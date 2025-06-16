@@ -23,14 +23,15 @@ const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
 const imageController = require("./controllers/imageController");
 
 const { executeSqlQuery } = require("./controllers/sqlController");
-const  checkDatabaseConnection  = require("./config/dbCheck.js");
 
 const cors = require("cors");
- 
+const { checkDatabaseConnection } = require("./config/db.js");
+
 const app = express();
 
 app.use(bodyParser.json());
- 
+//  const  {sendEmail}  = require('./email-service/emailServices/emailService');
+
 app.use(cors());
 
 const PORT = process.env.PORT || 5000;
@@ -77,27 +78,80 @@ app.use("/api/paypal", paypalRoutes);
 
 
 
- 
+
+
+
+// app.post('/send-email', emailController.sendEmail);
+// app.get('/track/open', async (req, res) => {
+//   const email = req.query.email;
+//   await supabase.from('email_logs').update({ opened: true, opened_at: new Date() }).eq('email', email);
+
+//   // إرجاع صورة 1x1 شفافة
+//   const img = Buffer.from(
+//     'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'
+//   );
+//   res.writeHead(200, {
+//     'Content-Type': 'image/gif',
+//     'Content-Length': img.length,
+//   });
+//   res.end(img);
+// });
+// app.get('/track/click', async (req, res) => {
+//   const { email, url } = req.query;
+//   const originalUrl = decodeURIComponent(url);
+
+//   await supabase.from('email_logs').update({ link_clicked: true, clicked_at: new Date() }).eq('email', email);
+
+//   res.redirect(originalUrl);
+// });
+
+// app.get("/send-email", async (req, res) => {
+//   // إدخال البيانات كـ Static Data
+//   const staticData = {
+//     to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
+//     subject: "Test Email", // الموضوع
+//     html: "<h1>This is a test email</h1>", // المحتوى HTML
+//     text: "This is a test email", // المحتوى النصي
+//     // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
+//     // templateData: {}, // البيانات التي سيتم استخدامها في القالب
+//     language: "ar", // اللغة
+//     // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
+//     // attachments: [] // المرفقات
+//   };
+
+//   try {
+//     // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
+//     const emailResult = await sendEmail(staticData);
+
+//     // إرجاع نتيجة النجاح
+//     res.status(200).json({ message: "Email sent successfully!", result: emailResult });
+//   } catch (error) {
+//     console.error("Error in sending email:", error);
+//     res.status(500).json({ message: "Failed to send email", error: error.message });
+//   }
+// });
+
+// app.get("/api", (req, res) => {
+//   res.send("API is working");
+// });
+
+
 
 
 app.get("/api", async (req, res) => {
   try {
-    // 1. فحص اتصال قاعدة البيانات
-    const dbCheck = await checkDatabaseConnection();
+     const dbCheck = await checkDatabaseConnection();
     
-    // 2. فحص وجود مجلد uploads
-    const uploadsDirExists = fs.existsSync(path.join(__dirname, "uploads"));
+     const uploadsDirExists = fs.existsSync(path.join(__dirname, "uploads"));
     
-    // 3. معلومات النظام الأساسية
-    const systemInfo = {
+     const systemInfo = {
       nodeVersion: process.version,
       platform: process.platform,
       memoryUsage: process.memoryUsage(),
       uptime: process.uptime()
     };
 
-    // 4. الرد النهائي
-    res.json({
+     res.json({
       status: "API is operational",
       timestamp: new Date().toISOString(),
       database: dbCheck,
@@ -110,8 +164,11 @@ app.get("/api", async (req, res) => {
         "/api/dishes",
         "/api/orders",
         "/api/auth",
-        // أضف بقية الروابط هنا
-      ]
+        "/api/reports",
+        "/api/paypal",
+        "/api/execute-sql",
+        "/api/send-email",
+        "/api/track/click",]
     });
 
   } catch (error) {
@@ -122,12 +179,8 @@ app.get("/api", async (req, res) => {
     });
   }
 });
- 
-app.use(express.static('public'));
-// إضافة هذا المسار لتقديم صفحة HTML
-app.get('/api/status', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
-  });
+
+
 
 
 app.listen(PORT, () => {

@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { getReviews, addReview } from '@/lib/reviews';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Star } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { getReviews, addReview } from "@/lib/reviews";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Star } from "lucide-react";
 
 export default function ReviewSection({ dishId }) {
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+  const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function ReviewSection({ dishId }) {
       const data = await getReviews(dishId);
       setReviews(data);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error("Error fetching reviews:", error);
     }
   };
 
@@ -28,11 +28,11 @@ export default function ReviewSection({ dishId }) {
 
     setLoading(true);
     try {
-      await addReview({...newReview, dish_id: dishId});
-      setNewReview({ rating: 0, comment: ''});
+      await addReview({ ...newReview, dish_id: dishId });
+      setNewReview({ rating: 0, comment: "" });
       await fetchReviews();
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error("Error submitting review:", error);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function ReviewSection({ dishId }) {
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold mb-4">التقييمات والمراجعات</h3>
-      
+
       {/* Add Review Form */}
       <form onSubmit={handleSubmitReview} className="mb-6">
         <div className="mb-4">
@@ -51,36 +51,42 @@ export default function ReviewSection({ dishId }) {
               <button
                 key={star}
                 type="button"
-                onClick={() => setNewReview(prev => ({ ...prev, rating: star }))}
+                onClick={() =>
+                  setNewReview((prev) => ({ ...prev, rating: star }))
+                }
                 className="focus:outline-none"
               >
                 <Star
                   className={`w-6 h-6 ${
-                    star <= newReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                    star <= newReview.rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
                   }`}
                 />
               </button>
             ))}
           </div>
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2">تعليقك</label>
           <Textarea
             value={newReview.comment}
-            onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+            onChange={(e) =>
+              setNewReview((prev) => ({ ...prev, comment: e.target.value }))
+            }
             placeholder="اكتب تعليقك هنا..."
             className="w-full"
             rows={3}
           />
         </div>
-        
+
         <Button
           type="submit"
           disabled={loading || newReview.rating === 0}
           className="w-full"
         >
-          {loading ? 'جاري الإرسال...' : 'إرسال التقييم'}
+          {loading ? "جاري الإرسال..." : "إرسال التقييم"}
         </Button>
       </form>
 
@@ -94,7 +100,9 @@ export default function ReviewSection({ dishId }) {
                   <Star
                     key={i}
                     className={`w-4 h-4 ${
-                      i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                      i < review.rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
                     }`}
                   />
                 ))}
@@ -109,4 +117,4 @@ export default function ReviewSection({ dishId }) {
       </div>
     </div>
   );
-} 
+}
