@@ -25,8 +25,8 @@ const imageController = require("./controllers/imageController");
 const { executeSqlQuery } = require("./controllers/sqlController");
 
 const cors = require("cors");
-const { checkDatabaseConnection } = require("./config/db.js");
-
+const checkDatabaseConnection = require("./config/dbCheck.js");
+ 
 const app = express();
 
 app.use(bodyParser.json());
