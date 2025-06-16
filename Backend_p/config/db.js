@@ -71,4 +71,4 @@ async function checkDatabaseConnection() {
   }
 }
 
-module.exports = { sql, checkDatabaseConnection };
+module.exports =   sql ;
