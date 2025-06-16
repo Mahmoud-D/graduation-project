@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pay Example</title>
+  <script src="https://www.paypal.com/sdk/js?client-id=Afb-AXFTQW3V7I_a7bT4p-oQ0hdT_yD3YPu-Ndg7P8KS5GZVWnvIiyzqGaqQ-p8UYdUELNxO7HXya6ig&currency=USD"></script>
+</head>
+<body>
+  <h2>ادفع كاش أو بايبال</h2>
+
+  <!-- زرار الدفع كاش -->
+  <button id="cashBtn">ادفع كاش</button>
+
+  <!-- زرار الدفع بايبال -->
+  <div id="paypal-button-container"></div>
+
+  <script>
+    const fixedOrderData = {
+      user_id: 2,
+      status: "pending",
+      delivery_address: "شارع التحرير، الجيزة",
+      city: "الجيزة",
+      phone_number: "01012345678",
+      notes: "بدون بصل",
+      dishes: [
+        { dishId: 15, quantity: 1 },
+        { dishId: 4, quantity: 1 }
+      ],
+      coupon_code: "code22324"
+    };
+
+    // الدفع كاش
+    document.getElementById("cashBtn").addEventListener("click", async () => {
+      const payload = {
+        ...fixedOrderData,
+        payment_method: "cash"
+      };
+
+      const res = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert(JSON.stringify(data));
+    });
+
+    // الدفع بايبال
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: "50.00" // المبلغ التقريبي — يُفضل تعديله ديناميكياً من الباك إند
+            }
+          }]
+        });
+      },
+
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          const paypal_order_id = data.orderID;
+
+          const payload = {
+            ...fixedOrderData,
+            payment_method: "paypal",
+            paypal_order_id: paypal_order_id
+          };
+console.log('payload',payload);
+
+          fetch("http://localhost:5000/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          })
+          .then(res => res.json())
+          .then(data => {
+            alert("تم الدفع بنجاح! 🎉");
+            console.log(data);
+          });
+        });
+      }
+    }).render("#paypal-button-container");
+  </script>
+</body>
+</html>

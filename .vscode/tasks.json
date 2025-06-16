@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "dev",
+      "path": "Backend_p",
+      "problemMatcher": [],
+      "label": "npm: dev - Backend_p",
+      "detail": "nodemon server.js"
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "path": "frontend",
+      "problemMatcher": [],
+      "label": "npm: dev - frontend",
+      "detail": "npm run dev"
+    }
+  ]
+}
