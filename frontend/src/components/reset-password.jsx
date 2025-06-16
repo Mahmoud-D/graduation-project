@@ -73,9 +73,14 @@ export function ResetPasswordForm({ className, ...props }) {
           router.push('/login');
         }, 2000);
       } else {
+
+        console.log(response);
+        
         setError(response.message || "حدث خطأ أثناء إعادة تعيين كلمة المرور");
       }
     } catch (err) {
+      console.log(err);
+      
       setError("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.");
     } finally {
       setLoading(false);
