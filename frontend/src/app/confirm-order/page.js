@@ -101,7 +101,7 @@ export default function EnhancedPaymentPage() {
 
 
     try {
-      const res = await fetch("http://localhost:5000/api/orders", {
+      const res = await fetch("https://localhost:5000/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export default function EnhancedPaymentPage() {
       if (response.ok) {
         const coupon = data[0];
         const myOrders = await fetch(
-          "http://localhost:5000/api/orders/my-orders",
+          "https://localhost:5000/api/orders/my-orders",
           {
             method: "GET",
             headers: {
