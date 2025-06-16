@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { KeyRound } from "lucide-react";
+import { KeyRound, Eye, EyeOff } from "lucide-react";
 import authEndpoints from "@/app/api/endPonts/auth";
 
 export function ResetPasswordForm({ className, ...props }) {
@@ -28,6 +28,8 @@ export function ResetPasswordForm({ className, ...props }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
@@ -64,7 +66,7 @@ export function ResetPasswordForm({ className, ...props }) {
     try {
       const response = await authEndpoints.resetPassword({
         token,
-        password: formData.password,
+        newPassword: formData.password,
       });
       
       if (response.success) {
@@ -106,24 +108,52 @@ export function ResetPasswordForm({ className, ...props }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 text-right">
               <Label htmlFor="password" className="text-sm font-medium">كلمة المرور الجديدة</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className={`text-right h-11 text-base ${error ? "border-red-500" : ""}`}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className={`text-right h-11 text-base ${error ? "border-red-500" : ""}`}
+                  placeholder="كلمة المرور الجديدة"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2 text-right">
               <Label htmlFor="confirmPassword" className="text-sm font-medium">تأكيد كلمة المرور</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className={`text-right h-11 text-base ${error ? "border-red-500" : ""}`}
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className={`text-right h-11 text-base ${error ? "border-red-500" : ""}`}
+                  placeholder="تأكيد كلمة المرور"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && (

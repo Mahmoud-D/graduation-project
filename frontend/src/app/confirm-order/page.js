@@ -44,12 +44,9 @@ import CheckoutSteps from "./CheckoutSteps";
 import OrderSuccess from "./OrderSuccess";
 import CouponInput from "./CouponInput";
 
-
 // أضف هذه الاستيرادات في أعلى الملف
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { CheckCircle2 } from "lucide-react";
-
-
 
 export default function EnhancedPaymentPage() {
   const router = useRouter();
@@ -67,8 +64,6 @@ export default function EnhancedPaymentPage() {
   const [couponError, setCouponError] = useState(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
-
-  
   const form = useForm({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
@@ -93,13 +88,6 @@ export default function EnhancedPaymentPage() {
 
   const createOrder = async (payload) => {
 
-
-    console.log("payload", payload);
-
-    // return
-    
-
-
     try {
       const res = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
@@ -109,16 +97,12 @@ export default function EnhancedPaymentPage() {
         },
         body: JSON.stringify(payload),
       });
-  
-   
+
       return res.json();
     } catch (error) {
       console.error("Error creating order:", error);
       throw error;
     }
-
-     
-   
   };
 
   const onSubmit = async (data) => {
@@ -392,9 +376,6 @@ export default function EnhancedPaymentPage() {
                     name="paymentMethod"
                     render={({ field }) => (
                       <FormItem>
-
-
-                        
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -423,100 +404,100 @@ export default function EnhancedPaymentPage() {
                           </FormItem>
 
                           <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-blue-200 bg-blue-50 p-6 hover:bg-blue-100 transition-colors">
-          <FormControl>
-            <RadioGroupItem value="paypal" className="text-blue-600" />
-          </FormControl>
-          <div className="flex-1">
-            <FormLabel className="font-semibold text-lg cursor-pointer">
-              💳 الدفع باستخدام بايبال
-            </FormLabel>
-            <p className="text-sm text-gray-600 mt-1">
-              سيتم توجيهك للدفع عبر حسابك على PayPal
-            </p>
-          </div>
-          <Badge variant="secondary" className="bg-blue-600 text-white">
-            آمن وسريع
-          </Badge>
-        </FormItem>
+                            <FormControl>
+                              <RadioGroupItem
+                                value="paypal"
+                                className="text-blue-600"
+                              />
+                            </FormControl>
+                            <div className="flex-1">
+                              <FormLabel className="font-semibold text-lg cursor-pointer">
+                                💳 الدفع باستخدام بايبال
+                              </FormLabel>
+                              <p className="text-sm text-gray-600 mt-1">
+                                سيتم توجيهك للدفع عبر حسابك على PayPal
+                              </p>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-600 text-white"
+                            >
+                              آمن وسريع
+                            </Badge>
+                          </FormItem>
                         </RadioGroup>
 
-
-
                         <FormMessage className="pt-2 text-red-500" />
-
-
-
-
-
-
-
-
-
-                        
                       </FormItem>
                     )}
                   />
-           {form.watch("paymentMethod") === "paypal" && (
-  <PayPalScriptProvider
-    options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
-  >
-    <PayPalButtons
-      style={{ layout: "vertical", color: "blue", shape: "pill", label: "paypal" }}
-      createOrder={(data, actions) => {
-        return actions.order.create({
-          purchase_units: [
-            {
-              amount: {
-                value: total.toFixed(2), // total calculated already
-              },
-            },
-          ],
-        });
-      }}
-      onApprove={async (data, actions) => {
-        const details = await actions.order.capture();
-        const shipping = details?.purchase_units?.[0]?.shipping;
-        const orderPayload = {
-          dishes: items.map((item) => ({
-            dishId: item.id,
-            quantity: item.quantity,
-          })),
-          paypal_order_id:data.orderID ,
-          payment_method: "paypal",
-          delivery_address: shipping?.address?.address_line_1 || "N/A",
-          city: shipping?.address?.admin_area_2 || "N/A",
-          phone_number: "N/A",
-          coupon_code: couponData?.[0]?.code || null,
-          status: "paid",
-        };
-        setIsSubmitting(true);
-        try {
-          const res = await createOrder(orderPayload);
-          if (res?.ok) {
-            setOrderNumber(res.order1?.order_id);
-            clearCart();
-            setIsOrderConfirmed(true);
-          }
-        } catch (err) {
-          console.error("Error after PayPal payment:", err);
-        } finally {
-          setIsSubmitting(false);
-        }
-      }}
-      onCancel={() => {
-        alert("تم إلغاء عملية الدفع عبر PayPal");
-      }}
-      onError={(err) => {
-        console.error("PayPal Checkout Error:", err);
-        alert("حدث خطأ أثناء الدفع عبر PayPal");
-      }}
-    />
-  </PayPalScriptProvider>
-)}
-
-
-
-
+                  {form.watch("paymentMethod") === "paypal" && (
+                    <PayPalScriptProvider
+                      options={{
+                        "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+                         "disable-funding": "card",
+                      }}
+                    >
+                      <PayPalButtons
+                        style={{
+                          layout: "vertical",
+                          color: "blue",
+                          shape: "pill",
+                          label: "paypal",
+                        }}
+                        createOrder={(data, actions) => {
+                          return actions.order.create({
+                            purchase_units: [
+                              {
+                                amount: {
+                                  value: total.toFixed(2) / 50, // total calculated already (from dollar to EGP conversion)
+                                },
+                              },
+                            ],
+                          });
+                        }}
+                        onApprove={async (data, actions) => {
+                          const details = await actions.order.capture();
+                          const shipping =
+                            details?.purchase_units?.[0]?.shipping;
+                          const orderPayload = {
+                            dishes: items.map((item) => ({
+                              dishId: item.id,
+                              quantity: item.quantity,
+                            })),
+                            paypal_order_id: data.orderID,
+                            payment_method: "paypal",
+                            delivery_address:
+                              shipping?.address?.address_line_1 || "N/A",
+                            city: shipping?.address?.admin_area_2 || "N/A",
+                            phone_number: "N/A",
+                            coupon_code: couponData?.[0]?.code || null,
+                            status: "paid",
+                          };
+                          setIsSubmitting(true);
+                          try {
+                            const res = await createOrder(orderPayload);
+                            if (res?.ok) {
+                              setOrderNumber(res.order1?.order_id);
+                              clearCart();
+                              setIsOrderConfirmed(true);
+                            }
+                          } catch (err) {
+                            console.error("Error after PayPal payment:", err);
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                        onCancel={() => {
+                          alert("تم إلغاء عملية الدفع عبر PayPal");
+                        }}
+                        onError={(err) => {
+                          console.error("PayPal Checkout Error:", err);
+                          alert("حدث خطأ أثناء الدفع عبر PayPal");
+                        }}
+                      />
+                    </PayPalScriptProvider>
+                  )}
 
                   <Alert className="mt-6 bg-yellow-50 border-yellow-200">
                     <Shield className="h-4 w-4 text-yellow-600" />
@@ -527,27 +508,22 @@ export default function EnhancedPaymentPage() {
                 </CardContent>
               </Card>
 
-
-   
-
-
-
-
-
-             { form.watch("paymentMethod") !== "paypal" &&<Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full text-xl py-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                    جاري تأكيد الطلب...
-                  </>
-                ) : (
-                  <>✨ تأكيد الطلب الآن</>
-                )}
-              </Button>}
+              {form.watch("paymentMethod") !== "paypal" && (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full text-xl py-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                      جاري تأكيد الطلب...
+                    </>
+                  ) : (
+                    <>✨ تأكيد الطلب الآن</>
+                  )}
+                </Button>
+              )}
             </div>
 
             <OrderSummary
