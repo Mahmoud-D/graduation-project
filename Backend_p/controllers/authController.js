@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
         userId: user.id,
         role: user.role,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "JWT_SECRET",
       { expiresIn: process.env.JWT_EXPIRATION }
     );
 
@@ -79,28 +79,11 @@ exports.login = async (req, res) => {
       success: false,
       message: "حدث خطأ في الخادم",
       system_message: error.message,
+      error: error,
       hint: "الرجاء المحاولة مرة أخرى لاحقًا",
     });
   }
 };
-
-// exports.register = async (req, res) => {
-//   const { name, email, password, role } = req.body;
-
-//   try {
-//     const newUser = new User(name, email, password, role || "user");
-//     const userId = await newUser.create();
-
-//     const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-//       expiresIn: "1h",
-//     });
-
-//     res.status(201).json({ message: "تم إنشاء المستخدم بنجاح", userId, token });
-//   } catch (error) {
-//     console.error("❌ Error in register:", error);
-//     res.status(500).json({ message: error.message || "حدث خطأ أثناء التسجيل" });
-//   }
-// };
 
 exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -205,7 +188,7 @@ exports.verifyEmail = async (req, res) => {
   const { token } = req.query;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
     const userId = decoded.userId;
     const user = await User.getById(userId);
     if (!user) {
@@ -277,11 +260,9 @@ exports.sendResetPasswordEmail = async (req, res) => {
     // 1. التأكد أن المستخدم موجود
     const user = await User.findByEmail(email);
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          message: "إن كنت مسجلا فقد ارسلنا الان لك رسالة بها خطوات التسجيل ",
-        });
+      return res.status(404).json({
+        message: "إن كنت مسجلا فقد ارسلنا الان لك رسالة بها خطوات التسجيل ",
+      });
     }
 
     // 2. إنشاء توكين جديد
@@ -305,11 +286,9 @@ exports.sendResetPasswordEmail = async (req, res) => {
       senderName,
     });
 
-    res
-      .status(200)
-      .json({
-        message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
-      });
+    res.status(200).json({
+      message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
+    });
   } catch (error) {
     console.error("❌ Error in sendResetPasswordEmail:", error);
     res.status(500).json({
@@ -325,7 +304,7 @@ exports.resetPassword = async (req, res) => {
 
   try {
     // 1. التحقق من صحة التوكين
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
     const userId = decoded.userId;
 
     // 2. التحقق أن المستخدم موجود

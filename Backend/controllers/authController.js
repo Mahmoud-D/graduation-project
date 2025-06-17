@@ -24,9 +24,13 @@ exports.login = async (req, res) => {
         .json({ message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRATION,
-    });
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || "JWT_SECRET",
+      {
+        expiresIn: process.env.JWT_EXPIRATION,
+      }
+    );
     res.json({ token });
   } catch (error) {
     res
@@ -42,9 +46,7 @@ exports.register = async (req, res) => {
     const newUser = new User(name, email, password, role || "user");
     const userId = await newUser.create();
 
-  
- 
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET || "JWT_SECRET", {
       expiresIn: process.env.JWT_EXPIRATION,
     });
 
