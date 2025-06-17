@@ -263,7 +263,7 @@ export default function EnhancedPaymentPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-base font-semibold text-gray-700">
                           <User className="w-4 h-4" />
-                          اسم المستخدم
+                          اسم المستلم                          
                         </FormLabel>
                         <FormControl>
                           <Input
