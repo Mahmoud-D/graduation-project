@@ -34,7 +34,7 @@ export default function DishSearchDropdown() {
         setLoading(true);
         try {
           const res = await fetch(
-            `http://localhost:5000/api/dishes?q=${encodeURIComponent(q)}`
+            `${process.env.NEXT_PUBLIC_API_URL}/dishes?q=${encodeURIComponent(q)}`
           );
           if (!res.ok) throw new Error("Network response was not ok");
           const data = await res.json();

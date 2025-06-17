@@ -32,7 +32,7 @@ export default function MenuPage() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/dishes`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dishes`);
       if (!response.ok) {
         throw new Error("Failed to fetch dishes");
       }
@@ -49,7 +49,9 @@ export default function MenuPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/categories`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
@@ -104,7 +106,7 @@ export default function MenuPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {selectedDishes.map((dish, index) => (
             <ProductCard key={index} dish={dish} />
-          ))} 
+          ))}
         </div>
 
         {selectedDishes.length === 0 && (

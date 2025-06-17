@@ -89,7 +89,7 @@ export default function EnhancedPaymentPage() {
   const createOrder = async (payload) => {
 
     try {
-      const res = await fetch("http://localhost:5000/api/orders", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -153,12 +153,12 @@ export default function EnhancedPaymentPage() {
     setCouponError(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/coupons/${code}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/coupons/${code}`);
       const data = await response.json();
       if (response.ok) {
         const coupon = data[0];
         const myOrders = await fetch(
-          "http://localhost:5000/api/orders/my-orders",
+          `${process.env.NEXT_PUBLIC_API_URL}/orders/my-orders`,
           {
             method: "GET",
             headers: {
