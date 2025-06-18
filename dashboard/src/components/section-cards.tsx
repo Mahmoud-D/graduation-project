@@ -1,6 +1,12 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import {
+  IconTrendingDown,
+  IconTrendingUp,
+  IconUsers,
+  IconUserShield,
+  type Icon,
+} from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -8,95 +14,90 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
-export function SectionCards() {
+// Props interface with custom card data
+interface SectionCardsProps {
+  adminCount?: number;
+  userCount?: number;
+  customCards?: CardData[];
+}
+
+// Define the data structure for a card
+interface CardData {
+  title: string;
+  value: string | number;
+  description: string;
+  icon: Icon;
+  trend?: {
+    direction: "up" | "down";
+    value: string;
+  };
+  footer: {
+    title: string;
+    description: string;
+  };
+}
+
+export function SectionCards({
+  adminCount = 0,
+  userCount = 0,
+  customCards = [],
+}: SectionCardsProps) {
+  // Default cards with dynamic count values
+  const defaultCards: CardData[] = [
+    {
+      title: "عدد المسؤولين",
+      value: adminCount,
+      description: "المسؤولين",
+      icon: IconUserShield,
+      footer: {
+        title: "مسؤولي النظام",
+        description: "المستخدمون الذين لديهم إمكانية الوصول الكامل إلى النظام",
+      },
+    },
+    {
+      title: "المستخدمين المسجلين",
+      value: userCount,
+      description: "المستخدمين",
+      icon: IconUsers,
+      footer: {
+        title: "حسابات العملاء النشطة",
+        description: "مستخدمو المنصة المسجلون",
+      },
+    },
+    // You can add more default cards here if needed
+  ];
+
+  // Combine default cards with any custom cards passed as props
+  const allCards = [...defaultCards, ...customCards];
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>New Customers</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
-        </CardFooter>
-      </Card>
+      {allCards.map((card, index) => (
+        <Card key={index} className="@container/card">
+          <CardHeader>
+            <CardDescription>{card.title}</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              {card.value}
+            </CardTitle>
+            <CardAction>
+              <Badge variant="outline">
+                <card.icon className="mr-1 h-3.5 w-3.5" />
+                {card.description}
+              </Badge>
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="flex gap-2 font-medium line-clamp-1">
+              {card.footer.title} <card.icon className="size-4" />
+            </div>
+            <div className="text-muted-foreground">
+              {card.footer.description}
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
-  )
+  );
 }

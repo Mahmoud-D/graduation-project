@@ -39,6 +39,7 @@ import {
   DishUpdate,
 } from "@/types";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function DishesPage() {
   // State for dishes
@@ -69,13 +70,14 @@ export default function DishesPage() {
 
   // Filtered and sorted data
   const [displayedDishes, setDisplayedDishes] = useState<Dish[]>(dishes);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const router = useRouter();
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (isFormData = false) => {
     const token = localStorage.getItem("authToken");
     return {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       Authorization: token ? `Bearer ${token}` : "",
     };
   };
@@ -134,6 +136,11 @@ export default function DishesPage() {
       setIsLoading(false);
     }
   };
+
+  console.log(
+    "image_path",
+    dishes.map((d) => d.imagePath)
+  );
 
   // Fetch data on component mount
   useEffect(() => {
@@ -236,16 +243,35 @@ export default function DishesPage() {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
+    }
+  };
+
   // Handle form submission for new dish
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const formData = new FormData();
+      formData.append("name", newDish.name);
+      formData.append("description", newDish.description);
+      formData.append("price", newDish.price.toString());
+      formData.append("category", newDish.category);
+
+      // Append image if selected
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      // Don't set Content-Type header - browser will set it with boundary
+
       const response = await fetch(`${API}dishes`, {
         method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(newDish),
+        headers: getAuthHeaders(true),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -257,6 +283,7 @@ export default function DishesPage() {
 
       // Reset form and close dialog
       setNewDish({ name: "", description: "", price: 0, category: "" });
+      setSelectedImage(null);
       setDialogOpen(false);
     } catch (err) {
       console.error("Error creating dish:", err);
@@ -423,6 +450,25 @@ export default function DishesPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="grid items-center w-full gap-2">
+                <Label htmlFor="image">Image</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="flex-1"
+                  />
+                  {selectedImage && (
+                    <div className="text-sm text-muted-foreground">
+                      Selected: {selectedImage.name}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <DialogFooter>
@@ -628,16 +674,15 @@ export default function DishesPage() {
               </TableRow>
             ) : (
               displayedDishes.map((dish) => (
-                <TableRow key={dish.id}>
-                  <TableCell>
+                <TableRow key={dish.id}>                  <TableCell>
                     {dish.imagePath ? (
                       <div className="relative w-10 h-10 overflow-hidden rounded">
-                        {/* <Image
-                          src={dish.imagePath}
+                        <Image
+                          src={`http://localhost:5000/api/uploads/${dish.imagePath}`}
                           alt={dish.name}
                           fill
                           className="object-cover"
-                        /> */}
+                        />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center w-10 h-10 text-xs rounded bg-muted text-muted-foreground">
@@ -663,9 +708,9 @@ export default function DishesPage() {
                       .join(", ")}
                   </TableCell>
                   <TableCell className="text-right">
-                    {dish.averageRating ? (
+                    {dish.average_rating ? (
                       <div className="flex items-center justify-end">
-                        <span>⭐ {dish.averageRating.toFixed(1)}</span>
+                        <span>⭐ {dish.average_rating.toFixed(1)}</span>
                       </div>
                     ) : (
                       <span className="text-sm text-muted-foreground">
