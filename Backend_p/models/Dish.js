@@ -1,72 +1,95 @@
 const sql = require("../config/db");
 
-// Get all dishes
 const Dish = {
-  getAll: async ({ category, minPrice, maxPrice, name }) => {
+  getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
     let query = sql`
-      WITH latest_promotion AS (
-        SELECT 
-          dish_id,
-          discount_percentage,
-          start_date,
-          end_date,
-          is_active,
-          created_at,
-          ROW_NUMBER() OVER (
-            PARTITION BY dish_id 
-            ORDER BY created_at DESC, discount_percentage DESC
-          ) AS rn
-        FROM promotions
-        WHERE is_active = true
-          AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+      WITH dishes_with_details AS (
+        SELECT
+          d.id,
+          d.name,
+          d.description,
+          d.price AS old_price,
+          d.image_path,
+          d.created_at,
+          AVG(r.rating) AS average_rating,
+          STRING_AGG(DISTINCT c.name, ',') AS categories,
+          p.discount_percentage,
+          CASE
+            WHEN p.discount_percentage IS NOT NULL
+            THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
+            ELSE d.price
+          END AS price,
+          p.start_date AS promotion_start,
+          p.end_date AS promotion_end,
+          CASE
+            WHEN p.discount_percentage IS NULL THEN 'no promotion'
+            ELSE 'active'
+          END AS promotion_status
+        FROM dishes d
+        LEFT JOIN (
+          SELECT
+            dish_id, discount_percentage, start_date, end_date,
+            ROW_NUMBER() OVER (
+              PARTITION BY dish_id
+              ORDER BY created_at DESC, discount_percentage DESC
+            ) AS rn
+          FROM promotions
+          WHERE is_active = true AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+        ) p ON d.id = p.dish_id AND p.rn = 1
+        LEFT JOIN reviews r ON d.id = r.dish_id
+        LEFT JOIN dish_categories dc ON d.id = dc.dish_id
+        LEFT JOIN categories c ON dc.category_id = c.id
+    `;
+
+    const whereClauses = [];
+    if (name) {
+      whereClauses.push(
+        sql`translate(translate(lower(d.name), 'أإآ', 'ااا'), 'ى', 'ي') ILIKE translate(translate(lower(${`%${name}%`}), 'أإآ', 'ااا'),'ى', 'ي')`
+      );
+    }
+    if (category && category !== "all") {
+      whereClauses.push(
+        sql`d.id IN (SELECT dish_id FROM dish_categories WHERE category_id = ${category})`
+      );
+    }
+
+    if (whereClauses.length > 0) {
+      query = sql`${query} WHERE ${whereClauses.reduce(
+        (prev, curr) => sql`${prev} AND ${curr}`
+      )}`;
+    }
+
+    query = sql`${query}
+        GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
       )
-      SELECT 
-        d.id,
-        d.name,
-        d.description,
-        d.price AS old_price,  -- تم تغيير هذا من price إلى old_price
-        d.image_path,
-        d.created_at,
-        AVG(r.rating) AS average_rating,
-        STRING_AGG(c.name, ',') AS categories,
-        lp.discount_percentage,
-        CASE
-          WHEN lp.discount_percentage IS NOT NULL
-          THEN ROUND(d.price * (1 - lp.discount_percentage/100), 2)
-          ELSE d.price
-        END AS price,
-        lp.start_date AS promotion_start,
-        lp.end_date AS promotion_end,
-        CASE
-          WHEN lp.discount_percentage IS NULL THEN 'no promotion'
-          ELSE 'active'
-        END AS promotion_status
-      FROM dishes d
-      LEFT JOIN reviews r ON d.id = r.dish_id
-      LEFT JOIN dish_categories dc ON d.id = dc.dish_id
-      LEFT JOIN categories c ON dc.category_id = c.id
-      LEFT JOIN latest_promotion lp ON d.id = lp.dish_id AND lp.rn = 1
+      SELECT * FROM dishes_with_details
       WHERE TRUE
     `;
-    const params = [];
 
-    if (category) {
-      query = sql`${query} AND c.name = ${category}`;
-    }
-
+    // Add filtering for price on the final calculated price
     if (minPrice) {
-      query = sql`${query} AND d.price >= ${minPrice}`;
+      query = sql`${query} AND price >= ${minPrice}`;
     }
-
     if (maxPrice) {
-      query = sql`${query} AND d.price <= ${maxPrice}`;
+      query = sql`${query} AND price <= ${maxPrice}`;
     }
 
-    if (name) {
-      query = sql`${query} AND d.name ILIKE ${`%${name}%`}`;
+    // Add sorting
+    switch (sortBy) {
+      case "price_asc":
+        query = sql`${query} ORDER BY price ASC, name ASC`;
+        break;
+      case "price_desc":
+        query = sql`${query} ORDER BY price DESC, name ASC`;
+        break;
+      case "name_asc":
+        query = sql`${query} ORDER BY name ASC`;
+        break;
+      case "relevance":
+      default:
+        query = sql`${query} ORDER BY name ASC`;
+        break;
     }
-
-    query = sql`${query} GROUP BY d.id, lp.discount_percentage, lp.start_date, lp.end_date`;
 
     try {
       const result = await query;
@@ -75,8 +98,8 @@ const Dish = {
           id: dish.id,
           name: dish.name,
           description: dish.description,
-          price: dish.price,
-          old_price: dish.old_price,
+          price: parseFloat(dish.price),
+          old_price: parseFloat(dish.old_price),
           image_path: dish.image_path,
           created_at: dish.created_at,
           average_rating: dish.average_rating
@@ -90,19 +113,113 @@ const Dish = {
             ...baseDish,
             promotion: {
               discount_percentage: dish.discount_percentage,
-              final_price: dish.price,
+              final_price: parseFloat(dish.price),
               start_date: dish.promotion_start,
               end_date: dish.promotion_end,
               status: dish.promotion_status,
             },
           };
         }
-
         return baseDish;
       });
     } catch (err) {
       console.error("Error in getAll:", err);
       throw err;
+    }
+  },
+
+  getDishesByIds: async (ids) => {
+    if (!Array.isArray(ids)) {
+      if (typeof ids === "string") {
+        try {
+          ids = JSON.parse(ids);
+          if (!Array.isArray(ids)) ids = [Number(ids)];
+        } catch {
+          ids = ids.split(",").map((x) => Number(x.trim()));
+        }
+      } else if (typeof ids === "number") {
+        ids = [ids];
+      } else {
+        throw new Error("يجب تقديم مصفوفة من IDs صالحة");
+      }
+    }
+
+    ids = ids.map(Number).filter((x) => !isNaN(x));
+
+    if (ids.length === 0) return [];
+
+    try {
+      const result = await sql`
+        WITH active_promotions AS (
+          SELECT 
+            dish_id,
+            discount_percentage,
+            start_date,
+            end_date,
+            created_at,
+            ROW_NUMBER() OVER (
+              PARTITION BY dish_id 
+              ORDER BY created_at DESC, discount_percentage DESC
+            ) AS rn
+          FROM promotions
+          WHERE is_active = true
+            AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+        )
+        SELECT 
+          d.id,
+          d.name,
+          d.description,
+          d.price AS old_price,
+          d.image_path,
+          d.created_at,
+          COALESCE(AVG(r.rating), 0) AS average_rating,
+          COALESCE(STRING_AGG(DISTINCT c.name, ','), '') AS categories,
+          p.discount_percentage,
+          CASE
+            WHEN p.discount_percentage IS NOT NULL
+            THEN ROUND(d.price * (1 - p.discount_percentage/100), 2)
+            ELSE d.price
+          END AS price,
+          p.start_date AS promotion_start,
+          p.end_date AS promotion_end,
+          CASE
+            WHEN p.discount_percentage IS NULL THEN 'no promotion'
+            ELSE 'active'
+          END AS promotion_status
+        FROM dishes d
+        LEFT JOIN reviews r ON d.id = r.dish_id
+        LEFT JOIN dish_categories dc ON d.id = dc.dish_id
+        LEFT JOIN categories c ON dc.category_id = c.id
+        LEFT JOIN active_promotions p ON d.id = p.dish_id AND p.rn = 1
+        WHERE d.id = ANY(${sql`${ids}`})
+        GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
+      `;
+
+      return result.map((dish) => ({
+        id: dish.id,
+        name: dish.name,
+        description: dish.description,
+        price: parseFloat(dish.price),
+        old_price: parseFloat(dish.old_price),
+        image_path: dish.image_path,
+        created_at: dish.created_at,
+        average_rating: parseFloat(dish.average_rating).toFixed(1),
+        categories: dish.categories
+          ? dish.categories.split(",").filter(Boolean)
+          : [],
+        ...(dish.discount_percentage && {
+          promotion: {
+            discount_percentage: parseFloat(dish.discount_percentage),
+            final_price: parseFloat(dish.price),
+            start_date: dish.promotion_start,
+            end_date: dish.promotion_end,
+            status: dish.promotion_status,
+          },
+        }),
+      }));
+    } catch (err) {
+      console.error("PostgreSQL Error:", err);
+      throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
     }
   },
   // Get dish by ID
