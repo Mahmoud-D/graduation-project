@@ -1,0 +1,281 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Search, X } from "lucide-react";
+import { API } from "@/constant";
+
+// User interface
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  is_verified: boolean;
+}
+
+export default function Users() {
+  // State variables
+  const [users, setUsers] = useState<User[]>([]);
+  const [displayedUsers, setDisplayedUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [processingId, setProcessingId] = useState<number | null>(null);
+
+  // Authentication headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
+    return {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    };
+  };
+
+  // Fetch users from API
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API}users`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setUsers(data);
+      setDisplayedUsers(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
+      console.error("Error fetching users:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Toggle user activation status
+  const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
+    setProcessingId(userId);
+
+    try {
+      const endpoint = `${API}users/deactivateUser/${userId}`;
+
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      // Update user in the local state
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, is_verified: !currentStatus } : user
+        )
+      );
+
+      // Apply filters again
+      applyFilters();
+    } catch (err) {
+      console.error(`Error toggling user status:`, err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Apply filters for search and dropdown selections
+  const applyFilters = () => {
+    let filtered = [...users];
+
+    // Apply search
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply role filter
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      const isActive = statusFilter === "active";
+      filtered = filtered.filter((user) => user.is_verified === isActive);
+    }
+
+    setDisplayedUsers(filtered);
+  };
+
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Apply filters when filter state changes
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, roleFilter, statusFilter, users]);
+
+  return (
+    <div className="container py-10 mx-auto">
+      <h1 className="mb-6 text-2xl font-bold">إدارة المستخدمين</h1>
+
+      {/* Filters and search */}
+      <div className="flex flex-col gap-4 mb-6 md:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="w-full md:w-40">
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">جميع الأدوار</SelectItem>
+              <SelectItem value="admin">مسؤل</SelectItem>
+              <SelectItem value="user">مستخدم</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full md:w-40">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">جميع الحالات</SelectItem>
+              <SelectItem value="active">نشط</SelectItem>
+              <SelectItem value="inactive">غير نشط</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Loading and error states */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : error ? (
+        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
+          <p>{error}</p>
+          <Button onClick={fetchUsers} variant="outline" className="mt-2">
+            Try Again
+          </Button>
+        </div>
+      ) : (
+        <Table>
+          <TableCaption>قائمة بجميع المستخدمين في النظام</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[80px]">الرقم التعريفي</TableHead>
+              <TableHead>الاسم</TableHead>
+              <TableHead>البريد الالكتروني</TableHead>
+              <TableHead>الدور</TableHead>
+              <TableHead>الحالة</TableHead>
+              <TableHead className="text-right">الإجراءات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {displayedUsers.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="py-8 text-center text-muted-foreground"
+                >
+                  No users found{searchTerm ? " matching your search" : ""}
+                </TableCell>
+              </TableRow>
+            ) : (
+              displayedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.id}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={user.role === "admin" ? "default" : "outline"}
+                    >
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={user.is_verified ? "success" : "destructive"}
+                      className={
+                        user.is_verified ? "bg-green-100 text-green-800" : ""
+                      }
+                    >
+                      {user.is_verified ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant={user.is_verified ? "destructive" : "default"}
+                      size="sm"
+                      onClick={() =>
+                        toggleUserStatus(user.id, user.is_verified)
+                      }
+                      disabled={processingId === user.id}
+                    >
+                      {processingId === user.id ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : null}
+                      {user.is_verified ? "Deactivate" : "Activate"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  );
+}

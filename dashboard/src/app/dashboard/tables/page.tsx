@@ -1,6 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { z } from "zod"; // Make sure to import zod
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Table,
   TableBody,
@@ -37,6 +48,15 @@ import {
   CategoryResponse,
   CategoryUpdate,
 } from "@/types";
+
+// Define validation schema with Zod
+const categoryFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  description: z.string().min(5, "Description must be at least 5 characters"),
+});
+
+// Infer the type from the schema
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function TablesPage() {
   // State for categories
@@ -277,8 +297,8 @@ export default function TablesPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container py-10 mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Categories</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -293,7 +313,7 @@ export default function TablesPage() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
@@ -305,7 +325,7 @@ export default function TablesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
@@ -319,7 +339,7 @@ export default function TablesPage() {
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
                   Create Category
                 </Button>
@@ -339,7 +359,7 @@ export default function TablesPage() {
             </DialogHeader>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-name">Name</Label>
                 <Input
                   id="edit-name"
@@ -351,7 +371,7 @@ export default function TablesPage() {
                 />
               </div>
 
-              <div className="grid w-full items-center gap-2">
+              <div className="grid items-center w-full gap-2">
                 <Label htmlFor="edit-description">Description</Label>
                 <Input
                   id="edit-description"
@@ -373,7 +393,7 @@ export default function TablesPage() {
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
                   Save Changes
                 </Button>
@@ -384,7 +404,7 @@ export default function TablesPage() {
       </div>
 
       {/* Search and filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -420,11 +440,11 @@ export default function TablesPage() {
 
       {/* Loading and error states */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : error ? (
-        <div className="bg-destructive/10 p-4 rounded-md text-destructive text-center">
+        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
           <p>{error}</p>
           <Button onClick={fetchCategories} variant="outline" className="mt-2">
             Try Again
@@ -462,7 +482,7 @@ export default function TablesPage() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center py-8 text-muted-foreground"
+                  className="py-8 text-center text-muted-foreground"
                 >
                   No categories found{searchTerm ? " matching your search" : ""}
                 </TableCell>

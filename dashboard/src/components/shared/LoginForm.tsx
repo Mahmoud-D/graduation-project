@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
+import { API } from "@/constant";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -34,13 +35,12 @@ export default function LoginForm() {
       password: "",
     },
   });
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/";
   const onSubmit = async (data: FormValues) => {
     try {
       // Add static role to request data
       const requestData = {
         ...data,
-        role: "user", // Set your required static role value here
+        role: "admin", // Set your required static role value here
       };
 
       // Handle form submission, e.g., send data to an API endpoint
@@ -85,14 +85,14 @@ export default function LoginForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-md mx-auto mt-10 border p-8 rounded-md shadow-md bg-white "
+        className="max-w-md p-8 mx-auto mt-10 space-y-4 bg-white border rounded-md shadow-md "
       >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>الاسم</FormLabel>
               <FormControl>
                 <Input placeholder="Your name" {...field} />
               </FormControl>
@@ -105,7 +105,7 @@ export default function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>البريد الالكتروني</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="you@example.com" {...field} />
               </FormControl>
@@ -118,7 +118,7 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>كلمة المرور</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="Password" {...field} />
               </FormControl>
@@ -126,7 +126,7 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">تسجيل الدخول</Button>
       </form>
     </Form>
   );
