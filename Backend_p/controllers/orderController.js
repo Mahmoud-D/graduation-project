@@ -248,7 +248,7 @@ const createOrder = async (req, res) => {
       return total;
     }, 0);
 
-    let finalAmount = 0;
+    let finalAmount = totalAmount;
     let coupon = null;
     if (coupon_code) {
       try {
