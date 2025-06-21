@@ -1,80 +1,88 @@
 const sql = require("../config/db");
 
 const Dish = {
-// models/Dish.js
+  // models/Dish.js
 
-getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
-  let query = sql`SELECT * FROM v_dishes_public`;
+  getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
+    let query = sql`SELECT * FROM v_dishes_public`;
 
-  const whereClauses = [];
+    const whereClauses = [];
 
-  if (name) {
-    whereClauses.push(
-      sql`translate(translate(lower(name), 'أإآ', 'ااا'), 'ى', 'ي') ILIKE translate(translate(lower(${`%${name}%`}), 'أإآ', 'ااا'),'ى', 'ي')`
-    );
-  }
+    if (name) {
+      whereClauses.push(
+        sql`translate(translate(lower(name), 'أإآ', 'ااا'), 'ى', 'ي') ILIKE translate(translate(lower(${`%${name}%`}), 'أإآ', 'ااا'),'ى', 'ي')`
+      );
+    }
 
-  if (category && category !== "all") {
-    whereClauses.push(
-      sql`id IN (SELECT dish_id FROM dish_categories WHERE category_id = ${category})`
-    );
-  }
-  
-  if (minPrice) {
-    whereClauses.push(sql`price >= ${minPrice}`);
-  }
-  if (maxPrice) {
-    whereClauses.push(sql`price <= ${maxPrice}`);
-  }
+    if (category && category !== "all") {
+      whereClauses.push(
+        sql`id IN (SELECT dish_id FROM dish_categories WHERE category_id = ${category})`
+      );
+    }
 
-  if (whereClauses.length > 0) {
-    query = sql`${query} WHERE ${sql.join(whereClauses, sql` AND `)}`;
-  }
+    if (minPrice) {
+      whereClauses.push(sql`price >= ${minPrice}`);
+    }
+    if (maxPrice) {
+      whereClauses.push(sql`price <= ${maxPrice}`);
+    }
 
-  let orderByClause;
-  switch (sortBy) {
-    case "price_asc":
-      orderByClause = sql`ORDER BY price ASC, name ASC`;
-      break;
-    case "price_desc":
-      orderByClause = sql`ORDER BY price DESC, name ASC`;
-      break;
-    case "name_asc":
-      orderByClause = sql`ORDER BY name ASC`;
-      break;
-    case "name_desc":
-      orderByClause = sql`ORDER BY name DESC`;
-      break;
-    default:
-      orderByClause = sql`ORDER BY created_at DESC, name ASC`;
-      break;
-  }
-  
-  query = sql`${query} ${orderByClause}`;
+    if (whereClauses.length > 0) {
+      query = sql`${query} WHERE ${whereClauses.reduce(
+        (prev, curr) => sql`${prev} AND ${curr}`
+      )}`;
+    }
 
-  try {
-    const result = await query;
-    return result.map((dish) => ({
+    let orderByClause;
+    switch (sortBy) {
+      case "price_asc":
+        orderByClause = sql`ORDER BY price ASC, name ASC`;
+        break;
+      case "price_desc":
+        orderByClause = sql`ORDER BY price DESC, name ASC`;
+        break;
+      case "name_asc":
+        orderByClause = sql`ORDER BY name ASC`;
+        break;
+      case "name_desc":
+        orderByClause = sql`ORDER BY name DESC`;
+        break;
+      default:
+        orderByClause = sql`ORDER BY created_at DESC, name ASC`;
+        break;
+    }
+
+    query = sql`${query} ${orderByClause}`;
+
+    try {
+      const result = await query;
+      return result.map((dish) => ({
         id: dish.id,
         name: dish.name,
         description: dish.description,
         price: parseFloat(dish.price),
-        old_price: dish.old_price ? parseFloat(dish.old_price) : parseFloat(dish.price),
+        old_price: dish.old_price
+          ? parseFloat(dish.old_price)
+          : parseFloat(dish.price),
         image_path: dish.image_path,
         created_at: dish.created_at,
-        average_rating: dish.average_rating ? parseFloat(dish.average_rating).toFixed(1) : null,
+        average_rating: dish.average_rating
+          ? parseFloat(dish.average_rating).toFixed(1)
+          : null,
         categories: dish.categories ? dish.categories.split(",") : [],
-        offer: dish.offer_id ? {
-            id: dish.offer_id,
-            title: dish.offer_title,
-            discount_percentage: dish.discount_percentage
-        } : null
-    }));
-  } catch (err) {
-    console.error("Error in getAll:", err);
-    throw err;
-  }
-},
+        offer: dish.offer_id
+          ? {
+              id: dish.offer_id,
+              title: dish.offer_title,
+              discount_percentage: dish.discount_percentage,
+            }
+          : null,
+      }));
+    } catch (err) {
+      console.error("Error in getAll:", err);
+      throw err;
+    }
+  },
 
   getDishesByIds: async (ids) => {
     if (!Array.isArray(ids)) {
@@ -173,25 +181,24 @@ getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
   // Get dish by ID
   getDishesByIds: async (ids) => {
     if (!Array.isArray(ids)) {
-      if (typeof ids === 'string') {
+      if (typeof ids === "string") {
         try {
           ids = JSON.parse(ids);
           if (!Array.isArray(ids)) ids = [Number(ids)];
         } catch {
-          ids = ids.split(',').map(x => Number(x.trim()));
+          ids = ids.split(",").map((x) => Number(x.trim()));
         }
-      } else if (typeof ids === 'number') {
+      } else if (typeof ids === "number") {
         ids = [ids];
       } else {
         throw new Error("يجب تقديم مصفوفة من IDs صالحة");
       }
     }
-  
+
     ids = ids.map(Number).filter((x) => !isNaN(x));
-  
+
     if (ids.length === 0) return [];
-  
-   
+
     try {
       const result = await sql`
         WITH active_promotions AS (
@@ -238,7 +245,7 @@ getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
         WHERE d.id = ANY(${sql`${ids}`})
         GROUP BY d.id, p.discount_percentage, p.start_date, p.end_date
       `;
-  
+
       return result.map((dish) => ({
         id: dish.id,
         name: dish.name,
@@ -266,7 +273,7 @@ getAll: async ({ category, minPrice, maxPrice, name, sortBy }) => {
       throw new Error("فشل في جلب بيانات الأطباق: " + err.message);
     }
   },
-  
+
   findById: async (id) => {
     if (!id) {
       throw new Error("Invalid dish ID");
