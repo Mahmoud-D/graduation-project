@@ -58,12 +58,13 @@ app.post("/api/execute-sql", executeSqlQuery);
 
 // Routes
 app.use("/api/users", userRoutes);
-app.use("/api/promotions", promotionsRoutes);
 app.use("/api/dishes", dishRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
+
+app.use("/api/promotions", promotionsRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/restaurantReviews", restaurantReviewsRoutes);
-app.use("/api/categories", categoryRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/apply-coupon", couponUsesRoutes);
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
