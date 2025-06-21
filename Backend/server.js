@@ -41,15 +41,15 @@ const userRoutes = require('./routes/userRoutes'); // تأكد من إنشاء r
 const dishRoutes = require('./routes/dishRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const orderDishRoutes = require('./routes/orderDishRoutes');
-  const authRoutes = require('./routes/authRoutes');
- const promotionsRoutes = require('./routes/promotionsRoutes');
+const authRoutes = require('./routes/authRoutes');
+const promotionsRoutes = require('./routes/promotionsRoutes');
 const reviewRoutes = require('./routes/reviewsRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const couponUsesRoutes = require('./routes/couponUsesRoutes');
 const distinctiveDishRoutes = require('./routes/distinctiveDishRoutes');
 const imageController = require('./controllers/imageController');
-const {executeSqlQuery} = require('./controllers/sqlController');
+const { executeSqlQuery } = require('./controllers/sqlController');
 
 const cors = require('cors');
 
@@ -101,7 +101,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/coupons', couponRoutes);
-app.use('/api/apply-coupon', couponUsesRoutes); 
+app.use('/api/apply-coupon', couponUsesRoutes);
 app.use('/api/distinctive-dishes', distinctiveDishRoutes);
 
 
@@ -109,9 +109,9 @@ app.use('/api/orderDishes', orderDishRoutes);
 app.use('/api/auth', authRoutes);
 
 
- 
 
- 
+
+
 
 app.get('/api', (req, res) => {
   res.send('API is working');
@@ -119,7 +119,7 @@ app.get('/api', (req, res) => {
 
 
 
- const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
