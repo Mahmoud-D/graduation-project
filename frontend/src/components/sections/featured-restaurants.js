@@ -68,7 +68,7 @@ export default function MenuCategories() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {dishes.map((dish) => (
-            <EnhancedProductCard key={dish.id} dish={dish} />
+            <EnhancedProductCard key={dish.dish_id} dish={dish} />
           ))}
         </div>
         <div className="text-center mt-12">
