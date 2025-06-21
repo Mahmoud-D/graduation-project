@@ -2,7 +2,6 @@
 
 const connection = require("../config/db");
 
- 
 const Order = {
   getAllOrdersWithDishes: () => {
     return new Promise((resolve, reject) => {
@@ -13,26 +12,23 @@ const Order = {
           orders.status,
           orders.created_at,
           orders.updated_at,
-          order_dishes.dish_id,
+          order_items.dish_id,
           dishes.name AS dish_name,
-          order_dishes.quantity
+          order_items.quantity
         FROM 
           orders
         JOIN 
-          order_dishes ON orders.id = order_dishes.order_id
+          order_items ON orders.id = order_items.order_id
         JOIN 
-          dishes ON order_dishes.dish_id = dishes.id;
+          dishes ON order_items.dish_id = dishes.id;
       `;
-      
+
       connection.query(sql, (err, results) => {
         if (err) return reject(err);
         resolve(results);
       });
     });
   },
-  
-
-
 
   getAll: () => {
     return new Promise((resolve, reject) => {
@@ -44,37 +40,36 @@ const Order = {
           orders.created_at,
           orders.updated_at,
           GROUP_CONCAT(
-            CONCAT(dishes.name, ' (', order_dishes.quantity, ')')
+            CONCAT(dishes.name, ' (', order_items.quantity, ')')
             SEPARATOR ', '
           ) AS dishes 
         FROM 
           orders
         JOIN 
-          order_dishes ON orders.id = order_dishes.order_id
+          order_items ON orders.id = order_items.order_id
         JOIN 
-          dishes ON order_dishes.dish_id = dishes.id
+          dishes ON order_items.dish_id = dishes.id
         GROUP BY 
           orders.id;
       `;
       connection.query(sql, (err, results) => {
         if (err) return reject(err);
-        
+
         // تحويل الأطباق إلى مصفوفة في الكود
-        results.forEach(order => {
-          order.dishes = order.dishes.split(', ').map(dish => {
-            const [name, quantity] = dish.split(' (');
+        results.forEach((order) => {
+          order.dishes = order.dishes.split(", ").map((dish) => {
+            const [name, quantity] = dish.split(" (");
             return {
               dish_name: name,
-              quantity: parseInt(quantity.replace(')', ''), 10)
+              quantity: parseInt(quantity.replace(")", ""), 10),
             };
           });
         });
-        
+
         resolve(results);
       });
     });
   },
-
 
   getById: (id) => {
     return new Promise((resolve, reject) => {
@@ -107,7 +102,7 @@ const Order = {
   
         FROM orders o
         JOIN users u ON o.user_id = u.id
-        JOIN order_dishes od ON o.id = od.order_id
+        JOIN order_items od ON o.id = od.order_id
         JOIN dishes d ON od.dish_id = d.id
         LEFT JOIN promotions p 
           ON d.id = p.dish_id 
@@ -118,14 +113,14 @@ const Order = {
   
         WHERE o.id = ?;
       `;
-  
+
       connection.query(sql, [id], (err, results) => {
         if (err) return reject(err);
-  
+
         if (results.length === 0) {
           return reject(new Error(`Order with ID ${id} not found`));
         }
-  
+
         const order = results.reduce((acc, row) => {
           if (!acc) {
             acc = {
@@ -141,14 +136,14 @@ const Order = {
               dishes: [],
             };
           }
-  
+
           const dishData = {
             ...row,
             quantity: row.quantity,
             discount_percentage: row.discount_percentage,
             final_price: row.final_price,
           };
-  
+
           // نحذف بيانات الطلب والمستخدم من بيانات الطبق لتفادي التكرار
           delete dishData.order_id;
           delete dishData.user_id;
@@ -159,23 +154,20 @@ const Order = {
           delete dishData.user_email;
           delete dishData.coupon_code;
           delete dishData.coupon_discount_value;
-  
+
           acc.dishes.push(dishData);
-  
+
           return acc;
         }, null);
-  
+
         resolve(order);
       });
     });
   },
-  
-  
 
-  
   getMyOrders: (userId) => {
-    console.log("userId",userId);
-    
+    console.log("userId", userId);
+
     return new Promise((resolve, reject) => {
       const sql = `
         SELECT 
@@ -185,15 +177,15 @@ const Order = {
           orders.created_at,
           orders.updated_at,
           GROUP_CONCAT(
-            CONCAT(dishes.name, ' (', order_dishes.quantity, ')')
+            CONCAT(dishes.name, ' (', order_items.quantity, ')')
             SEPARATOR ', '
           ) AS dishes
         FROM 
           orders
         JOIN 
-          order_dishes ON orders.id = order_dishes.order_id
+          order_items ON orders.id = order_items.order_id
         JOIN 
-          dishes ON order_dishes.dish_id = dishes.id
+          dishes ON order_items.dish_id = dishes.id
         JOIN
           users ON orders.user_id = users.id
         WHERE 
@@ -201,45 +193,26 @@ const Order = {
         GROUP BY 
           orders.id;
       `;
-  
+
       connection.query(sql, [userId], (err, results) => {
         if (err) return reject(err);
-  
-        const orders = results.map(order => {
-          order.dishes = order.dishes.split(', ').map(dish => {
-            const [name, quantity] = dish.split(' (');
+
+        const orders = results.map((order) => {
+          order.dishes = order.dishes.split(", ").map((dish) => {
+            const [name, quantity] = dish.split(" (");
             return {
               dish_name: name,
-              quantity: parseInt(quantity.replace(')', ''), 10)
+              quantity: parseInt(quantity.replace(")", ""), 10),
             };
           });
-  
+
           return order;
         });
-  
+
         resolve(orders);
       });
     });
   },
-  
-
- 
-  
-  
-  create: (order) => {
-    const { user_id, status } = order;
-    const now = new Date();
-    return new Promise((resolve, reject) => {
-      connection.query(
-        "INSERT INTO orders (user_id, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
-        [user_id, status, now, now],
-        (err, result) => {
-          if (err) return reject(err);
-          resolve({ id: result.insertId, ...order });
-        }
-      );
-    });
-  },
 
   create: (order) => {
     const { user_id, status } = order;
@@ -256,31 +229,48 @@ const Order = {
     });
   },
 
-update: (id, status) => {
-  return new Promise((resolve, reject) => {
-    const sql = `UPDATE orders SET status = ? WHERE id = ?`;
-    connection.query(sql, [status, id], (err, result) => {
-      if (err) return reject(err);
-
-      if (result.affectedRows === 0) {
-        return reject(new Error(`Order with ID ${id} not found`));
-      }
-
-      resolve(true);
+  create: (order) => {
+    const { user_id, status } = order;
+    const now = new Date();
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "INSERT INTO orders (user_id, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
+        [user_id, status, now, now],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve({ id: result.insertId, ...order });
+        }
+      );
     });
-  });
-},
+  },
 
+  update: (id, status) => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE orders SET status = ? WHERE id = ?`;
+      connection.query(sql, [status, id], (err, result) => {
+        if (err) return reject(err);
+
+        if (result.affectedRows === 0) {
+          return reject(new Error(`Order with ID ${id} not found`));
+        }
+
+        resolve(true);
+      });
+    });
+  },
 
   delete: (id) => {
     return new Promise((resolve, reject) => {
-      connection.query("DELETE FROM orders WHERE id = ?", [id], (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
+      connection.query(
+        "DELETE FROM orders WHERE id = ?",
+        [id],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
     });
-  }
-}
+  },
+};
 
- 
 module.exports = Order;

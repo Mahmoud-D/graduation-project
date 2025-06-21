@@ -1,15 +1,32 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../utils/upload"); // استخدم الإعدادات الخاصة بك
 const DishController = require("../controllers/dishController");
 const { verifyToken } = require("../middleware/auth");
 const checkRole = require("../middleware/checkRole");
 const { dishSchema } = require("../validations/dishSchema");
 const validator = require("../middleware/validate.middleware");
 
-
-  router.post("/", verifyToken, checkRole(["admin"]),
-  validator(dishSchema),
-  DishController.createDish);
+router.post("/", 
+  verifyToken,
+  checkRole(["admin"]),
+  upload.single('image'), // 1. معالجة الملف أولاً
+  (req, res, next) => {
+    // 2. تحضير البيانات للتحقق
+    req.bodyForValidation = {
+      ...req.body,
+      image: req.file ? { // إنشاء كائن يحتوي على معلومات الملف
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        filename: req.file.filename
+      } : undefined
+    };
+    next();
+  },
+  validator(dishSchema), // 3. التحقق من الصحة
+  DishController.createDish // 4. معالجة المنطق
+);
 
  router.put(
   "/:id",

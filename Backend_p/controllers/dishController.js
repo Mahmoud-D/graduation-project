@@ -39,67 +39,67 @@ exports.getDishByIdParam = async (req, res) => {
     const { id } = req.params;
     const dish = await Dish.findById(id);
 
+
     if (!dish) {
       return res.status(404).json({ message: "Dish not found" });
     }
+
 
     res.status(200).json(dish);
   } catch (error) {
     res
       .status(500)
       .json({ message: "Error fetching dish", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching dish", error: error.message });
   }
 };
 
-exports.createDish = (req, res) => {
-  upload.single("image")(req, res, async (err) => {
-    try {
-      if (err) {
-        console.error("Upload error:", err);
-        return res
-          .status(400)
-          .json({ message: "حدث خطأ أثناء رفع الصورة", error: err.message });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ message: "لم يتم رفع الصورة" });
-      }
-
-      const imagePath = `uploads/${req.file.filename}`;
-      const { name, description, price, category } = req.body;
-
-      const parsedCategories = JSON.parse(category);
-
-      console.log("Received data:", {
-        name,
-        description,
-        price,
-        parsedCategories,
-        imagePath,
-      });
-
-      const newDishId = await Dish.create(name, description, price, imagePath);
-
-      for (const catId of parsedCategories) {
-        await Dish.linkCategory(newDishId, catId);
-      }
-
-      const newDish = await Dish.getDishesByIds([newDishId]); // Use the more detailed getter
-
-      res.status(201).json({
-        message: "تم إنشاء الطبق وربطه بالتصنيفات بنجاح",
-        dish: newDish[0],
-      });
-    } catch (error) {
-      console.error("Create dish error:", error);
-      res.status(500).json({
-        message: "حدث خطأ أثناء إنشاء الطبق",
-        error: error.message,
-      });
+exports.createDish = async (req, res) => {
+  try {
+    // 1. التحقق من وجود الملف (تم الرفع بواسطة multer)
+    if (!req.file) {
+      return res.status(400).json({ message: "لم يتم رفع الصورة" });
     }
-  });
-};
 
+    // 2. معالجة البيانات
+    const imagePath = `uploads/${req.file.filename}`;
+    const { name, description, price, category } = req.body;
+
+    // 3. تحليل التصنيفات بشكل آمن
+    let parsedCategories = [];
+    try {
+      parsedCategories = JSON.parse(category);
+      if (!Array.isArray(parsedCategories)) {
+        parsedCategories = [parsedCategories];
+      }
+    } catch (e) {
+      return res.status(400).json({ message: "تنسيق التصنيفات غير صالح" });
+    }
+
+    // 4. إنشاء الطبق
+    const newDishId = await Dish.create(name, description, price, imagePath);
+
+    // 5. ربط التصنيفات
+    for (const catId of parsedCategories) {
+      await Dish.linkCategory(newDishId, catId);
+    }
+
+    // 6. إرجاع النتيجة
+    const newDish = await Dish.findById(newDishId);
+    res.status(201).json({
+      message: "تم إنشاء الطبق بنجاح",
+      dish: newDish,
+    });
+  } catch (error) {
+    console.error("Create dish error:", error);
+    res.status(500).json({
+      message: "حدث خطأ أثناء إنشاء الطبق",
+      error: error.message,
+    });
+  }
+};
 exports.updateDish = async (req, res) => {
   const { name, description, price, category } = req.body;
 
@@ -132,12 +132,19 @@ exports.deleteDish = async (req, res) => {
       return res.status(404).json({ message: "الطبق غير موجود" });
     }
 
-    await Dish.delete(req.params.id);
+    const deletedRows = await Dish.delete(req.params.id);
+    console.log(deletedRows);
 
-    res.json({ message: "تم حذف الطبق بنجاح" });
+    if (deletedRows.length == 0) {
+      res.json({ message: "تم حذف الطبق بنجاح" });
+    } else {
+      res.status(500).json({ message: "حدث خطأ أثناء حذف الطبق" });
+    }
   } catch (error) {
-    if (error.success === false && error.error === "CANNOT_DELETE_RELATED_RECORDS_EXIST") {
-        return res.status(400).json({ message: error.message });
+    if (error.code === "ER_ROW_IS_REFERENCED_2") {
+      return res
+        .status(400)
+        .json({ message: "لا يمكن حذف الطبق لأنه مرتبط بعروض ترويجية" });
     }
     res
       .status(500)

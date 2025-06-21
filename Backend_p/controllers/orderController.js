@@ -444,11 +444,11 @@ const updateOrder = async (req, res) => {
 const deleteOrder = async (req, res) => {
   const { id } = req.params;
   const { force } = req.query;
-
+ 
+ 
   try {
     if (force === "true") {
-      // نحذف الصفوف المرتبطة الأول
-      await OrderDish.deleteByOrderId(id);
+       await OrderDish.deleteByOrderId(id);
     }
 
     const deleted = await Order.delete(id);
@@ -467,7 +467,7 @@ const deleteOrder = async (req, res) => {
       });
     }
 
-    return res.status(500).json({ message: "Error deleting order" });
+    return res.status(500).json({ message: "Error deleting order" , err});
   }
 };
 

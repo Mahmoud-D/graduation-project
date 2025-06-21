@@ -58,21 +58,25 @@ app.post("/api/execute-sql", executeSqlQuery);
 
 // Routes
 app.use("/api/users", userRoutes);
-app.use("/api/promotions", promotionsRoutes);
 app.use("/api/dishes", dishRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
+
+app.use("/api/coupons", couponRoutes);
+app.use("/api/promotions", promotionsRoutes);
+
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/restaurantReviews", restaurantReviewsRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/coupons", couponRoutes);
+
+
 app.use("/api/apply-coupon", couponUsesRoutes);
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
 app.use("/api/offers", offersRoutes);
 
-app.use("/api/orderDishes", orderDishRoutes);
+// app.use("/api/orderDishes", orderDishRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes); 
-app.use("/api/paypal", paypalRoutes);
+// app.use("/api/paypal", paypalRoutes);
 
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {

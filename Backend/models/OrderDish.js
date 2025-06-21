@@ -6,12 +6,10 @@
 const connection = require("../config/db");
 
 const OrderDish = {
-
-  
   addDishesToOrder: (orderId, dishId, quantity) => {
     return new Promise((resolve, reject) => {
       const sql =
-        "INSERT INTO order_dishes (order_id, dish_id, quantity) VALUES (?, ?, ?)";
+        "INSERT INTO order_items (order_id, dish_id, quantity) VALUES (?, ?, ?)";
       connection
         .promise()
         .query(sql, [orderId, dishId, quantity])
@@ -24,14 +22,13 @@ const OrderDish = {
         });
     });
   },
-  
 
   getByOrderId: (orderId) => {
     return new Promise((resolve, reject) => {
       connection
         .promise()
         .query(
-          "SELECT * FROM order_dishes WHERE order_id = ?",
+          "SELECT * FROM order_items WHERE order_id = ?",
           [orderId],
           (err, results) => {
             if (err) reject(err);
@@ -43,17 +40,15 @@ const OrderDish = {
 
   deleteByOrderId: async (orderId) => {
     try {
-      const [results] = await connection.promise().query(
-        "DELETE FROM order_dishes WHERE order_id = ?",
-        [orderId]
-      );
+      const [results] = await connection
+        .promise()
+        .query("DELETE FROM order_items WHERE order_id = ?", [orderId]);
       return results.affectedRows;
     } catch (err) {
       console.error("Error in deleteByOrderId:", err.message);
       throw err;
     }
-  }
-  
+  },
 };
 
 module.exports = OrderDish;
