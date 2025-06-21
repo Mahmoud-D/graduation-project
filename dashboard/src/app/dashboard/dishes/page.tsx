@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import {
   Table,
   TableBody,
@@ -31,15 +31,61 @@ import {
 } from "@/components/ui/select";
 import { ArrowUpDown, Search, X, Loader2 } from "lucide-react";
 import { API } from "@/constant";
-import {
-  Dish,
-  DishCategory,
-  DishCreate,
-  DishResponse,
-  DishUpdate,
-} from "@/types";
+import { Dish, DishCategory, DishCreate, DishResponse } from "@/types";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+
+// Memoized DishImage component to prevent unnecessary re-renders
+const DishImage = memo(
+  ({
+    imagePath,
+    dishName,
+    onImageError,
+  }: {
+    imagePath: string | null;
+    dishName: string;
+    onImageError: (imagePath: string | null) => void;
+  }) => {
+    const [hasError, setHasError] = useState(false);
+
+    const imageUrl = useMemo(() => {
+      if (!imagePath || hasError) return "/images/placeholder-dish.svg";
+      const path = imagePath.startsWith("uploads/")
+        ? imagePath
+        : `uploads/${imagePath}`;
+      return `http://localhost:5000/api/${path}`;
+    }, [imagePath, hasError]);
+
+    const handleError = useCallback(() => {
+      setHasError(true);
+      onImageError(imagePath);
+    }, [imagePath, onImageError]);
+
+    if (!imagePath || hasError) {
+      return (
+        <div className="flex items-center justify-center w-20 h-20 text-xs rounded bg-muted text-muted-foreground">
+          No img
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative w-20 h-20 overflow-hidden rounded">
+        <Image
+          src={imageUrl}
+          alt={dishName}
+          fill
+          sizes="80px"
+          className="object-cover"
+          loading="lazy"
+          onError={handleError}
+        />
+      </div>
+    );
+  }
+);
+
+DishImage.displayName = "DishImage";
 
 export default function DishesPage() {
   // State for dishes
@@ -66,10 +112,7 @@ export default function DishesPage() {
     description: "",
     price: 0,
     category: "",
-  });
-
-  // Filtered and sorted data
-  const [displayedDishes, setDisplayedDishes] = useState<Dish[]>(dishes);
+  }); // Filtered and sorted data
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const router = useRouter();
@@ -83,7 +126,7 @@ export default function DishesPage() {
   };
 
   // Fetch categories for the dropdown
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch(`${API}categories`, {
         headers: getAuthHeaders(),
@@ -98,10 +141,9 @@ export default function DishesPage() {
     } catch (err) {
       console.error("Error fetching categories:", err);
     }
-  };
-
+  }, []);
   // Fetch dishes from API
-  const fetchDishes = async () => {
+  const fetchDishes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -135,12 +177,32 @@ export default function DishesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  console.log(
-    "image_path",
-    dishes.map((d) => d.imagePath)
+  // Debug log only when dishes change
+  useEffect(() => {
+    if (dishes.length > 0) {
+      console.log("Dishes loaded:", dishes.length, "items");
+    }
+  }, [dishes.length]);
+  // Get category name by ID - now handles both string and number IDs
+  const getCategoryNameById = useCallback(
+    (categoryId: string | number) => {
+      const category = categories.find(
+        (c) =>
+          c.category_id === categoryId.toString() ||
+          c.category_id === categoryId
+      );
+      return category ? category.category_name : "Unknown";
+    },
+    [categories]
   );
+  // Handle image load errors - just a callback, actual error handling is in DishImage component
+  const handleImageError = useCallback((imagePath: string | null) => {
+    if (imagePath) {
+      console.log(`Failed to load image: ${imagePath}`);
+    }
+  }, []);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -151,13 +213,11 @@ export default function DishesPage() {
       router.push("/login");
       return;
     }
-
     fetchCategories();
     fetchDishes();
-  }, []);
-
-  // Filter, sort and search dishes
-  useEffect(() => {
+  }, [fetchCategories, fetchDishes, router]);
+  // Memoized filtered and sorted dishes to prevent unnecessary recalculations
+  const displayedDishes = useMemo(() => {
     let result = [...dishes];
 
     // Apply search
@@ -172,7 +232,11 @@ export default function DishesPage() {
     // Apply category filter
     if (categoryFilter !== "all") {
       result = result.filter((dish) =>
-        dish.categories.includes(categoryFilter)
+        dish.categories.some(
+          (catName) =>
+            // Filter by category name directly since categories are returned as names
+            catName === getCategoryNameById(categoryFilter)
+        )
       );
     }
 
@@ -192,9 +256,15 @@ export default function DishesPage() {
           : (fieldB as number) - (fieldA as number);
       }
     });
-
-    setDisplayedDishes(result);
-  }, [dishes, searchTerm, sortField, sortDirection, categoryFilter]);
+    return result;
+  }, [
+    dishes,
+    searchTerm,
+    sortField,
+    sortDirection,
+    categoryFilter,
+    getCategoryNameById,
+  ]);
 
   // Toggle sort direction
   const handleSort = (field: keyof Dish) => {
@@ -247,9 +317,7 @@ export default function DishesPage() {
     if (e.target.files && e.target.files[0]) {
       setSelectedImage(e.target.files[0]);
     }
-  };
-
-  // Handle form submission for new dish
+  }; // Handle form submission for new dish
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -259,11 +327,19 @@ export default function DishesPage() {
       formData.append("name", newDish.name);
       formData.append("description", newDish.description);
       formData.append("price", newDish.price.toString());
-      formData.append("category", newDish.category);
+
+      // Backend expects category as array of numbers, not strings
+      const categoryArray = newDish.category
+        ? [parseInt(newDish.category)]
+        : [];
+      formData.append("category", JSON.stringify(categoryArray));
 
       // Append image if selected
       if (selectedImage) {
         formData.append("image", selectedImage);
+      } else {
+        // Image is required by the backend
+        throw new Error("Please select an image for the dish");
       }
 
       // Don't set Content-Type header - browser will set it with boundary
@@ -287,12 +363,12 @@ export default function DishesPage() {
       setDialogOpen(false);
     } catch (err) {
       console.error("Error creating dish:", err);
+      // Show error to user
+      alert(err instanceof Error ? err.message : "Failed to create dish");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Handle edit submission
+  }; // Handle edit submission
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -301,36 +377,65 @@ export default function DishesPage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare data for the API
-      const updateData: DishUpdate = {
-        id: editingDish.id,
-        name: editingDish.name,
-        description: editingDish.description,
-        price: editingDish.price,
-        category: editingDish.categories[0], // Assuming we're editing the first category
-      };
+      // If image is being updated, use FormData, otherwise use JSON
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("name", editingDish.name);
+        formData.append("description", editingDish.description);
+        formData.append("price", editingDish.price.toString());
+        formData.append(
+          "category",
+          JSON.stringify(
+            editingDish.categories.map((catId) => parseInt(catId.toString()))
+          )
+        );
+        formData.append("image", selectedImage);
 
-      const response = await fetch(`${API}dishes/${editingDish.id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updateData),
-      });
+        const response = await fetch(`${API}dishes/${editingDish.id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(true),
+          body: formData,
+        });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Error ${response.status}: ${errorData}`);
+        }
+      } else {
+        // Update without image
+        const updateData = {
+          name: editingDish.name,
+          description: editingDish.description,
+          price: parseFloat(editingDish.price.toString()),
+          category: editingDish.categories.map((catId) =>
+            parseInt(catId.toString())
+          ),
+        };
+
+        const response = await fetch(`${API}dishes/${editingDish.id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(updateData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Error ${response.status}: ${errorData}`);
+        }
       }
 
       // Refresh dishes to get updated data
       await fetchDishes();
       setEditingDish(null);
+      setSelectedImage(null);
       setEditDialogOpen(false);
     } catch (err) {
       console.error("Error updating dish:", err);
+      alert(err instanceof Error ? err.message : "Failed to update dish");
     } finally {
       setIsSubmitting(false);
     }
   };
-
   // Handle delete
   const handleDelete = async (dishId: string) => {
     if (!confirm("Are you sure you want to delete this dish?")) return;
@@ -342,19 +447,21 @@ export default function DishesPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.text();
+        throw new Error(`Error ${response.status}: ${errorData}`);
       }
 
       // Refresh dishes after deletion
       await fetchDishes();
     } catch (err) {
       console.error("Error deleting dish:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete dish");
     }
   };
-
   // Open edit dialog
   const handleEdit = (dish: Dish) => {
     setEditingDish({ ...dish });
+    setSelectedImage(null); // Reset image selection
     setEditDialogOpen(true);
   };
 
@@ -366,17 +473,21 @@ export default function DishesPage() {
     }).format(price);
   };
 
-  // Get category name by ID
-  const getCategoryNameById = (categoryId: string) => {
-    const category = categories.find((c) => c.category_id === categoryId);
-    return category ? category.category_name : "Unknown";
-  };
-
   return (
     <div className="container py-10 mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Dishes</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) {
+              // Reset form when dialog closes
+              setNewDish({ name: "", description: "", price: 0, category: "" });
+              setSelectedImage(null);
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>Add Dish</Button>
           </DialogTrigger>
@@ -484,7 +595,16 @@ export default function DishesPage() {
         </Dialog>
 
         {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <Dialog
+          open={editDialogOpen}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) {
+              setEditingDish(null);
+              setSelectedImage(null);
+            }
+          }}
+        >
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Edit Dish</DialogTitle>
@@ -556,8 +676,27 @@ export default function DishesPage() {
                         {category.category_name}
                       </SelectItem>
                     ))}
-                  </SelectContent>
+                  </SelectContent>{" "}
                 </Select>
+              </div>
+
+              <div className="grid items-center w-full gap-2">
+                <Label htmlFor="edit-image">Update Image (Optional)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="edit-image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="flex-1"
+                  />
+                  {selectedImage && (
+                    <div className="text-sm text-muted-foreground">
+                      Selected: {selectedImage.name}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <DialogFooter>
@@ -669,26 +808,19 @@ export default function DishesPage() {
                   colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No dishes found{searchTerm ? " matching your search" : ""}
+                  No dishes found{searchTerm ? " matching your search" : ""}{" "}
                 </TableCell>
               </TableRow>
             ) : (
               displayedDishes.map((dish) => (
-                <TableRow key={dish.id}>                  <TableCell>
-                    {dish.imagePath ? (
-                      <div className="relative w-10 h-10 overflow-hidden rounded">
-                        <Image
-                          src={`http://localhost:5000/api/uploads/${dish.imagePath}`}
-                          alt={dish.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center w-10 h-10 text-xs rounded bg-muted text-muted-foreground">
-                        No img
-                      </div>
-                    )}
+                <TableRow key={dish.id}>
+                  {" "}
+                  <TableCell>
+                    <DishImage
+                      imagePath={dish.imagePath}
+                      dishName={dish.name}
+                      onImageError={handleImageError}
+                    />
                   </TableCell>
                   <TableCell className="font-medium">{dish.name}</TableCell>
                   <TableCell className="max-w-xs truncate">
@@ -700,17 +832,20 @@ export default function DishesPage() {
                       <span className="ml-2 text-xs line-through text-muted-foreground">
                         {formatPrice(dish.oldPrice)}
                       </span>
-                    )}
+                    )}{" "}
                   </TableCell>
                   <TableCell>
-                    {dish.categories
-                      .map((catId) => getCategoryNameById(catId))
-                      .join(", ")}
+                    {Array.isArray(dish.categories)
+                      ? dish.categories.join(", ")
+                      : dish.categories}
                   </TableCell>
                   <TableCell className="text-right">
-                    {dish.average_rating ? (
+                    {dish.averageRating ? (
                       <div className="flex items-center justify-end">
-                        <span>⭐ {dish.average_rating.toFixed(1)}</span>
+                        <span>
+                          ⭐{" "}
+                          {parseFloat(dish.averageRating.toString()).toFixed(1)}
+                        </span>
                       </div>
                     ) : (
                       <span className="text-sm text-muted-foreground">
