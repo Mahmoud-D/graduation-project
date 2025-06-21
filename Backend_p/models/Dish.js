@@ -85,6 +85,9 @@ const Dish = {
       case "name_asc":
         query = sql`${query} ORDER BY name ASC`;
         break;
+      case "name_desc":
+        query = sql`${query} ORDER BY name DESC`;
+        break;
       case "relevance":
       default:
         query = sql`${query} ORDER BY name ASC`;
