@@ -6,9 +6,9 @@ const checkRole = require('../middleware/checkRole');
 
 router.post('/', verifyToken, checkRole(['admin']), couponController.createCoupon);
 
- router.get('/', verifyToken, couponController.filterCoupons);
+ router.get('/', verifyToken,checkRole(['admin']), couponController.filterCoupons);
 
- router.get('/:code', couponController.getCoupons);
+ router.get('/:code',checkRole(['admin']), couponController.getCoupons);
  
  router.put('/:id', verifyToken, checkRole(['admin']), couponController.updateCoupon);
 
