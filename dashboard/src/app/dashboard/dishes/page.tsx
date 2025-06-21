@@ -811,10 +811,8 @@ export default function DishesPage() {
                   No dishes found{searchTerm ? " matching your search" : ""}{" "}
                 </TableCell>
               </TableRow>
-            ) : (
-              displayedDishes.map((dish) => (
+            ) : (              displayedDishes.map((dish) => (
                 <TableRow key={dish.id}>
-                  {" "}
                   <TableCell>
                     <DishImage
                       imagePath={dish.imagePath}

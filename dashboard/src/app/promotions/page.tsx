@@ -756,8 +756,7 @@ const PromotionsPage = () => {
                               onClick={() => openEditDialog(promotion)}
                             >
                               <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
+                            </Button>                            <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleToggleStatus(promotion)}
@@ -767,7 +766,7 @@ const PromotionsPage = () => {
                               ) : (
                                 <ToggleLeft className="w-4 h-4 text-gray-400" />
                               )}
-                            </Button>{" "}
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
