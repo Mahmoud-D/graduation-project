@@ -58,65 +58,51 @@ exports.getDishByIdParam = async (req, res) => {
   }
 };
 
-exports.createDish = (req, res) => {
-
-  console.log('====================');
-  console.log('====================');
-  console.log('====================');
-  console.log('====================');
-  
-  return
-  
-  upload.single('image')(req, res, async (err) => {
-    try {
-      if (err) {
-        console.error('Upload error:', err);
-        return res.status(400).json({ message: 'حدث خطأ أثناء رفع الصورة', error: err.message });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ message: 'لم يتم رفع الصورة' });
-      }
-
-      const imagePath = `uploads/${req.file.filename}`;
-      const { name, description, price, category } = req.body;
-
-      const parsedCategories = JSON.parse(category);
-
-    
-
-      console.log('Received data:', { name, description, price, parsedCategories, imagePath });
-
-      const newDishId = await Dish.create(name, description, price, imagePath);
-
-
-      for (const catId of parsedCategories) {
-        await Dish.linkCategory(newDishId, catId);
-      }
-
-
-      
-
-
- 
-
-      const newDish = await Dish.getById(newDishId);
-      
-      res.status(201).json({
-        message: "تم إنشاء الطبق وربطه بالتصنيفات بنجاح",
-        dish: newDish,
-       });
-
-    } catch (error) {
-      console.error('Create dish error:', error);
-      res.status(500).json({ 
-        message: 'حدث خطأ أثناء إنشاء الطبق',
-        error: error.message 
-      });
+exports.createDish = async (req, res) => {
+  try {
+    // 1. التحقق من وجود الملف (تم الرفع بواسطة multer)
+    if (!req.file) {
+      return res.status(400).json({ message: 'لم يتم رفع الصورة' });
     }
-  });
-};
 
+    // 2. معالجة البيانات
+    const imagePath = `uploads/${req.file.filename}`;
+    const { name, description, price, category } = req.body;
+
+    // 3. تحليل التصنيفات بشكل آمن
+    let parsedCategories = [];
+    try {
+      parsedCategories = JSON.parse(category);
+      if (!Array.isArray(parsedCategories)) {
+        parsedCategories = [parsedCategories];
+      }
+    } catch (e) {
+      return res.status(400).json({ message: 'تنسيق التصنيفات غير صالح' });
+    }
+
+    // 4. إنشاء الطبق
+    const newDishId = await Dish.create(name, description, price, imagePath);
+    
+    // 5. ربط التصنيفات
+    for (const catId of parsedCategories) {
+      await Dish.linkCategory(newDishId, catId);
+    }
+
+    // 6. إرجاع النتيجة
+    const newDish = await Dish.findById(newDishId);
+    res.status(201).json({
+      message: "تم إنشاء الطبق بنجاح",
+      dish: newDish
+    });
+
+  } catch (error) {
+    console.error('Create dish error:', error);
+    res.status(500).json({ 
+      message: 'حدث خطأ أثناء إنشاء الطبق',
+      error: error.message 
+    });
+  }
+};
 exports.updateDish = async (req, res) => {
   const { name, description, price, category } = req.body;
 
