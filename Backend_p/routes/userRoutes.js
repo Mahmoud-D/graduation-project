@@ -8,7 +8,7 @@ router.get("/",   verifyToken,   checkRole(["admin"]),   userController.getAllUs
 
 router.get("/:id", verifyToken,   checkRole(["admin"]),userController.getUserById);
 
-router.put('/:id', userController.updateUser);
+router.put('/:id', verifyToken,   checkRole(["admin"]), userController.updateUser);
 
 router.delete('/:id', verifyToken,   checkRole(["admin"]),userController.deleteUser);
 router.put('/deactivateUser/:id', userController.deactivateUser);

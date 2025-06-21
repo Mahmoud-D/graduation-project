@@ -59,6 +59,14 @@ exports.getDishByIdParam = async (req, res) => {
 };
 
 exports.createDish = (req, res) => {
+
+  console.log('====================');
+  console.log('====================');
+  console.log('====================');
+  console.log('====================');
+  
+  return
+  
   upload.single('image')(req, res, async (err) => {
     try {
       if (err) {
@@ -74,6 +82,8 @@ exports.createDish = (req, res) => {
       const { name, description, price, category } = req.body;
 
       const parsedCategories = JSON.parse(category);
+
+    
 
       console.log('Received data:', { name, description, price, parsedCategories, imagePath });
 

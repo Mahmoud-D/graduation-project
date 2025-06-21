@@ -6,6 +6,8 @@ const checkRole = require("../middleware/checkRole");
 const { dishSchema } = require("../validations/dishSchema");
 const validator = require("../middleware/validate.middleware");
 
+console.log('====================');
+
 
   router.post("/", verifyToken, checkRole(["admin"]),
   validator(dishSchema),
