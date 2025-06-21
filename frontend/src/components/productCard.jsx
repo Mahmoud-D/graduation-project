@@ -1,63 +1,78 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import ProductDetailModal from './ProductDetailModal';
+import ProductDetailModal from './ProductDetailModal'; 
 
-export default function ProductCard({ dish }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function EnhancedProductCard({ dish }) {
   const { addItem } = useCart();
+  const [isAdded, setIsAdded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddToCart = (e, dish) => {
-    e.stopPropagation(); // Prevent modal from opening when clicking add to cart
+  const handleAddToCart = (e) => {
+    e.stopPropagation(); 
     addItem({
       id: dish.id,
       name: dish.name,
       price: parseFloat(dish.price),
-      image: dish.image || '/placeholder-dish.png',
+      image: dish.image_path,
       quantity: 1
     });
+
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 2000);
   };
 
-
-    return (
-    <> 
+  return (
+    <>
       <Card
-        className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
         onClick={() => setIsModalOpen(true)}
+        className="flex flex-col overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer"
       >
-        <div className="relative h-48">
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}/${dish.image_path}` || "/placeholder-dish.png"}
-            alt={dish.name}
-            fill
-            unoptimized
-            className="object-cover"
-          />
-          {dish.isSpicy && (
-            <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-              حار 🌶️
-            </span>
-          )}
-        </div>
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-xl font-semibold text-dark-shade">
-              {dish.name}
-            </h3>
-            <div className="text-primary font-bold">
-              {dish.price} جنيه
-            </div>
+        <CardHeader className="p-0">
+          <div className="relative h-52 w-full">
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_URL}/${dish.image_path}` || "/placeholder-dish.png"}
+              alt={dish.name}
+              fill
+              unoptimized
+              className="object-cover"
+            />
           </div>
-          <p className="text-dark-shade/70 mb-4">{dish.description}</p>
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 cursor-pointer"
-            onClick={(e) => handleAddToCart(e, dish)}
-          >
-            أضف إلى السلة
-          </Button>
-        </CardContent>
+        </CardHeader>
+        
+        <div className="flex flex-col flex-grow p-4">
+          <CardContent className="flex-grow p-0">
+            <CardTitle className="text-xl font-bold mb-2">{dish.name}</CardTitle>
+            <p className="text-sm text-gray-600 mb-4">{dish.description}</p>
+            
+            {dish.average_rating && (
+              <div className="flex items-center text-gray-500 mb-4">
+                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 ml-1" />
+                <span className="text-sm font-medium">{parseFloat(dish.average_rating).toFixed(1)}</span>
+              </div>
+            )}
+          </CardContent>
+
+          <CardFooter className="p-0 mt-4">
+            <div className="flex justify-between items-center w-full">
+              <p className="text-lg font-semibold text-primary">
+                {dish.price} جنيه
+              </p>
+              <Button
+                onClick={handleAddToCart}
+                className={`transition-all duration-300 ${isAdded ? 'bg-green-500 hover:bg-green-600' : 'bg-primary hover:bg-primary/90'}`}
+                disabled={isAdded}
+              >
+                {isAdded ? "تمت الإضافة! ✓" : "أضف إلى السلة"}
+              </Button>
+            </div>
+          </CardFooter>
+        </div>
       </Card>
 
       <ProductDetailModal
