@@ -25,7 +25,8 @@ const imageController = require("./controllers/imageController");
 const { executeSqlQuery } = require("./controllers/sqlController");
 
 const cors = require("cors");
-
+const checkDatabaseConnection = require("./config/dbCheck.js");
+ 
 const app = express();
 
 app.use(bodyParser.json());
@@ -123,9 +124,62 @@ app.use("/api/paypal", paypalRoutes);
 //   }
 // });
 
-app.get("/api", (req, res) => {
-  res.send("API is working");
+// app.get("/api", (req, res) => {
+//   res.send("API is working");
+// });
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// مسار لعرض صفحة HTML عند زيارة /status
+app.get('/status', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
 });
+
+app.get("/api", async (req, res) => {
+  try {
+     const dbCheck = await checkDatabaseConnection();
+    
+     const uploadsDirExists = fs.existsSync(path.join(__dirname, "uploads"));
+    
+     const systemInfo = {
+      nodeVersion: process.version,
+      platform: process.platform,
+      memoryUsage: process.memoryUsage(),
+      uptime: process.uptime()
+    };
+
+     res.json({
+      status: "API is operational",
+      timestamp: new Date().toISOString(),
+      database: dbCheck,
+      filesystem: {
+        uploadsDirectory: uploadsDirExists ? "Available" : "Not available"
+      },
+      system: systemInfo,
+      routes: [
+        "/api/users",
+        "/api/dishes",
+        "/api/orders",
+        "/api/auth",
+        "/api/reports",
+        "/api/paypal",
+        "/api/execute-sql",
+        "/api/send-email",
+        "/api/track/click",]
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: "API check failed",
+      error: error.message,
+      details: error.stack
+    });
+  }
+});
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
