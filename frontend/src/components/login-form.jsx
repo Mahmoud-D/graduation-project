@@ -19,24 +19,24 @@ import authEndpoints from "@/app/api/endPonts/auth";
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Initial state values
   const initialFormData = {
     email: "",
     password: "",
   };
-  
+
   const initialErrors = {
     email: "",
     password: "",
     general: "",
   };
-  
+
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState(initialErrors);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Function to reset the form
   const resetForm = () => {
     setFormData(initialFormData);
@@ -44,28 +44,28 @@ export function LoginForm({ className, ...props }) {
     setLoading(false);
     setShowPassword(false);
   };
-  
+
   // Reset form when route changes and comes back
   useEffect(() => {
     resetForm();
   }, []);
-  
+
   const validateEmail = (email) => {
     if (!email || typeof email !== 'string') {
       return false;
     }
-  
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   }
-  
+
   const handleEmailChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({
       ...prev,
       email: value,
     }));
-    
+
     if (!value) {
       setErrors(prev => ({...prev, email: "البريد الإلكتروني مطلوب"}));
     } else if (!validateEmail(value)) {
@@ -74,29 +74,29 @@ export function LoginForm({ className, ...props }) {
       setErrors(prev => ({...prev, email: ""}));
     }
   };
-  
+
   const handlePasswordChange = (e) => {
     const { value } = e.target;
     setFormData((prev) => ({
       ...prev,
       password: value,
     }));
-    
+
     if (!value) {
       setErrors(prev => ({...prev, password: "كلمة المرور مطلوبة"}));
     } else {
       setErrors(prev => ({...prev, password: ""}));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors(initialErrors);
-    
+
     // Validate all fields before submission
     let hasErrors = false;
     const newErrors = { ...errors };
-    
+
     if (!formData.email) {
       newErrors.email = "البريد الإلكتروني مطلوب";
       hasErrors = true;
@@ -104,22 +104,24 @@ export function LoginForm({ className, ...props }) {
       newErrors.email = "البريد الإلكتروني غير صالح";
       hasErrors = true;
     }
-    
+
     if (!formData.password) {
       newErrors.password = "كلمة المرور مطلوبة";
       hasErrors = true;
     }
-    
+
     if (hasErrors) {
       setErrors(newErrors);
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const response = await authEndpoints.login(formData.email, formData.password);
       if (response.success) {
+        window.dispatchEvent(new Event("storage"));
+
         const savedFormData = localStorage.getItem('orderFormData');
         if (savedFormData) {
           router.push('/confirm-order');
@@ -141,7 +143,7 @@ export function LoginForm({ className, ...props }) {
       }
     } catch (err) {
       setErrors(prev => ({
-        ...prev, 
+        ...prev,
         general: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا."
       }));
     } finally {
@@ -179,7 +181,7 @@ export function LoginForm({ className, ...props }) {
                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
             </div>
-            
+
             <div className="space-y-2 text-right">
               <Label htmlFor="password" className="text-sm font-medium">كلمة المرور</Label>
               <div className="relative">
@@ -208,13 +210,13 @@ export function LoginForm({ className, ...props }) {
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
             </div>
-            
+
             {errors.general && (
               <div className="text-red-500 text-sm font-medium text-right bg-red-50 p-4 rounded-md">
                 {errors.general}
               </div>
             )}
-            
+
             <div className="flex justify-between items-center mb-4">
               <Button
                 type="button"
@@ -226,14 +228,14 @@ export function LoginForm({ className, ...props }) {
               </Button>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-base font-medium mt-2 cursor-pointer" 
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-medium mt-2 cursor-pointer"
               disabled={loading}
             >
               {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
-            
+
           </form>
         </CardContent>
         <CardFooter className="border-t pt-5 pb-6">
