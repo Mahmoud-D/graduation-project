@@ -17,7 +17,6 @@ const paypalRoutes = require("./routes/paypalRoutes");
 
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
-const couponUsesRoutes = require("./routes/couponUsesRoutes");
 const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
  
 const imageController = require("./controllers/imageController");
@@ -61,19 +60,17 @@ app.use("/api/users", userRoutes);
 app.use("/api/dishes", dishRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
-
 app.use("/api/coupons", couponRoutes);
 app.use("/api/promotions", promotionsRoutes);
-
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/restaurantReviews", restaurantReviewsRoutes);
 
 
-app.use("/api/apply-coupon", couponUsesRoutes);
+
+
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
  
-// app.use("/api/orderDishes", orderDishRoutes);
-app.use("/api/auth", authRoutes);
+ app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes);
 // app.use("/api/paypal", paypalRoutes);
 

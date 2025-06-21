@@ -218,6 +218,34 @@ const Dish = {
     }
   },
 
+
+// في ملف models/Dish.js
+updateImage : async (id, imagePath) => {
+  const updatedDish = await sql`
+    UPDATE dishes 
+    SET image_path = ${imagePath}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return updatedDish[0];
+},
+
+
+clearCategories: async (dishId) => {
+  await sql`
+    DELETE FROM dish_categories
+    WHERE dish_id = ${dishId}
+  `;
+},
+
+linkCategory : async (dishId, categoryId)=> {
+  await sql`
+    ON CONFLICT DO NOTHING
+  `;
+},
+
+
+
   // getById: async (id) => {
   //   const dishSql = sql`
   //     SELECT
@@ -279,20 +307,26 @@ const Dish = {
   },
 
   // Update dish details
-  update: async (id, name, description, price) => {
-    const query = sql`
-      UPDATE dishes
-      SET name = ${name}, description = ${description}, price = ${price}
-      WHERE id = ${id}
-    `;
-
-    try {
-      const result = await query;
-      return result.rowCount;
-    } catch (err) {
-      console.error("Error in update dish:", err);
-      throw err;
+  update: async (id, data)=> {
+     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+  
+    if (Object.keys(filteredData).length === 0) {
+      return; // لا شيء للتحديث
     }
+  
+    const updatedDish = await sql`
+      UPDATE dishes SET
+        ${sql(filteredData, ...Object.keys(filteredData))}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return updatedDish[0];
   },
 
   // Delete dish by ID

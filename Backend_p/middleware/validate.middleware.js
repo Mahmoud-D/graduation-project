@@ -1,16 +1,23 @@
-const validate = (schema) => (req, res, next) => {
-  try {
-    // استخدام البيانات المحضرة من multer
-    const data = req.bodyForValidation || req.body;
-    const validatedData = schema.parse(data);
-    req.validatedData = validatedData;
-    next();
-  } catch (error) {
-    return res.status(400).json({
-      errors: error.errors,
-      message: "Validation failed"
+const validator = (schema) => async (req, res, next) => {
+  // استخدام req.bodyForValidation إذا كان موجوداً، وإلا req.body
+  const dataToValidate = req.bodyForValidation || req.body;
+  
+  const result = await schema.safeParseAsync(dataToValidate);
+
+  if (!result.success) {
+    const formattedErrors = result.error.errors.map((err) => ({
+      field: err.path.join('.'),
+      message: err.message
+    }));
+    
+    return res.status(400).json({ 
+      message: "Validation failed",
+      errors: formattedErrors 
     });
   }
+
+  req.validatedData = result.data;
+  next();
 };
 
-module.exports = validate;
+module.exports = validator;

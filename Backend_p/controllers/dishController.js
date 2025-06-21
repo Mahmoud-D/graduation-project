@@ -97,29 +97,70 @@ exports.createDish = async (req, res) => {
   }
 };
 exports.updateDish = async (req, res) => {
-  const { name, description, price, category } = req.body;
-
-  console.log(name, description, price, category);
-
   try {
-    const updatedRows = await Dish.update(
-      req.params.id,
-      name,
-      description,
-      price,
-      category
-    );
-    if (updatedRows === 0) {
+    const { id } = req.params;
+    const { name, description, price, category } = req.body;
+
+    // التحقق من وجود الطبق
+    const existingDish = await Dish.findById(id);
+    if (!existingDish) {
       return res.status(404).json({ message: "الطبق غير موجود" });
     }
-    const updatedDish = await Dish.findById(req.params.id);
-    res.json(updatedDish);
+
+    // إنشاء كائن التحديث مع تجنب القيم غير المعرّفة
+    const updateData = {};
+    if (name !== undefined && name !== null) updateData.name = name;
+    if (description !== undefined && description !== null) updateData.description = description;
+    if (price !== undefined && price !== null) updateData.price = price;
+
+    // التحديث فقط إذا كان هناك بيانات للتحديث
+    if (Object.keys(updateData).length > 0) {
+      await Dish.update(id, updateData);
+    }
+
+    // معالجة الصورة إذا تم رفعها
+    if (req.file) {
+      const imagePath = `uploads/${req.file.filename}`;
+      await Dish.updateImage(id, imagePath);
+    }
+
+    // معالجة التصنيفات إذا تم تقديمها
+    if (category !== undefined && category !== null) {
+      let parsedCategories = [];
+      try {
+        parsedCategories = JSON.parse(category);
+        if (!Array.isArray(parsedCategories)) {
+          parsedCategories = [parsedCategories];
+        }
+      } catch (e) {
+        return res.status(400).json({ message: "تنسيق التصنيفات غير صالح" });
+      }
+
+      await Dish.clearCategories(id);
+      for (const catId of parsedCategories) {
+        await Dish.linkCategory(id, catId);
+      }
+    }
+
+    // إرجاع الطبق المحدث
+    const updatedDish = await Dish.findById(id);
+    res.status(200).json({
+      message: "تم تحديث الطبق بنجاح",
+      dish: updatedDish,
+    });
+
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "حدث خطأ أثناء تحديث بيانات الطبق", error });
+    console.error("Update dish error:", error);
+    res.status(500).json({
+      message: "حدث خطأ أثناء تحديث الطبق",
+      error: error.message,
+    });
   }
 };
+
+
+// في ملف models/Dish.js
+
 
 exports.deleteDish = async (req, res) => {
   try {
