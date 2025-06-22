@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import EnhancedProductCard from '@/components/productCard'; // Adjust path as needed
+import EnhancedProductCard from '@/components/productCard'; 
 
 export default function Offers() {
   const [offerDishes, setOfferDishes] = useState([]);

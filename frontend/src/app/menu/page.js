@@ -20,7 +20,6 @@ export default function MenuPage() {
       try {
         setLoading(true);
         
-        // Fetch all data in parallel
         const [dishesResponse, categoriesResponse, offersResponse] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/dishes`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),

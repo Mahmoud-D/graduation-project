@@ -141,7 +141,7 @@ export default function Navigation() {
                   variant="ghost"
                   size="sm"
                   className="hover:bg-red-100 text-red-600"
-                  onClick={promptLogout} // Changed to open dialog
+                  onClick={promptLogout}
                 >
                   تسجيل الخروج
                 </Button>
@@ -198,7 +198,7 @@ export default function Navigation() {
                     variant="ghost"
                     size="sm"
                     className="w-full hover:bg-red-100 text-red-600"
-                    onClick={promptLogout} // Changed to open dialog
+                    onClick={promptLogout} 
                   >
                     تسجيل الخروج
                   </Button>

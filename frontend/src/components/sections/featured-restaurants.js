@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-// Make sure the path to your enhanced card component is correct
 import EnhancedProductCard from "../productCard";
 
 export default function MenuCategories() {
@@ -96,7 +95,6 @@ export default function MenuCategories() {
     );
   }
 
-  // Count how many distinctive dishes have offers
   const dishesWithOffers = dishes.filter(dish => dish.isOffer).length;
 console.log("disheswithoffers", dishes)
   return (

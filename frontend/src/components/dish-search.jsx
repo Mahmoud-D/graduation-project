@@ -193,7 +193,6 @@ export default function DishSearch({ onSearchActive }) {
     return () => fetchDishes.cancel();
   }, [query, sortBy, filterCategory, minPrice, maxPrice, fetchDishes]);
 
-  // Enhanced clear functions
   const clearAllFilters = useCallback(() => {
     setQuery("");
     setSortBy("relevance");
@@ -225,7 +224,6 @@ export default function DishSearch({ onSearchActive }) {
     }
   }, []);
 
-  // Enhanced price validation
   const handlePriceChange = useCallback((value, type) => {
     const numValue = value === "" ? "" : Math.max(0, parseFloat(value) || 0).toString();
     
