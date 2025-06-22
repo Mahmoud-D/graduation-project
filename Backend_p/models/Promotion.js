@@ -43,7 +43,6 @@ class Promotion {
 
   // إنشاء عرض ترويجي جديد
   static async create(data) {
-    console.log("data", data);
     const { dish_id, discount_percentage, start_date, end_date } = data;
     try {
       const result = await sql`
