@@ -4,7 +4,7 @@ const upload = require("../utils/upload"); // استخدم الإعدادات ا
 const DishController = require("../controllers/dishController");
 const { verifyToken } = require("../middleware/auth");
 const checkRole = require("../middleware/checkRole");
-const { dishSchema } = require("../validations/dishSchema");
+const { dishSchema ,updateDishSchema} = require("../validations/dishSchema");
 const validator = require("../middleware/validate.middleware");
 
 router.post("/", 
@@ -28,13 +28,38 @@ router.post("/",
   DishController.createDish // 4. معالجة المنطق
 );
 
- router.put(
+router.put(
   "/:id",
   verifyToken,
   checkRole(["admin"]),
-  validator(dishSchema),
+  upload.single('image'),
+  (req, res, next) => {
+    req.bodyForValidation = {
+      ...req.body,
+      id: req.params.id,
+      ...(req.file ? {
+        image: {
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size,
+          filename: req.file.filename
+        }
+      } : {})
+    };
+    next();
+  },
+  validator(updateDishSchema),
   DishController.updateDish
 );
+
+
+//  router.put(
+//   "/:id",
+//   verifyToken,
+//   checkRole(["admin"]),
+//   validator(dishSchema),
+//   DishController.updateDish
+// );
 
  router.delete(
   "/:id",
