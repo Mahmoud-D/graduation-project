@@ -10,6 +10,7 @@ const navLinks = [
   { name: "العروض", href: "/offers" },
   { name: "من نحن", href: "/about" },
   { name: "اتصل بنا", href: "/contact" },
+  {name: "طلباتي", href: "/orders", reqLogin: true}
 ];
 
 export default function Navigation() {
@@ -52,6 +53,14 @@ export default function Navigation() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Filter navigation links based on login status
+  const visibleNavLinks = navLinks.filter(link => {
+    if (link.reqLogin && !isLoggedIn) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-sm shadow-sm">
@@ -71,7 +80,7 @@ export default function Navigation() {
             </div>
 
             <div className="hidden md:flex items-center gap-6">
-              {navLinks.map((link) => (
+              {visibleNavLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -148,7 +157,7 @@ export default function Navigation() {
             } pt-2 pb-4 border-t bg-white/95 backdrop-blur-sm`}
           >
             <div className="flex flex-col space-y-2">
-              {navLinks.map((link) => (
+              {visibleNavLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
