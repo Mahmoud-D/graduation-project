@@ -12,10 +12,10 @@ const validator = require('../middleware/validate.middleware');
 // Get all orders
 
  // Create new order
-router.post("/",verifyToken, OrderController.createOrder);
+router.post("/",verifyToken,checkRole(["user"]), OrderController.createOrder);
 
 // // Get order by ID
-router.get('/my-orders', verifyToken, OrderController.getMyOrders);
+router.get('/my-orders',  verifyToken,checkRole(["user"]), OrderController.getMyOrders);
 router.get("/:id", OrderController.getOrderDetails);
 // // // Update order status
 router.put("/:id", OrderController.updateOrder);

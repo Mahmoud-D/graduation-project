@@ -4,9 +4,11 @@ const promotionsController = require("../controllers/promotionsController");
 const checkRole = require("../middleware/checkRole");
 const { verifyToken } = require("../middleware/auth");
 
-    router.get("/active", promotionsController.getActivePromotions);
+    router.get("/active", verifyToken,
+    checkRole(["user"]), promotionsController.getActivePromotions);
     router.get(
-        "/dishes-with-promotions",
+        "/dishes-with-promotions", verifyToken,
+    checkRole(["user"]),
         promotionsController.getDishesWithPromotions
     );
 

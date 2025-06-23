@@ -263,19 +263,7 @@ const createOrder = async (req, res) => {
       finalAmount = totalAmount - discount;
     }
 
-    // if (payment_method === "paypal") {
-    //   if (!paypal_order_id) {
-    //     return res.status(400).json({ message: "Missing PayPal order ID" });
-    //   }
-
-    //   try {
-    //     const captureResult = await capturePayment(paypal_order_id);
-    //     console.log("✅ PayPal Payment Captured:", captureResult);
-    //   } catch (error) {
-    //     console.error("❌ PayPal Capture Failed:", error);
-    //     return res.status(400).json({ message: "PayPal payment failed" });
-    //   }
-    // }
+ 
 
     const orderData = {
       dishes: dbDishes,
@@ -316,27 +304,7 @@ const createOrder = async (req, res) => {
     await sendOrderInvoiceEmail(order1, req.user.email);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
