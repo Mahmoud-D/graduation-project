@@ -1,8 +1,7 @@
-// apiHandler.js
 class APIHandler {
   constructor() {
     this.apiBaseURL = process.env.NEXT_PUBLIC_API_URL;
-    this.tokenKey = 'token'; // Centralize token key name
+    this.tokenKey = 'token';
   }
 
   getToken() {
@@ -52,7 +51,6 @@ class APIHandler {
       const response = await fetch(url, options);
       const responseData = await response.json().catch(() => ({}));
       
-      // Return a standardized response format
       if (!response.ok) {
         return {
           success: false,

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, X, Plus, Minus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Cart() {
   const {
@@ -20,7 +21,6 @@ export default function Cart() {
   const toggleCart = () => {
     setIsOpen(!isOpen);
   };
-
   return (
     <div className="relative">
       {/* Cart Icon Button */}
@@ -65,12 +65,17 @@ export default function Cart() {
               <ul className="space-y-4">
                 {items.map((item) => (
                   <li key={item.id} className="flex border-b pb-4">
-                    <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                    <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 relative">
                       {item.image ? (
-                        <img
-                          src={item.image}
+                        <Image
+                          src={
+                            `${process.env.NEXT_PUBLIC_API_URL}/${item.image}` ||
+                            "/placeholder-dish.png"
+                          }
                           alt={item.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          priority
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-gray-400">

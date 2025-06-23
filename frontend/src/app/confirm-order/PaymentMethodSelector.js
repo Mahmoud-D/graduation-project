@@ -25,7 +25,6 @@ export default function PaymentMethodSelector({
   const [paypalReady, setPaypalReady] = useState(false);
   const [paypalError, setPaypalError] = useState(null);
 
-  // تحميل سكريبت PayPal
   useEffect(() => {
     if (form.watch("paymentMethod") !== "paypal") return;
 

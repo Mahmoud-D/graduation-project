@@ -1,4 +1,4 @@
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 class Promotion {
   // استرجاع العروض الترويجية النشطة والتي تكون في فترة صالحة
@@ -28,6 +28,33 @@ class Promotion {
     }
   }
 
+  static async getVAllPromotions() {
+    try {
+      const result = await sql`
+      SELECT 
+        dish_id,
+        name,
+        description,
+        image_path,
+        original_price,
+        discount_percentage,
+        discounted_price,
+        discount_amount,
+        start_date,
+        end_date,
+        promotion_id,
+        promotion_created_at,
+        dish_created_at
+      FROM v_dishes_with_offers
+      ORDER BY discount_percentage DESC
+    `;
+    return result;
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+      throw error;
+    }
+  }
+
   // استرجاع عرض ترويجي بناءً على الـ ID
   static async findById(id) {
     try {
@@ -43,7 +70,6 @@ class Promotion {
 
   // إنشاء عرض ترويجي جديد
   static async create(data) {
-    console.log("data", data);
     const { dish_id, discount_percentage, start_date, end_date } = data;
     try {
       const result = await sql`
@@ -60,7 +86,8 @@ class Promotion {
 
   // تحديث عرض ترويجي موجود
   static async update(id, data) {
-    const { dish_id, discount_percentage, start_date, end_date, is_active } = data;
+    const { dish_id, discount_percentage, start_date, end_date, is_active } =
+      data;
     try {
       await sql`
         UPDATE promotions

@@ -8,7 +8,10 @@ router.post('/', verifyToken, checkRole(['admin']), couponController.createCoupo
 
  router.get('/', verifyToken,checkRole(['admin']), couponController.filterCoupons);
 
- router.get('/:code',checkRole(['admin']), couponController.getCoupons);
+ router.get('/active', couponController.getActiveCoupons);
+ 
+ router.get('/:code', couponController.getCoupons);
+ 
  
  router.put('/:id', verifyToken, checkRole(['admin']), couponController.updateCoupon);
 
