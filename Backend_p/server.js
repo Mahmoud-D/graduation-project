@@ -8,7 +8,7 @@ const dishRoutes = require("./routes/dishRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const orderDishRoutes = require("./routes/orderDishRoutes");
 const authRoutes = require("./routes/authRoutes");
- const reportsRoutes = require("./routes/reportsRoutes.js");
+const reportsRoutes = require("./routes/reportsRoutes.js");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
 const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
@@ -18,7 +18,7 @@ const paypalRoutes = require("./routes/paypalRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
- 
+const offersRoutes = require("./routes/offersRoutes");
 const imageController = require("./controllers/imageController");
 
 const { executeSqlQuery } = require("./controllers/sqlController");
@@ -36,8 +36,8 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "*", 
-   methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
@@ -69,18 +69,11 @@ app.use("/api/restaurantReviews", restaurantReviewsRoutes);
 
 
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
- 
+app.use("/api/offers", offersRoutes);
+
  app.use("/api/auth", authRoutes);
-app.use("/api/reports", reportsRoutes);
+app.use("/api/reports", reportsRoutes); 
 // app.use("/api/paypal", paypalRoutes);
-
-
-
-
-
-
-
-
 
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {

@@ -2,24 +2,23 @@ const Dish = require("../models/Dish"); // استيراد موديل الطبق
 const upload = require("../utils/upload"); // استيراد إعدادات Multer من utils
 
 exports.getAllDishes = async (req, res) => {
-  const { category, minPrice, maxPrice, name, q } = req.query;
+  const { q, sortBy, filterByCategory, minPrice, maxPrice } = req.query;
 
   try {
-    let dishes;
-    if (q) {
-      dishes = await Dish.search(q);
-    } else {
-      dishes = await Dish.getAll({
-        category,
-        minPrice,
-        maxPrice,
-        name,
-      });
-    }
+    const dishes = await Dish.getAll({
+      name: q,
+      category: filterByCategory,
+      minPrice,
+      maxPrice,
+      sortBy,
+    });
 
     res.json(dishes);
   } catch (error) {
-    res.status(500).json({ message: "حدث خطأ أثناء جلب الأطباق", error });
+    console.error("Error in getAllDishes:", error);
+    res
+      .status(500)
+      .json({ message: "حدث خطأ أثناء جلب الأطباق", error: error.message });
   }
 };
 
@@ -40,12 +39,17 @@ exports.getDishByIdParam = async (req, res) => {
     const { id } = req.params;
     const dish = await Dish.findById(id);
 
+
     if (!dish) {
       return res.status(404).json({ message: "Dish not found" });
     }
 
+
     res.status(200).json(dish);
   } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching dish", error: error.message });
     res
       .status(500)
       .json({ message: "Error fetching dish", error: error.message });

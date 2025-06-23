@@ -80,6 +80,34 @@ const getCouponById = async (id) => {
   return result[0]; // رجع أول نتيجة بس
 };
 
+const getActiveCoupons = async () => {
+  try {
+    const results = sql`
+      SELECT 
+        id,
+        code,
+        discount_value,
+        min_order,
+        start_date,
+        end_date,
+        max_uses,
+        current_uses,
+        user_max_uses
+      FROM coupons
+      WHERE 
+        is_active = true
+        AND CURRENT_TIMESTAMP BETWEEN start_date AND end_date
+        AND current_uses < max_uses
+      ORDER BY discount_value DESC, code ASC
+    `;
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching active coupons:", error);
+    throw error;
+  }
+};
+
 // ✅ 3. Update coupon
 const updateCoupon = async (id, couponData) => {
   const {
@@ -216,4 +244,5 @@ module.exports = {
   addCouponToOrder,
   applyCouponToOrder,
   getCouponByCode,
+  getActiveCoupons
 };

@@ -111,11 +111,11 @@ const PromotionsPage = () => {
         const data = await response.json();
         setPromotions(data);
       } else {
-        toast.error("Failed to fetch promotions");
+        toast.error("فشل في جلب العروض الترويجية");
       }
     } catch (error) {
       console.error("Error fetching promotions:", error);
-      toast.error("Error fetching promotions");
+      toast.error("خطأ في جلب العروض الترويجية");
     } finally {
       setLoading(false);
     }
@@ -144,11 +144,12 @@ const PromotionsPage = () => {
     fetchPromotions();
     fetchDishes();
   }, []);
+
   // Get dish name by ID
   const getDishName = useMemo(() => {
     return (dishId: number) => {
       const dish = dishes.find((d) => d.id === dishId);
-      return dish ? dish.name : `Dish #${dishId}`;
+      return dish ? dish.name : `طبق #${dishId}`;
     };
   }, [dishes]);
 
@@ -156,6 +157,7 @@ const PromotionsPage = () => {
   const getDishDetails = (dishId: number) => {
     return dishes.find((d) => d.id === dishId);
   };
+
   // Filter and sort promotions
   const filteredAndSortedPromotions = useMemo(() => {
     const filtered = promotions.filter((promotion) => {
@@ -220,29 +222,29 @@ const PromotionsPage = () => {
     const newErrors: Partial<PromotionFormData> = {};
 
     if (!formData.dish_id) {
-      newErrors.dish_id = "Dish is required";
+      newErrors.dish_id = "الطبق مطلوب";
     }
 
     if (!formData.discount_percentage) {
-      newErrors.discount_percentage = "Discount percentage is required";
+      newErrors.discount_percentage = "نسبة الخصم مطلوبة";
     } else {
       const discount = parseFloat(formData.discount_percentage);
       if (isNaN(discount) || discount <= 0 || discount > 100) {
-        newErrors.discount_percentage = "Discount must be between 1 and 100";
+        newErrors.discount_percentage = "يجب أن يكون الخصم بين 1 و 100";
       }
     }
 
     if (!formData.start_date) {
-      newErrors.start_date = "Start date is required";
+      newErrors.start_date = "تاريخ البداية مطلوب";
     }
 
     if (!formData.end_date) {
-      newErrors.end_date = "End date is required";
+      newErrors.end_date = "تاريخ النهاية مطلوب";
     } else if (
       formData.start_date &&
       new Date(formData.end_date) <= new Date(formData.start_date)
     ) {
-      newErrors.end_date = "End date must be after start date";
+      newErrors.end_date = "يجب أن يكون تاريخ النهاية بعد تاريخ البداية";
     }
 
     setErrors(newErrors);
@@ -281,17 +283,17 @@ const PromotionsPage = () => {
       });
 
       if (response.ok) {
-        toast.success("Promotion created successfully");
+        toast.success("تم إنشاء العرض الترويجي بنجاح");
         setIsAddDialogOpen(false);
         resetForm();
         fetchPromotions();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Failed to create promotion");
+        toast.error(errorData.message || "فشل في إنشاء العرض الترويجي");
       }
     } catch (error) {
       console.error("Error creating promotion:", error);
-      toast.error("Error creating promotion");
+      toast.error("خطأ في إنشاء العرض الترويجي");
     }
   };
 
@@ -320,18 +322,18 @@ const PromotionsPage = () => {
       );
 
       if (response.ok) {
-        toast.success("Promotion updated successfully");
+        toast.success("تم تحديث العرض الترويجي بنجاح");
         setIsEditDialogOpen(false);
         resetForm();
         setSelectedPromotion(null);
         fetchPromotions();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Failed to update promotion");
+        toast.error(errorData.message || "فشل في تحديث العرض الترويجي");
       }
     } catch (error) {
       console.error("Error updating promotion:", error);
-      toast.error("Error updating promotion");
+      toast.error("خطأ في تحديث العرض الترويجي");
     }
   };
 
@@ -351,20 +353,21 @@ const PromotionsPage = () => {
 
       if (response.ok) {
         toast.success(
-          `Promotion ${
-            promotion.is_active ? "deactivated" : "activated"
-          } successfully`
+          `تم ${
+            promotion.is_active ? "إلغاء تفعيل" : "تفعيل"
+          } العرض الترويجي بنجاح`
         );
         fetchPromotions();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Failed to toggle promotion status");
+        toast.error(errorData.message || "فشل في تغيير حالة العرض الترويجي");
       }
     } catch (error) {
       console.error("Error toggling promotion status:", error);
-      toast.error("Error toggling promotion status");
+      toast.error("خطأ في تغيير حالة العرض الترويجي");
     }
   };
+
   // Handle delete promotion
   const handleDeletePromotion = async (promotionId: number) => {
     try {
@@ -380,17 +383,17 @@ const PromotionsPage = () => {
       );
 
       if (response.ok) {
-        toast.success("Promotion deleted successfully");
+        toast.success("تم حذف العرض الترويجي بنجاح");
         setIsDeleteDialogOpen(false);
         setSelectedPromotion(null);
         fetchPromotions();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Failed to delete promotion");
+        toast.error(errorData.message || "فشل في حذف العرض الترويجي");
       }
     } catch (error) {
       console.error("Error deleting promotion:", error);
-      toast.error("Error deleting promotion");
+      toast.error("خطأ في حذف العرض الترويجي");
     }
   };
 
@@ -415,7 +418,7 @@ const PromotionsPage = () => {
   // Get promotion status
   const getPromotionStatus = (promotion: Promotion) => {
     if (!promotion.is_active) {
-      return { label: "Inactive", variant: "secondary" as const };
+      return { label: "غير نشط", variant: "secondary" as const };
     }
 
     const now = new Date();
@@ -423,53 +426,57 @@ const PromotionsPage = () => {
     const endDate = new Date(promotion.end_date);
 
     if (now < startDate) {
-      return { label: "Upcoming", variant: "outline" as const };
+      return { label: "قادم", variant: "outline" as const };
     } else if (now > endDate) {
-      return { label: "Expired", variant: "destructive" as const };
+      return { label: "منتهي الصلاحية", variant: "destructive" as const };
     } else {
-      return { label: "Active", variant: "default" as const };
+      return { label: "نشط", variant: "default" as const };
     }
   };
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString("ar-EG");
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading promotions...</div>
+      <div className="flex items-center justify-center h-64" dir="rtl">
+        <div className="text-lg">جاري تحميل العروض الترويجية...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div
+      className="p-8 space-y-6"
+      dir="rtl"
+      style={{ fontFamily: "Cairo, Tahoma, Arial, sans-serif" }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Promotions Management
+            إدارة العروض الترويجية
           </h1>
           <p className="text-muted-foreground">
-            Manage dish promotions and discount offers
+            إدارة العروض الترويجية وخصومات الأطباق
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Promotion
+              <Plus className="w-4 h-4 ml-2" />
+              إضافة عرض ترويجي
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Promotion</DialogTitle>
+              <DialogTitle>إنشاء عرض ترويجي جديد</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="dish_id">Dish</Label>
+                <Label htmlFor="dish_id">الطبق</Label>
                 <Select
                   value={formData.dish_id}
                   onValueChange={(value) =>
@@ -479,7 +486,7 @@ const PromotionsPage = () => {
                   <SelectTrigger
                     className={errors.dish_id ? "border-red-500" : ""}
                   >
-                    <SelectValue placeholder="Select a dish" />
+                    <SelectValue placeholder="اختر طبق" />
                   </SelectTrigger>
                   <SelectContent>
                     {dishes.map((dish) => (
@@ -495,7 +502,7 @@ const PromotionsPage = () => {
               </div>
 
               <div>
-                <Label htmlFor="discount_percentage">Discount Percentage</Label>
+                <Label htmlFor="discount_percentage">نسبة الخصم</Label>
                 <Input
                   id="discount_percentage"
                   type="number"
@@ -509,7 +516,7 @@ const PromotionsPage = () => {
                     }))
                   }
                   className={errors.discount_percentage ? "border-red-500" : ""}
-                  placeholder="e.g., 20"
+                  placeholder="مثال: 20"
                 />
                 {errors.discount_percentage && (
                   <p className="mt-1 text-sm text-red-500">
@@ -519,7 +526,7 @@ const PromotionsPage = () => {
               </div>
 
               <div>
-                <Label htmlFor="start_date">Start Date</Label>
+                <Label htmlFor="start_date">تاريخ البداية</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -540,7 +547,7 @@ const PromotionsPage = () => {
               </div>
 
               <div>
-                <Label htmlFor="end_date">End Date</Label>
+                <Label htmlFor="end_date">تاريخ النهاية</Label>
                 <Input
                   id="end_date"
                   type="date"
@@ -563,9 +570,11 @@ const PromotionsPage = () => {
                 variant="outline"
                 onClick={() => setIsAddDialogOpen(false)}
               >
-                Cancel
+                إلغاء
               </Button>
-              <Button onClick={handleCreatePromotion}>Create Promotion</Button>
+              <Button onClick={handleCreatePromotion}>
+                إنشاء العرض الترويجي
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -576,7 +585,7 @@ const PromotionsPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
-              Total Promotions
+              إجمالي العروض الترويجية
             </CardTitle>
             <Percent className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -586,9 +595,7 @@ const PromotionsPage = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">
-              Active Promotions
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">العروض النشطة</CardTitle>
             <ToggleRight className="w-4 h-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -600,7 +607,7 @@ const PromotionsPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
-              Current Promotions
+              العروض الحالية
             </CardTitle>
             <Calendar className="w-4 h-4 text-blue-600" />
           </CardHeader>
@@ -620,7 +627,7 @@ const PromotionsPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
-              Expired Promotions
+              العروض المنتهية الصلاحية
             </CardTitle>
             <Calendar className="w-4 h-4 text-red-600" />
           </CardHeader>
@@ -641,18 +648,18 @@ const PromotionsPage = () => {
       {/* Filters and Search */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters & Search</CardTitle>
+          <CardTitle>الفلاتر والبحث</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by dish name or discount..."
+                  placeholder="ابحث باسم الطبق أو الخصم..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
+                  className="pr-8"
                 />
               </div>
             </div>
@@ -662,12 +669,12 @@ const PromotionsPage = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="current">Current</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="all">جميع الحالات</SelectItem>
+                <SelectItem value="active">نشط</SelectItem>
+                <SelectItem value="inactive">غير نشط</SelectItem>
+                <SelectItem value="current">حالي</SelectItem>
+                <SelectItem value="upcoming">قادم</SelectItem>
+                <SelectItem value="expired">منتهي الصلاحية</SelectItem>
               </SelectContent>
             </Select>
 
@@ -676,11 +683,11 @@ const PromotionsPage = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="created_at">Created Date</SelectItem>
-                <SelectItem value="start_date">Start Date</SelectItem>
-                <SelectItem value="end_date">End Date</SelectItem>
-                <SelectItem value="discount_percentage">Discount %</SelectItem>
-                <SelectItem value="dish_name">Dish Name</SelectItem>
+                <SelectItem value="created_at">تاريخ الإنشاء</SelectItem>
+                <SelectItem value="start_date">تاريخ البداية</SelectItem>
+                <SelectItem value="end_date">تاريخ النهاية</SelectItem>
+                <SelectItem value="discount_percentage">نسبة الخصم</SelectItem>
+                <SelectItem value="dish_name">اسم الطبق</SelectItem>
               </SelectContent>
             </Select>
 
@@ -698,7 +705,7 @@ const PromotionsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            Promotions List ({filteredAndSortedPromotions.length})
+            قائمة العروض الترويجية ({filteredAndSortedPromotions.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -706,19 +713,19 @@ const PromotionsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Dish</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>الطبق</TableHead>
+                  <TableHead>الخصم</TableHead>
+                  <TableHead>تاريخ البداية</TableHead>
+                  <TableHead>تاريخ النهاية</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAndSortedPromotions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">
-                      No promotions found
+                      لم يتم العثور على عروض ترويجية
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -756,7 +763,8 @@ const PromotionsPage = () => {
                               onClick={() => openEditDialog(promotion)}
                             >
                               <Edit className="w-4 h-4" />
-                            </Button>                            <Button
+                            </Button>
+                            <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleToggleStatus(promotion)}
@@ -793,11 +801,11 @@ const PromotionsPage = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Promotion</DialogTitle>
+            <DialogTitle>تعديل العرض الترويجي</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit_dish_id">Dish</Label>
+              <Label htmlFor="edit_dish_id">الطبق</Label>
               <Select
                 value={formData.dish_id}
                 onValueChange={(value) =>
@@ -807,7 +815,7 @@ const PromotionsPage = () => {
                 <SelectTrigger
                   className={errors.dish_id ? "border-red-500" : ""}
                 >
-                  <SelectValue placeholder="Select a dish" />
+                  <SelectValue placeholder="اختر طبق" />
                 </SelectTrigger>
                 <SelectContent>
                   {dishes.map((dish) => (
@@ -821,11 +829,8 @@ const PromotionsPage = () => {
                 <p className="mt-1 text-sm text-red-500">{errors.dish_id}</p>
               )}
             </div>
-
             <div>
-              <Label htmlFor="edit_discount_percentage">
-                Discount Percentage
-              </Label>
+              <Label htmlFor="edit_discount_percentage">نسبة الخصم</Label>
               <Input
                 id="edit_discount_percentage"
                 type="number"
@@ -839,7 +844,7 @@ const PromotionsPage = () => {
                   }))
                 }
                 className={errors.discount_percentage ? "border-red-500" : ""}
-                placeholder="e.g., 20"
+                placeholder="مثال، 20"
               />
               {errors.discount_percentage && (
                 <p className="mt-1 text-sm text-red-500">
@@ -849,7 +854,7 @@ const PromotionsPage = () => {
             </div>
 
             <div>
-              <Label htmlFor="edit_start_date">Start Date</Label>
+              <Label htmlFor="edit_start_date">تاريخ البدء</Label>
               <Input
                 id="edit_start_date"
                 type="date"
@@ -868,7 +873,7 @@ const PromotionsPage = () => {
             </div>
 
             <div>
-              <Label htmlFor="edit_end_date">End Date</Label>
+              <Label htmlFor="edit_end_date">تاريخ الانتهاء</Label>
               <Input
                 id="edit_end_date"
                 type="date"
@@ -892,9 +897,9 @@ const PromotionsPage = () => {
                 setSelectedPromotion(null);
               }}
             >
-              Cancel
+              إلغاء
             </Button>
-            <Button onClick={handleEditPromotion}>Update Promotion</Button>
+            <Button onClick={handleEditPromotion}>تحديث العرض</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -903,20 +908,20 @@ const PromotionsPage = () => {
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Promotion Details</DialogTitle>
+            <DialogTitle>تفاصيل العرض</DialogTitle>
           </DialogHeader>
           {selectedPromotion && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">
-                    Promotion ID
+                    معرف العرض
                   </Label>
                   <p>{selectedPromotion.id}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">
-                    Status
+                    الحالة
                   </Label>
                   <div className="mt-1">
                     <Badge
@@ -930,7 +935,7 @@ const PromotionsPage = () => {
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  Dish
+                  الطبق
                 </Label>
                 <p className="font-medium">
                   {getDishName(selectedPromotion.dish_id)}
@@ -947,23 +952,23 @@ const PromotionsPage = () => {
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  Discount Percentage
+                  نسبة الخصم
                 </Label>
                 <p className="text-2xl font-bold text-green-600">
-                  {selectedPromotion.discount_percentage}%
+                  %{selectedPromotion.discount_percentage}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">
-                    Start Date
+                    تاريخ البدء
                   </Label>
                   <p>{formatDate(selectedPromotion.start_date)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">
-                    End Date
+                    تاريخ الانتهاء
                   </Label>
                   <p>{formatDate(selectedPromotion.end_date)}</p>
                 </div>
@@ -974,11 +979,11 @@ const PromotionsPage = () => {
                 return dish ? (
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">
-                      Original Price
+                      السعر الأصلي
                     </Label>
                     <p className="font-medium">${dish.price.toFixed(2)}</p>
                     <Label className="text-sm font-medium text-muted-foreground">
-                      Discounted Price
+                      السعر بعد الخصم
                     </Label>
                     <p className="text-lg font-bold text-green-600">
                       $
@@ -988,7 +993,7 @@ const PromotionsPage = () => {
                       ).toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      You save: $
+                      أنت توفر: $
                       {(
                         dish.price *
                         (selectedPromotion.discount_percentage / 100)
@@ -1007,22 +1012,22 @@ const PromotionsPage = () => {
                 setSelectedPromotion(null);
               }}
             >
-              Close
+              إغلاق
             </Button>
           </DialogFooter>
-        </DialogContent>{" "}
+        </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Promotion</DialogTitle>
+            <DialogTitle>حذف العرض</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p>
-              Are you sure you want to delete this promotion? This action cannot
-              be undone.
+              هل أنت متأكد من أنك تريد حذف هذا العرض؟ لا يمكن التراجع عن هذا
+              الإجراء.
             </p>
             {selectedPromotion && (
               <div className="p-4 mt-4 rounded-lg bg-gray-50">
@@ -1030,7 +1035,7 @@ const PromotionsPage = () => {
                   {getDishName(selectedPromotion.dish_id)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedPromotion.discount_percentage}% discount
+                  %{selectedPromotion.discount_percentage} خصم
                 </p>
               </div>
             )}
@@ -1043,7 +1048,7 @@ const PromotionsPage = () => {
                 setSelectedPromotion(null);
               }}
             >
-              Cancel
+              إلغاء
             </Button>
             <Button
               variant="destructive"
@@ -1053,7 +1058,7 @@ const PromotionsPage = () => {
                 }
               }}
             >
-              Delete
+              حذف
             </Button>
           </DialogFooter>
         </DialogContent>
