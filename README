@@ -1,0 +1,29 @@
+to run this app
+
+navigate to frontend folder 
+
+run npm install
+
+run npm run dev
+
+frontend is on port 3000
+
+and to run the backend 
+
+navigate to backend_p folder
+
+run npm install
+
+run npm run dev 
+
+backend is on port 5000
+
+and to run the dashboard 
+
+navigate to dashboard folder
+
+run npm install
+
+run npm run dev
+
+dashboard is on port 3001
