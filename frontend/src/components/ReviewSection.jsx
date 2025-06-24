@@ -8,10 +8,17 @@ export default function ReviewSection({ dishId }) {
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     fetchReviews();
+    checkAuthStatus();
   }, [dishId]);
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+  };
 
   const fetchReviews = async () => {
     try {
@@ -24,7 +31,7 @@ export default function ReviewSection({ dishId }) {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    if (newReview.rating === 0) return;
+    if (newReview.rating === 0 || !isAuthenticated) return;
 
     setLoading(true);
     try {
@@ -55,13 +62,14 @@ export default function ReviewSection({ dishId }) {
                   setNewReview((prev) => ({ ...prev, rating: star }))
                 }
                 className="focus:outline-none"
+                disabled={!isAuthenticated}
               >
                 <Star
                   className={`w-6 h-6 ${
                     star <= newReview.rating
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-gray-300"
-                  }`}
+                  } ${!isAuthenticated ? "opacity-50 cursor-not-allowed" : ""}`}
                 />
               </button>
             ))}
@@ -75,18 +83,24 @@ export default function ReviewSection({ dishId }) {
             onChange={(e) =>
               setNewReview((prev) => ({ ...prev, comment: e.target.value }))
             }
-            placeholder="اكتب تعليقك هنا..."
+            placeholder={isAuthenticated ? "اكتب تعليقك هنا..." : "يجب تسجيل الدخول أولاً لكتابة تقييم"}
             className="w-full"
             rows={3}
+            disabled={!isAuthenticated}
           />
         </div>
 
         <Button
           type="submit"
-          disabled={loading || newReview.rating === 0}
+          disabled={loading || newReview.rating === 0 || !isAuthenticated}
           className="w-full"
         >
-          {loading ? "جاري الإرسال..." : "إرسال التقييم"}
+          {loading 
+            ? "جاري الإرسال..." 
+            : !isAuthenticated 
+            ? "يجب تسجيل الدخول لإرسال التقييم" 
+            : "إرسال التقييم"
+          }
         </Button>
       </form>
 
