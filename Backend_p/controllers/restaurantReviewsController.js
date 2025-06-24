@@ -1,4 +1,4 @@
-const RestaurantReview = require('../models/RestaurantReview');
+const RestaurantReview = require("../models/RestaurantReview");
 
 // POST /api/restaurantReviews
 const createRestaurantReview = async (req, res) => {
@@ -17,13 +17,17 @@ const createRestaurantReview = async (req, res) => {
     const newReview = await RestaurantReview.create({
       user_id: req.user.id,
       rating,
-      comment
+      comment,
     });
 
-    return res.status(201).json({ message: "Restaurant review created", review: newReview });
+    return res
+      .status(201)
+      .json({ message: "Restaurant review created", review: newReview });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error creating restaurant review" });
+    return res
+      .status(500)
+      .json({ message: "Error creating restaurant review" });
   }
 };
 
@@ -41,11 +45,25 @@ const getRestaurantReviewsByUserId = async (req, res) => {
     return res.status(200).json({ reviews });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error fetching restaurant reviews" });
+    return res
+      .status(500)
+      .json({ message: "Error fetching restaurant reviews" });
+  }
+};
+
+const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await RestaurantReview.getAllRestaurantReviews();
+
+    return res.status(200).json({ reviews });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "حدث خطأ أثناء جلب التقييمات" });
   }
 };
 
 module.exports = {
   createRestaurantReview,
-  getRestaurantReviewsByUserId
+  getRestaurantReviewsByUserId,
+  getAllReviews
 };
