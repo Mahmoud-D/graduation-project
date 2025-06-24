@@ -69,12 +69,9 @@ app.use("/api/restaurantReviews", restaurantReviewsRoutes);
 
 
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
-<<<<<<< HEAD
- //
-=======
+
 app.use("/api/offers", offersRoutes);
 
->>>>>>> 995b29d46e666479f93f54fc749658bca9c0de18
  app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes); 
 // app.use("/api/paypal", paypalRoutes);

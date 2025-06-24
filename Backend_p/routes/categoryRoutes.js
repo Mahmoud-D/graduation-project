@@ -6,7 +6,7 @@ const validator = require('../middleware/validate.middleware');
 const checkRole = require('../middleware/checkRole');
 const { verifyToken } = require('../middleware/auth');
 
- router.get('/',verifyToken,    categoryController.getAllCategories);
+ router.get('/', categoryController.getAllCategories);
 
  router.post('/',validator(CategorySchema),verifyToken,   checkRole(["admin"]), categoryController.createCategory);
 

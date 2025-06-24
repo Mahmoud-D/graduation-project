@@ -7,22 +7,17 @@ const { verifyToken } = require("../middleware/auth");
     router.get("/active", verifyToken,
     checkRole(["user"]), promotionsController.getActivePromotions);
     router.get(
-        "/dishes-with-promotions", verifyToken,
-    checkRole(["user"]),
+        "/dishes-with-promotions",
         promotionsController.getDishesWithPromotions
     );
 
     router.get(
         "/",
-        verifyToken,
-        checkRole(["admin"]),
         promotionsController.getAllPromotions
     );
 
     router.post(
         "/",
-        verifyToken,
-        checkRole(["admin"]),
         promotionsController.createPromotion
     );
 
