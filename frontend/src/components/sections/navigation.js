@@ -10,7 +10,8 @@ const navLinks = [
   { name: "العروض", href: "/offers" },
   { name: "من نحن", href: "/about" },
   { name: "اتصل بنا", href: "/contact" },
-  {name: "طلباتي", href: "/orders", reqLogin: true}
+  {name: "طلباتي", href: "/orders", reqLogin: true},
+  {name: "تقييمات", href: "/reviews"}
 ];
 
 export default function Navigation() {
