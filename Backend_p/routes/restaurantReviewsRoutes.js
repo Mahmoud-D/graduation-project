@@ -5,6 +5,6 @@ const { verifyToken } = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
 
 router.post('/',verifyToken, checkRole(["user"]) ,restaurantReviewsController.createRestaurantReview);
-router.get('/user', verifyToken, checkRole(["user"]),restaurantReviewsController.getRestaurantReviewsByUserId);
+router.get('/user', restaurantReviewsController.getRestaurantReviewsByUserId);
 
 module.exports = router;

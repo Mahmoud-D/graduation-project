@@ -4,42 +4,35 @@ const promotionsController = require("../controllers/promotionsController");
 const checkRole = require("../middleware/checkRole");
 const { verifyToken } = require("../middleware/auth");
 
-    router.get("/active", verifyToken,
-    checkRole(["user"]), promotionsController.getActivePromotions);
-    router.get(
-        "/dishes-with-promotions",
-        promotionsController.getDishesWithPromotions
-    );
+router.get("/active", promotionsController.getActivePromotions);
+router.get(
+  "/dishes-with-promotions",
+  promotionsController.getDishesWithPromotions
+);
 
-    router.get(
-        "/",
-        promotionsController.getAllPromotions
-    );
+router.get("/", promotionsController.getAllPromotions);
 
-    router.post(
-        "/",
-        promotionsController.createPromotion
-    );
+router.post("/", promotionsController.createPromotion);
 
-    router.put(
-        "/:id",
-        verifyToken,
-        checkRole(["admin"]),
-        promotionsController.updatePromotion
-    );
+router.put(
+  "/:id",
+  verifyToken,
+  checkRole(["admin"]),
+  promotionsController.updatePromotion
+);
 
-    router.patch(
-        "/:id/toggle",
-        verifyToken,
-        checkRole(["admin"]),
-        promotionsController.togglePromotion
-    );
+router.patch(
+  "/:id/toggle",
+  verifyToken,
+  checkRole(["admin"]),
+  promotionsController.togglePromotion
+);
 
-    router.delete(
-        "/:id",
-        verifyToken,
-        checkRole(["admin"]),
-        promotionsController.deletePromotion
-    );
+router.delete(
+  "/:id",
+  verifyToken,
+  checkRole(["admin"]),
+  promotionsController.deletePromotion
+);
 
 module.exports = router;
