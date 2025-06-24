@@ -1,14 +1,23 @@
 "use client";
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { Toaster, toast } from 'sonner';
+import { Toaster, toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function LeaveReviewPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [form, setForm] = useState({
     rating: "1",
     comment: "",
@@ -23,28 +32,37 @@ export default function LeaveReviewPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
-        body: JSON.stringify(form),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/restaurantReviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(form),
+        }
+      );
 
       if (response.ok) {
         setForm({ rating: "5", comment: "" });
-        toast.success('تم إرسال التقييم', {
-          description: 'شكراً على مشاركة رأيك معنا'
+        toast.success("تم إرسال التقييم", {
+          description: "شكراً على مشاركة رأيك معنا",
         });
+        setTimeout(() => {
+          router.push("/");
+        }, 2000);
       } else {
-        toast.error('حدث خطأ', {
-          description: 'فشل في إرسال التقييم. حاول مرة أخرى.'
+        toast.error("حدث خطأ", {
+          description: "فشل في إرسال التقييم. حاول مرة أخرى.",
         });
       }
     } catch (error) {
       console.error(error);
-      toast.error('حدث خطأ', {
-        description: 'حدث خطأ غير متوقع. حاول مرة أخرى.'
+      toast.error("حدث خطأ", {
+        description: "حدث خطأ غير متوقع. حاول مرة أخرى.",
       });
     } finally {
       setIsLoading(false);
@@ -54,7 +72,10 @@ export default function LeaveReviewPage() {
   const maxCommentLength = 500;
 
   return (
-    <div dir="rtl" className="container mx-auto px-4 py-8 sm:py-12 lg:py-10 xl:py-8">
+    <div
+      dir="rtl"
+      className="container mx-auto px-4 py-8 sm:py-12 lg:py-10 xl:py-8"
+    >
       <Toaster position="top-center" expand={true} richColors />
       <Card className="w-full max-w-[95%] sm:max-w-[85%] md:max-w-2xl mx-auto shadow-lg">
         <CardHeader className="text-center p-6 sm:p-8 lg:p-6">
@@ -69,8 +90,8 @@ export default function LeaveReviewPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6 sm:space-y-8 lg:space-y-6 p-4 sm:p-6 lg:p-6">
             <div className="space-y-4">
-              <Label 
-                htmlFor="rating" 
+              <Label
+                htmlFor="rating"
                 className="text-sm sm:text-base font-medium text-center block"
               >
                 التقييم
@@ -80,17 +101,22 @@ export default function LeaveReviewPage() {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => handleChange({ target: { name: 'rating', value: star.toString() } })}
+                    onClick={() =>
+                      handleChange({
+                        target: { name: "rating", value: star.toString() },
+                      })
+                    }
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
                     className={`text-3xl sm:text-4xl md:text-5xl transition-all duration-200 
-                      ${hoveredRating > 0 
-                        ? hoveredRating >= star 
-                          ? 'text-yellow-400' 
-                          : 'text-gray-200'
-                        : parseInt(form.rating) >= star 
-                          ? 'text-yellow-400' 
-                          : 'text-gray-200'
+                      ${
+                        hoveredRating > 0
+                          ? hoveredRating >= star
+                            ? "text-yellow-400"
+                            : "text-gray-200"
+                          : parseInt(form.rating) >= star
+                          ? "text-yellow-400"
+                          : "text-gray-200"
                       }
                       hover:scale-110
                     `}
@@ -103,8 +129,8 @@ export default function LeaveReviewPage() {
             </div>
 
             <div className="space-y-2">
-              <Label 
-                htmlFor="comment" 
+              <Label
+                htmlFor="comment"
                 className="text-sm sm:text-base font-medium"
               >
                 مراجعتك
@@ -130,8 +156,8 @@ export default function LeaveReviewPage() {
           </CardContent>
 
           <CardFooter className="p-4 sm:p-6 lg:p-5">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 sm:h-14 lg:h-12 text-base sm:text-lg lg:text-lg
                 font-medium transition-all duration-200"
               disabled={isLoading}
@@ -142,7 +168,7 @@ export default function LeaveReviewPage() {
                   جاري الإرسال...
                 </>
               ) : (
-                'إرسال التقييم'
+                "إرسال التقييم"
               )}
             </Button>
           </CardFooter>
