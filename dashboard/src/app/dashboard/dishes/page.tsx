@@ -474,9 +474,9 @@ export default function DishesPage() {
   };
 
   return (
-    <div className="container py-10 mx-auto">
+    <div className="container py-10 mx-auto" dir="rtl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dishes</h1>
+        <h1 className="text-2xl font-bold">الأطباق</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(open) => {
@@ -489,42 +489,42 @@ export default function DishesPage() {
           }}
         >
           <DialogTrigger asChild>
-            <Button>Add Dish</Button>
+            <Button>إضافة طبق</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Add New Dish</DialogTitle>
+              <DialogTitle>إضافة طبق جديد</DialogTitle>
               <DialogDescription>
-                Create a new dish for your menu.
+                أنشئ طبقًا جديدًا لقائمة الطعام الخاصة بك.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">الاسم</Label>
                 <Input
                   id="name"
                   name="name"
                   value={newDish.name}
                   onChange={handleInputChange}
-                  placeholder="Dish name"
+                  placeholder="اسم الطبق"
                   required
                 />
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">الوصف</Label>
                 <Input
                   id="description"
                   name="description"
                   value={newDish.description}
                   onChange={handleInputChange}
-                  placeholder="Dish description"
+                  placeholder="وصف الطبق"
                 />
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="price">Price</Label>
+                <Label htmlFor="price">السعر</Label>
                 <Input
                   id="price"
                   name="price"
@@ -539,7 +539,7 @@ export default function DishesPage() {
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">الفئة</Label>
                 <Select
                   name="category"
                   value={newDish.category}
@@ -548,7 +548,7 @@ export default function DishesPage() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="اختر فئة" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -564,7 +564,7 @@ export default function DishesPage() {
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="image">Image</Label>
+                <Label htmlFor="image">الصورة</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="image"
@@ -576,7 +576,7 @@ export default function DishesPage() {
                   />
                   {selectedImage && (
                     <div className="text-sm text-muted-foreground">
-                      Selected: {selectedImage.name}
+                      تم اختيار: {selectedImage.name}
                     </div>
                   )}
                 </div>
@@ -587,7 +587,7 @@ export default function DishesPage() {
                   {isSubmitting && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
-                  Create Dish
+                  إنشاء طبق
                 </Button>
               </DialogFooter>
             </form>
@@ -607,36 +607,36 @@ export default function DishesPage() {
         >
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Edit Dish</DialogTitle>
-              <DialogDescription>Update dish information.</DialogDescription>
+              <DialogTitle>تعديل الطبق</DialogTitle>
+              <DialogDescription>تحديث معلومات الطبق.</DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="edit-name">Name</Label>
+                <Label htmlFor="edit-name">الاسم</Label>
                 <Input
                   id="edit-name"
                   name="name"
                   value={editingDish?.name || ""}
                   onChange={handleInputChange}
-                  placeholder="Dish name"
+                  placeholder="اسم الطبق"
                   required
                 />
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description">الوصف</Label>
                 <Input
                   id="edit-description"
                   name="description"
                   value={editingDish?.description || ""}
                   onChange={handleInputChange}
-                  placeholder="Dish description"
+                  placeholder="وصف الطبق"
                 />
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="edit-price">Price</Label>
+                <Label htmlFor="edit-price">السعر</Label>
                 <Input
                   id="edit-price"
                   name="price"
@@ -651,7 +651,7 @@ export default function DishesPage() {
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="edit-category">Category</Label>
+                <Label htmlFor="edit-category">الفئة</Label>
                 <Select
                   name="category"
                   value={editingDish?.categories[0] || ""}
@@ -665,7 +665,7 @@ export default function DishesPage() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="اختر فئة" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -681,7 +681,7 @@ export default function DishesPage() {
               </div>
 
               <div className="grid items-center w-full gap-2">
-                <Label htmlFor="edit-image">Update Image (Optional)</Label>
+                <Label htmlFor="edit-image">تحديث الصورة (اختياري)</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="edit-image"
@@ -693,7 +693,7 @@ export default function DishesPage() {
                   />
                   {selectedImage && (
                     <div className="text-sm text-muted-foreground">
-                      Selected: {selectedImage.name}
+                      تم اختيار: {selectedImage.name}
                     </div>
                   )}
                 </div>
@@ -706,13 +706,13 @@ export default function DishesPage() {
                   onClick={() => setEditDialogOpen(false)}
                   className="mr-2"
                 >
-                  Cancel
+                  إلغاء
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
-                  Save Changes
+                  حفظ التغييرات
                 </Button>
               </DialogFooter>
             </form>
@@ -725,7 +725,7 @@ export default function DishesPage() {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search dishes..."
+            placeholder="ابحث عن الأطباق..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -743,10 +743,10 @@ export default function DishesPage() {
         <div className="w-full md:w-52">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="Filter by category" />
+              <SelectValue placeholder="تصفية حسب الفئة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all">كل الفئات</SelectItem>
               {categories.map((category) => (
                 <SelectItem
                   key={category.category_id}
@@ -764,41 +764,42 @@ export default function DishesPage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="ml-2">جار التحميل...</span>
         </div>
       ) : error ? (
         <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
           <p>{error}</p>
           <Button onClick={fetchDishes} variant="outline" className="mt-2">
-            Try Again
+            حاول مرة أخرى
           </Button>
         </div>
       ) : (
         <Table>
-          <TableCaption>A list of your menu dishes</TableCaption>
+          <TableCaption>قائمة الأطباق في قائمتك</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[60px]">Image</TableHead>
+              <TableHead className="w-[60px]">صورة</TableHead>
               <TableHead
                 className="w-[150px] cursor-pointer"
                 onClick={() => handleSort("name")}
               >
-                Name <ArrowUpDown size={14} className="inline ml-1" />
+                الاسم <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead className="w-[300px]">Description</TableHead>
+              <TableHead className="w-[300px]">الوصف</TableHead>
               <TableHead
                 className="text-right cursor-pointer"
                 onClick={() => handleSort("price")}
               >
-                Price <ArrowUpDown size={14} className="inline ml-1" />
+                السعر <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>الفئة</TableHead>
               <TableHead
                 className="text-right cursor-pointer"
                 onClick={() => handleSort("averageRating")}
               >
-                Rating <ArrowUpDown size={14} className="inline ml-1" />
+                التقييم <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -808,10 +809,11 @@ export default function DishesPage() {
                   colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No dishes found{searchTerm ? " matching your search" : ""}{" "}
+                  لا توجد أطباق{searchTerm ? " مطابقة لبحثك" : ""}
                 </TableCell>
               </TableRow>
-            ) : (              displayedDishes.map((dish) => (
+            ) : (
+              displayedDishes.map((dish) => (
                 <TableRow key={dish.id}>
                   <TableCell>
                     <DishImage
@@ -847,7 +849,7 @@ export default function DishesPage() {
                       </div>
                     ) : (
                       <span className="text-sm text-muted-foreground">
-                        No ratings
+                        لا يوجد تقييمات
                       </span>
                     )}
                   </TableCell>
@@ -858,14 +860,14 @@ export default function DishesPage() {
                       className="mr-2"
                       onClick={() => handleEdit(dish)}
                     >
-                      Edit
+                      تعديل
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDelete(dish.id)}
                     >
-                      Delete
+                      حذف
                     </Button>
                   </TableCell>
                 </TableRow>

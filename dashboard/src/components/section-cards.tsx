@@ -1,10 +1,4 @@
-import {
-  IconTrendingDown,
-  IconTrendingUp,
-  IconUsers,
-  IconUserShield,
-  type Icon,
-} from "@tabler/icons-react";
+import { IconUsers, IconUserShield, type Icon } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,16 +41,6 @@ export function SectionCards({
   // Default cards with dynamic count values
   const defaultCards: CardData[] = [
     {
-      title: "عدد المسؤولين",
-      value: adminCount,
-      description: "المسؤولين",
-      icon: IconUserShield,
-      footer: {
-        title: "مسؤولي النظام",
-        description: "المستخدمون الذين لديهم إمكانية الوصول الكامل إلى النظام",
-      },
-    },
-    {
       title: "المستخدمين المسجلين",
       value: userCount,
       description: "المستخدمين",
@@ -66,11 +50,22 @@ export function SectionCards({
         description: "مستخدمو المنصة المسجلون",
       },
     },
+    {
+      title: "عدد المسؤولين",
+      value: adminCount,
+      description: "المسؤولين",
+      icon: IconUserShield,
+      footer: {
+        title: "مسؤولي النظام",
+        description: "المستخدمون الذين لديهم إمكانية الوصول الكامل إلى النظام",
+      },
+    },
+
     // You can add more default cards here if needed
   ];
 
   // Combine default cards with any custom cards passed as props
-  const allCards = [...defaultCards, ...customCards];
+  const allCards = [...customCards, ...defaultCards];
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">

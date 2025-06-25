@@ -1,17 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { z } from "zod"; // Make sure to import zod
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
+import {} from "@/components/ui/form";
 import {
   Table,
   TableBody,
@@ -50,13 +41,13 @@ import {
 } from "@/types";
 
 // Define validation schema with Zod
-const categoryFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().min(5, "Description must be at least 5 characters"),
-});
+// const categoryFormSchema = z.object({
+//   name: z.string().min(2, "Name must be at least 2 characters"),
+//   description: z.string().min(5, "Description must be at least 5 characters"),
+// });
 
 // Infer the type from the schema
-type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+// type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function TablesPage() {
   // State for categories
@@ -298,7 +289,7 @@ export default function TablesPage() {
 
   return (
     <div className="container py-10 mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Categories</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -313,7 +304,7 @@ export default function TablesPage() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
@@ -325,7 +316,7 @@ export default function TablesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
@@ -339,7 +330,7 @@ export default function TablesPage() {
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   )}
                   Create Category
                 </Button>
@@ -359,7 +350,7 @@ export default function TablesPage() {
             </DialogHeader>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-name">Name</Label>
                 <Input
                   id="edit-name"
@@ -371,7 +362,7 @@ export default function TablesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-description">Description</Label>
                 <Input
                   id="edit-description"
@@ -393,7 +384,7 @@ export default function TablesPage() {
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   )}
                   Save Changes
                 </Button>
@@ -440,7 +431,7 @@ export default function TablesPage() {
 
       {/* Loading and error states */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : error ? (

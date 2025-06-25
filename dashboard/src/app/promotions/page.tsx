@@ -475,7 +475,7 @@ const PromotionsPage = () => {
               <DialogTitle>إنشاء عرض ترويجي جديد</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="dish_id">الطبق</Label>
                 <Select
                   value={formData.dish_id}
@@ -501,7 +501,7 @@ const PromotionsPage = () => {
                 )}
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="discount_percentage">نسبة الخصم</Label>
                 <Input
                   id="discount_percentage"
@@ -525,7 +525,7 @@ const PromotionsPage = () => {
                 )}
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="start_date">تاريخ البداية</Label>
                 <Input
                   id="start_date"
@@ -546,7 +546,7 @@ const PromotionsPage = () => {
                 )}
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="end_date">تاريخ النهاية</Label>
                 <Input
                   id="end_date"
