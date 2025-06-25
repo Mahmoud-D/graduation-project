@@ -96,7 +96,6 @@ export default function MenuCategories() {
   }
 
   const dishesWithOffers = dishes.filter(dish => dish.isOffer).length;
-console.log("disheswithoffers", dishes)
   return (
     <section className="py-20 bg-light-shade" dir="rtl">
       <div className="container mx-auto px-4">

@@ -24,13 +24,17 @@ const RestaurantReview = {
   getAllRestaurantReviews: async () => {
     try {
       const query = sql`
-      SELECT * FROM restaurant_reviews
-      ORDER BY created_at DESC
-      `;
-       const results = await query;
+  SELECT 
+    restaurant_reviews.*,
+    users.name
+  FROM restaurant_reviews
+  JOIN users ON restaurant_reviews.user_id = users.id
+  ORDER BY restaurant_reviews.created_at DESC
+`;
+      const results = await query;
       return results;
     } catch (error) {
-        console.error("❌ Error fetching reviews:", error);
+      console.error("❌ Error fetching reviews:", error);
       throw error;
     }
   },

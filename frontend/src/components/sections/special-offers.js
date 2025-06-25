@@ -6,38 +6,10 @@ import Image from "next/image";
 import { Tag, Truck, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
-const getExpiryStatus = (endDateString) => {
-  const now = new Date();
-  const endDate = new Date(endDateString);
-  const diffTime = endDate - now;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 0) {
-    return { text: "انتهى العرض", status: "expired" };
-  }
-  if (diffDays === 1) {
-    return { text: "ينتهي اليوم", status: "soon" };
-  }
-  if (diffDays <= 7) {
-    return { text: `ينتهي في ${diffDays} أيام`, status: "soon" };
-  }
-  return { text: `ينتهي في ${diffDays} يوم`, status: "active" };
-};
-
 const getOfferIcon = (title) => {
   if (title.includes("توصيل")) return Truck;
   if (title.includes("أطباق")) return ShoppingBag;
   return Tag;
-};
-
-const getOfferImage = (title) => {
-  if (title.includes("توصيل")) {
-    return `${process.env.NEXT_PUBLIC_API_URL}/uploads/free_delivery.png`;
-  }
-  if (title.includes("أطباق")) {
-    return `${process.env.NEXT_PUBLIC_API_URL}/uploads/discounts.jpg`;
-  }
-  return `${process.env.NEXT_PUBLIC_API_URL}/uploads/20.png`;
 };
 
 export default function SpecialOffers() {
@@ -113,7 +85,6 @@ export default function SpecialOffers() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {offers.map((offer) => {
-              const expiry = getExpiryStatus(offer.end_date);
               const IconComponent = getOfferIcon(offer.title);
               const isDiscountOffer = offer.discount_percentage !== null;
               const isDishesOffer = offer.title.includes("أطباق");
@@ -125,26 +96,12 @@ export default function SpecialOffers() {
                 >
                   <div className="relative h-48">
                     <Image
-                      src={getOfferImage(offer.title)}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}/${offer.image_path}`}
                       alt={offer.title}
                       fill
                       unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-4 right-4">
-                      <Badge
-                        variant={
-                          expiry.status === "soon" ? "destructive" : "default"
-                        }
-                        className="text-sm shadow-md"
-                      >
-                        {expiry.status === "expired"
-                          ? "منتهي الصلاحية"
-                          : expiry.status === "soon"
-                          ? "ينتهي قريبًا"
-                          : "عرض فعال"}
-                      </Badge>
-                    </div>
                   </div>
                   <CardContent className="p-6 flex flex-col h-[240px]">
                     <div className="flex-grow">
@@ -175,15 +132,7 @@ export default function SpecialOffers() {
                           <span>عرض خاص</span>
                         </div>
                       )}
-                      <span
-                        className={`text-sm font-medium ${
-                          expiry.status === "soon"
-                            ? "text-red-600 animate-pulse"
-                            : "text-dark-shade/60"
-                        }`}
-                      >
-                        {expiry.text}
-                      </span>
+                     
                     </div>
                   </CardContent>
                 </Card>
