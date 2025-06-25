@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   Loader2, 
@@ -19,7 +19,11 @@ import {
   Phone,
   FileText,
   Receipt,
-  Truck
+  Truck,
+  Clock,
+  CheckCircle,
+  XCircle,
+  BarChart3
 } from 'lucide-react';
 
 export default function OrderDetailsPage() {
@@ -34,6 +38,55 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     fetchOrderDetails();
   }, [orderId]);
+
+  // Status configuration
+  const getStatusConfig = (status) => {
+    const configs = {
+      'pending': {
+        label: 'في الانتظار',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        icon: Clock,
+        iconColor: 'text-yellow-600',
+        description: 'تم استلام طلبك وهو في انتظار المراجعة'
+      },
+      'confirmed': {
+        label: 'مؤكد',
+        color: 'bg-blue-100 text-blue-800 border-blue-200',
+        icon: CheckCircle,
+        iconColor: 'text-blue-600',
+        description: 'تم تأكيد طلبك وسيتم البدء في التحضير قريباً'
+      },
+      'preparing': {
+        label: 'قيد التحضير',
+        color: 'bg-orange-100 text-orange-800 border-orange-200',
+        icon: Package,
+        iconColor: 'text-orange-600',
+        description: 'جاري تحضير طلبك في المطبخ'
+      },
+      'delivering': {
+        label: 'قيد التوصيل',
+        color: 'bg-purple-100 text-purple-800 border-purple-200',
+        icon: Truck,
+        iconColor: 'text-purple-600',
+        description: 'طلبك في الطريق إليك'
+      },
+      'delivered': {
+        label: 'تم التوصيل',
+        color: 'bg-green-100 text-green-800 border-green-200',
+        icon: CheckCircle,
+        iconColor: 'text-green-600',
+        description: 'تم توصيل طلبك بنجاح'
+      },
+      'cancelled': {
+        label: 'ملغي',
+        color: 'bg-red-100 text-red-800 border-red-200',
+        icon: XCircle,
+        iconColor: 'text-red-600',
+        description: 'تم إلغاء هذا الطلب'
+      }
+    };
+    return configs[status] || configs['pending'];
+  };
 
   const fetchOrderDetails = async () => {
     const token = localStorage.getItem("token");
@@ -128,6 +181,8 @@ export default function OrderDetailsPage() {
   const subtotal = calculateSubtotal();
   const deliveryFees = parseFloat(order.delivery_fees || 0);
   const total = subtotal + deliveryFees;
+  const statusConfig = getStatusConfig(order.status);
+  const StatusIcon = statusConfig.icon;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -158,12 +213,41 @@ export default function OrderDetailsPage() {
                 })}
               </p>
             </div>
+            
+            {/* Status Badge */}
+            <div className="mt-4 md:mt-0">
+              <Badge className={`${statusConfig.color} flex items-center gap-2 px-4 py-2 text-base font-medium border`}>
+                <StatusIcon className={`h-5 w-5 ${statusConfig.iconColor}`} />
+                {statusConfig.label}
+              </Badge>
+            </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Order Status Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  حالة الطلب
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                  <div className={`p-3 rounded-full ${statusConfig.color.replace('text-', 'bg-').replace('border-', 'bg-').replace('100', '200')}`}>
+                    <StatusIcon className={`h-6 w-6 ${statusConfig.iconColor}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{statusConfig.label}</h3>
+                    <p className="text-gray-600">{statusConfig.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Order Items */}
             <Card>
               <CardHeader>

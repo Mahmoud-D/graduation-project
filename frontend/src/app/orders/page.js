@@ -17,7 +17,11 @@ import {
   Eye,
   RefreshCw,
   Filter,
-  Search
+  Search,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Truck
 } from 'lucide-react';
 
 export default function MyOrdersPage() {
@@ -26,6 +30,7 @@ export default function MyOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
@@ -36,7 +41,50 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     filterOrders();
-  }, [orders, searchTerm]);
+  }, [orders, searchTerm, statusFilter]);
+
+  // Status configuration
+  const getStatusConfig = (status) => {
+    const configs = {
+      'pending': {
+        label: 'في الانتظار',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        icon: Clock,
+        iconColor: 'text-yellow-600'
+      },
+      'confirmed': {
+        label: 'مؤكد',
+        color: 'bg-blue-100 text-blue-800 border-blue-200',
+        icon: CheckCircle,
+        iconColor: 'text-blue-600'
+      },
+      'preparing': {
+        label: 'قيد التحضير',
+        color: 'bg-orange-100 text-orange-800 border-orange-200',
+        icon: Package,
+        iconColor: 'text-orange-600'
+      },
+      'delivering': {
+        label: 'قيد التوصيل',
+        color: 'bg-purple-100 text-purple-800 border-purple-200',
+        icon: Truck,
+        iconColor: 'text-purple-600'
+      },
+      'delivered': {
+        label: 'تم التوصيل',
+        color: 'bg-green-100 text-green-800 border-green-200',
+        icon: CheckCircle,
+        iconColor: 'text-green-600'
+      },
+      'cancelled': {
+        label: 'ملغي',
+        color: 'bg-red-100 text-red-800 border-red-200',
+        icon: XCircle,
+        iconColor: 'text-red-600'
+      }
+    };
+    return configs[status] || configs['pending'];
+  };
 
   const fetchOrders = async () => {
     const token = localStorage.getItem("token");
@@ -83,10 +131,32 @@ export default function MyOrdersPage() {
       );
     }
 
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
     setFilteredOrders(filtered);
   };
 
+  const getStatusCounts = () => {
+    const counts = {
+      all: orders.length,
+      pending: 0,
+      confirmed: 0,
+      preparing: 0,
+      delivering: 0,
+      delivered: 0,
+      cancelled: 0
+    };
 
+    orders.forEach(order => {
+      if (counts.hasOwnProperty(order.status)) {
+        counts[order.status]++;
+      }
+    });
+
+    return counts;
+  };
 
   if (loading) {
     return (
@@ -124,7 +194,7 @@ export default function MyOrdersPage() {
     );
   }
 
-  const statusCounts = orders.length;
+  const statusCounts = getStatusCounts();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -165,7 +235,7 @@ export default function MyOrdersPage() {
                   <CardContent className="p-6">
                     <Package className="h-8 w-8 mx-auto mb-3 text-blue-600" />
                     <p className="text-sm text-gray-600 mb-1">إجمالي الطلبات</p>
-                    <p className="text-3xl font-bold text-gray-900">{statusCounts}</p>
+                    <p className="text-3xl font-bold text-gray-900">{statusCounts.all}</p>
                   </CardContent>
                 </Card>
                 <Card className="text-center">
@@ -186,6 +256,31 @@ export default function MyOrdersPage() {
                     </p>
                   </CardContent>
                 </Card>
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex flex-wrap gap-2 justify-center">
+                {[
+                  { key: 'all', label: 'الكل', count: statusCounts.all },
+                  { key: 'pending', label: 'في الانتظار', count: statusCounts.pending },
+                  { key: 'confirmed', label: 'مؤكد', count: statusCounts.confirmed },
+                  { key: 'preparing', label: 'قيد التحضير', count: statusCounts.preparing },
+                  { key: 'delivering', label: 'قيد التوصيل', count: statusCounts.delivering },
+                  { key: 'delivered', label: 'تم التوصيل', count: statusCounts.delivered },
+                  { key: 'cancelled', label: 'ملغي', count: statusCounts.cancelled }
+                ].map(status => (
+                  <Button
+                    key={status.key}
+                    variant={statusFilter === status.key ? "default" : "outline"}
+                    onClick={() => setStatusFilter(status.key)}
+                    className="flex items-center gap-2"
+                  >
+                    {status.label}
+                    <Badge variant="secondary" className="text-xs">
+                      {status.count}
+                    </Badge>
+                  </Button>
+                ))}
               </div>
 
               {/* Search and Filter Bar */}
@@ -215,6 +310,9 @@ export default function MyOrdersPage() {
             {/* Orders Grid */}
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {filteredOrders.map((order) => {
+                const statusConfig = getStatusConfig(order.status);
+                const StatusIcon = statusConfig.icon;
+
                 return (
                   <Card key={order.order_id} className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0">
                     <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 pb-3">
@@ -223,6 +321,10 @@ export default function MyOrdersPage() {
                           <span className="text-lg font-bold text-gray-900">#{order.order_id}</span>
                           <p className="text-sm text-gray-500 mt-1">طلب رقم</p>
                         </div>
+                        <Badge className={`${statusConfig.color} flex items-center gap-1 px-3 py-1 text-sm font-medium border`}>
+                          <StatusIcon className={`h-4 w-4 ${statusConfig.iconColor}`} />
+                          {statusConfig.label}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-4">
@@ -291,11 +393,14 @@ export default function MyOrdersPage() {
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">لا توجد نتائج</h3>
                 <p className="text-gray-500">لم يتم العثور على طلبات تطابق معايير البحث الحالية</p>
                 <Button 
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                  }}
                   variant="outline"
                   className="mt-4"
                 >
-                  إزالة البحث
+                  إزالة الفلاتر
                 </Button>
               </div>
             )}
