@@ -8,11 +8,9 @@
 <body>
   <h2>ادفع كاش أو بايبال</h2>
 
-  <!-- زرار الدفع كاش -->
-  <button id="cashBtn">ادفع كاش</button>
+   <button id="cashBtn">ادفع كاش</button>
 
-  <!-- زرار الدفع بايبال -->
-  <div id="paypal-button-container"></div>
+   <div id="paypal-button-container"></div>
 
   <script>
     const fixedOrderData = {
@@ -29,8 +27,7 @@
       coupon_code: "code22324"
     };
 
-    // الدفع كاش
-    document.getElementById("cashBtn").addEventListener("click", async () => {
+     document.getElementById("cashBtn").addEventListener("click", async () => {
       const payload = {
         ...fixedOrderData,
         payment_method: "cash"
@@ -46,13 +43,12 @@
       alert(JSON.stringify(data));
     });
 
-    // الدفع بايبال
-    paypal.Buttons({
+     paypal.Buttons({
       createOrder: function(data, actions) {
         return actions.order.create({
           purchase_units: [{
             amount: {
-              value: "50.00" // المبلغ التقريبي — يُفضل تعديله ديناميكياً من الباك إند
+              value: "50.00" 
             }
           }]
         });

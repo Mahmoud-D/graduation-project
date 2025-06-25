@@ -65,8 +65,7 @@ exports.deletePromotion = async (req, res) => {
       return res.status(404).json({ message: 'العرض غير موجود' });
     }
 
-    // حذف العرض
-    const isDeleted = await Promotion.delete(promotionId);
+     const isDeleted = await Promotion.delete(promotionId);
     
     if (isDeleted) {
       res.json({ message: 'تم حذف العرض بنجاح' });

@@ -1,7 +1,6 @@
 const { z } = require('zod');
 
-// Schema أساسي مشترك
-const baseDishSchema = z.object({
+ const baseDishSchema = z.object({
   name: z.string({
     required_error: "اسم الطبق مطلوب"
   }).min(2, "الاسم يجب أن يكون على الأقل حرفين").max(100),
@@ -30,8 +29,7 @@ const baseDishSchema = z.object({
   )
 });
 
-// Schema لإنشاء طبق (يتطلب الصورة)
-const createDishSchema = baseDishSchema.extend({
+ const createDishSchema = baseDishSchema.extend({
   image: z.object({
     originalname: z.string(),
     mimetype: z.string().regex(/^image\//, "يجب أن يكون الملف صورة"),
@@ -42,8 +40,7 @@ const createDishSchema = baseDishSchema.extend({
   })
 });
 
-// Schema لتحديث طبق (الصورة اختيارية)
-const updateDishSchema = baseDishSchema.extend({
+ const updateDishSchema = baseDishSchema.extend({
   id: z.string().min(1, "معرف الطبق مطلوب"),
   image: z.object({
     originalname: z.string(),
@@ -51,9 +48,9 @@ const updateDishSchema = baseDishSchema.extend({
     size: z.number().max(5_000_000, "يجب أن لا يتجاوز حجم الصورة 5MB"),
     filename: z.string()
   }).optional()
-}).partial(); // يجعل جميع الحقول اختيارية للتحديث الجزئي
+}).partial(); 
 
-// Schema للبحث بالـ IDs
+
 const dishIdsSchema = z.object({
   ids: z.preprocess(
     (val) => {

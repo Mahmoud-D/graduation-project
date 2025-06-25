@@ -1,5 +1,5 @@
 const e = require("express");
-const sql = require("../config/db"); // الاتصال الجديد بـ postgres
+const sql = require("../config/db"); 
 const bcrypt = require("bcrypt");
 
 class User {
@@ -94,7 +94,7 @@ ORDER BY signup_date;`;
       )
     `;
     try {
-      await sql.unsafe(sqlQuery); // استخدم unsafe عشان نمرر SQL string عادي
+      await sql.unsafe(sqlQuery); 
       console.log('✅ Table "users" is ready');
     } catch (err) {
       console.error("❌ Error creating users table:", err);
@@ -153,7 +153,7 @@ console.log('========');
   
       await sql`UPDATE users SET is_active = ${newStatus} WHERE id = ${id}`;
   
-      return newStatus; // ممكن ترجعه علشان تعرف إذا اتفعل أو اتعطل
+      return newStatus; 
     } catch (err) {
 
       console.log("❌ Error toggling user status:", err);

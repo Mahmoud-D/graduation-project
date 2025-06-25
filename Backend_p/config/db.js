@@ -8,7 +8,7 @@
 // // connection options
 // const options = {
 //   ssl: {
-//     rejectUnauthorized: false // لازم تكون false عشان Supabase تستخدم شهادة عامة
+//     rejectUnauthorized: false 
 //   },
 //   idle_timeout: 20,
 //   max_lifetime: 60 * 30,
@@ -53,7 +53,6 @@ const options = {
 
 const sql = postgres(connectionString, options);
 
-// دالة لفحص الاتصال يمكن استيرادها
 async function checkDatabaseConnection() {
   try {
     const result = await sql`SELECT NOW()`;

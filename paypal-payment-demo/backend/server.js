@@ -5,7 +5,8 @@
 // Esd#xZ8Q
 
 
-require('dotenv').config(); // تحميل المتغيرات البيئية
+require('dotenv').config(); 
+
 
 const express = require('express');
 const paypal = require('paypal-rest-sdk');
@@ -14,21 +15,24 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// تمكين CORS
-app.use(cors());
-app.use(express.json()); // لتمكين معالجة البيانات بتنسيق JSON
 
-// تكوين PayPal باستخدام المتغيرات البيئية
+app.use(cors());
+app.use(express.json()); 
+
+
+
 paypal.configure({
-  'mode': 'sandbox', // استخدم 'sandbox' أثناء التطوير و 'live' عند الإنتاج
+  'mode': 'sandbox',
+
   'client_id': process.env.PAYPAL_CLIENT_ID,
   'client_secret': process.env.PAYPAL_SECRET_KEY
 });
 
-// إعداد الـ endpoint لإنشاء الدفع
-app.post('/pay', (req, res) => {
-  const { amount } = req.body; // استلام المبلغ من الـ Frontend
 
+app.post('/pay', (req, res) => {
+  const { amount } = req.body; 
+
+  
   const create_payment_json = {
     "intent": "sale",
     "payer": {
@@ -41,31 +45,32 @@ app.post('/pay', (req, res) => {
     "transactions": [{
       "amount": {
         "currency": "USD",
-        "total": amount // استخدام المبلغ الذي أرسله الـ Frontend
+        "total": amount 
+
       },
       "description": "Test payment"
     }]
   };
 
-  // إنشاء الدفع باستخدام PayPal API
+
   paypal.payment.create(create_payment_json, (error, payment) => {
     if (error) {
       console.error(error);
       res.status(500).send('Error creating payment');
     } else {
-      // العثور على رابط الدفع للموافقة عليه من PayPal
+
       const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
-      res.json({ approvalUrl }); // إرجاع رابط الدفع إلى الـ Frontend
+      res.json({ approvalUrl });
+
     }
   });
 });
 
-// صفحة النجاح
-app.get('/success', (req, res) => {
+ app.get('/success', (req, res) => {
   res.send('Payment Success!');
 });
 
-// صفحة الفشل
+
 app.get('/cancel', (req, res) => {
   res.send('Payment Cancelled');
 });

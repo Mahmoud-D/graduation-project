@@ -40,7 +40,7 @@ const OrderDish = {
       const result = await sql`
         DELETE FROM order_items WHERE order_id = ${orderId}
       `;
-      return result.count; // عدد الصفوف المحذوفة
+      return result.count; 
     } catch (err) {
       console.error("❌ Error deleting order dishes:", err);
       throw {

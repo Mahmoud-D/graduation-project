@@ -7,7 +7,6 @@ const checkRole = require("../middleware/checkRole");
 router.get("/", controller.getTopOrderedDishes);
 router.get("/admin",verifyToken, checkRole(["admin"]), controller.getFeaturedDishesForAdmin);
 
-// رواتب للمشرفين (تتطلب مصادقة وتفويض)
 router.post("/", verifyToken, checkRole(["admin"]), controller.addFeaturedDish);
 router.put(
   "/:id",

@@ -1,5 +1,5 @@
 // validation/Validator.js
- 
+
 class Validator {
   /**
    * Constructor to initialize the Validator with rules.
@@ -19,10 +19,9 @@ class Validator {
  * - isAlpha: Ensures the field contains only alphabetic characters.
  */
 
-   
   constructor(rules) {
     this.rules = rules; // Rules for each field
-    this.errors = {};   // To store errors for each field
+    this.errors = {}; // To store errors for each field
   }
 
   /**
@@ -51,7 +50,7 @@ class Validator {
             this.errors[field] = [];
           }
           this.errors[field].push(error);
-          break;  // Stop validation on the first error
+          break; // Stop validation on the first error
         }
       }
     }
@@ -77,7 +76,7 @@ const rules = {
    * @returns {function} - The validation function.
    */
   required: (fieldName) => (value) => {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === "") {
       return `${fieldName} is required.`;
     }
     return null;
@@ -90,7 +89,7 @@ const rules = {
    * @returns {function} - The validation function.
    */
   minLength: (fieldName, min) => (value) => {
-    if (typeof value === 'string' && value.length < min) {
+    if (typeof value === "string" && value.length < min) {
       return `${fieldName} must be at least ${min} characters long.`;
     }
     return null;
@@ -128,7 +127,7 @@ const rules = {
    * @returns {function} - The validation function.
    */
   noSpaces: (fieldName) => (value) => {
-    if (typeof value === 'string' && /\s/.test(value)) {
+    if (typeof value === "string" && /\s/.test(value)) {
       return `${fieldName} must not contain spaces.`;
     }
     return null;
@@ -153,7 +152,7 @@ const rules = {
    * @returns {function} - The validation function.
    */
   noNumbers: (fieldName) => (value) => {
-    if (typeof value === 'string' && /\d/.test(value)) {
+    if (typeof value === "string" && /\d/.test(value)) {
       return `${fieldName} must not contain numbers.`;
     }
     return null;
@@ -165,52 +164,36 @@ const rules = {
    * @returns {function} - The validation function.
    */
   isAlpha: (fieldName) => (value) => {
-    if (typeof value === 'string' && !/^[a-zA-Z]+$/.test(value)) {
+    if (typeof value === "string" && !/^[a-zA-Z]+$/.test(value)) {
       return `${fieldName} must contain only alphabetic characters.`;
     }
     return null;
-  }
+  },
 };
 
 module.exports = { Validator, rules };
 
+const validator = new Validator({
+  email: [
+    rules.required("البريد الإلكتروني"),
+    rules.emailFormat("البريد الإلكتروني"),
+    rules.noSpaces("البريد الإلكتروني"),
+    rules.minLength("البريد الإلكتروني", 1),
+  ],
+  phone: [rules.required("رقم الهاتف"), rules.phoneFormat("رقم الهاتف")],
+  password: [rules.required("كلمة المرور"), rules.minLength("كلمة المرور", 8)],
+  confirmPassword: [
+    rules.required("تأكيد كلمة المرور"),
+    rules.matchField("تأكيد كلمة المرور", "password"),
+  ],
+});
 
+const isValid = validator.validate({
+  email: "test@ss.example",
+  phone: "01012345678",
+  password: "password123",
+  confirmPassword: "password123",
+});
 
-
-
-
-  
-  const validator = new Validator({
-    email: [
-      rules.required('البريد الإلكتروني'),
-      rules.emailFormat('البريد الإلكتروني'),
-      rules.noSpaces('البريد الإلكتروني'),
-      rules.minLength('البريد الإلكتروني', 1),
-    ],
-    phone: [
-      rules.required('رقم الهاتف'),
-      rules.phoneFormat('رقم الهاتف'),
-    ],
-    password: [
-      rules.required('كلمة المرور'),
-      rules.minLength('كلمة المرور', 8),
-    ],
-    confirmPassword: [
-      rules.required('تأكيد كلمة المرور'),
-      rules.matchField('تأكيد كلمة المرور', 'password'),
-    ],
-  });
-
-  // التحقق من البيانات
-  const isValid = validator.validate({
-    email: 'test@ss.example',
-    phone: '01012345678',
-    password: 'password123',
-    confirmPassword: 'password123',
-  });
-
-  // إذا كانت هناك أخطاء
-  console.log(validator.getErrors());
-  console.log(isValid);
-  
-  
+console.log(validator.getErrors());
+console.log(isValid);

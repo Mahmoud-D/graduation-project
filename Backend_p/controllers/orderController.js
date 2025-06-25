@@ -39,11 +39,9 @@ const sendOrderInvoiceEmail = async (orderData, email) => {
  
 
   try {
-    // تنسيق بيانات الفاتورة
     const formattedDate = new Date(orderData.created_at).toLocaleDateString('ar-EG');
     const totalBeforeDelivery = parseFloat(orderData.total_amount) - parseFloat(orderData.delivery_fees);
     
-    // إنشاء محتوى HTML للفاتورة
     const html = `
     <html dir="rtl">
       <head>
@@ -165,7 +163,6 @@ const sendOrderInvoiceEmail = async (orderData, email) => {
     </html>
     `;
 
-    // نص عادي للبريد الإلكتروني
     const text = `
     فاتورة شراء - مطعمنا
     ---------------------
@@ -191,14 +188,13 @@ const sendOrderInvoiceEmail = async (orderData, email) => {
     شكراً لاختياركم مطعمنا
     `;
 
-    // إرسال البريد الإلكتروني
-    await sendEmail({
-      to: email, // استخدام البريد من بيانات الطلب
+     await sendEmail({
+      to: email, 
       subject: `فاتورة طلبك #${orderData.order_id} من مطعمنا`,
       text,
       html,
       category: "Order Invoice",
-      senderName: "مطعمنا"
+      senderName: "restaurant"
     });
 
     console.log(`تم إرسال الفاتورة إلى ${email}`);
@@ -273,7 +269,7 @@ const createOrder = async (req, res) => {
       delivery_address,
       city,
       phone_number,
-      total_amount: finalAmount, // بعد الخصم
+      total_amount: finalAmount, // after discount 
       delivery_fees: totalAmount >= 500 ? 0 : 35,
       coupon_id: coupon?.id || null,
     };
@@ -328,8 +324,7 @@ const createOrder = async (req, res) => {
 //     const orderData = { user_id: req.user.id, status };
 //     const { id: orderId } = await Order.create(orderData);
 
-//     // تحقق من الكوبون إذا كان موجودًا وصالحًا
-//     if (coupon_code) {
+ //     if (coupon_code) {
 //       const coupon = await couponModel.getCouponByCode(coupon_code, req.user.id);
 //       if (coupon === null) {
 //         return res.status(400).json({ message: "Invalid or expired coupon" });
@@ -341,8 +336,7 @@ const createOrder = async (req, res) => {
 //         return res.status(400).json({ message: "You have exceeded your coupon usage limit" });
 //       }
 
-//       // تطبيق الكوبون على الطلب
-//       await couponModel.applyCouponToOrder(orderId, coupon.id, req.user.id);
+ //       await couponModel.applyCouponToOrder(orderId, coupon.id, req.user.id);
 //     }
 
 //     for (let dish of dishes) {
@@ -366,8 +360,7 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-// جلب تفاصيل الطلب بناءً على الـ id
-const getOrderDetails = async (req, res) => {
+ const getOrderDetails = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -395,8 +388,7 @@ const updateOrder = async (req, res) => {
       return res.status(200).json({ message: "Order updated successfully!" });
     }
 
-    // لو الدالة Order.update عملت reject برسالة
-    return res.status(404).json({ message: `Order with ID ${id} not found` });
+     return res.status(404).json({ message: `Order with ID ${id} not found` });
   } catch (err) {
     console.error(err);
 
@@ -408,8 +400,7 @@ const updateOrder = async (req, res) => {
   }
 };
 
-// حذف طلب
-const deleteOrder = async (req, res) => {
+ const deleteOrder = async (req, res) => {
   const { id } = req.params;
   const { force } = req.query;
  
@@ -440,8 +431,9 @@ const deleteOrder = async (req, res) => {
 };
 
 const getMyOrders = async (req, res) => {
-  const userId = req.user.id; // تأكد أنك مستخرج user من التوكن أو السيشن
+  const userId = req.user.id; 
 
+  
   try {
     const myOrders = await Order.getMyOrders(userId);
     return res.status(200).json({ orders: myOrders });

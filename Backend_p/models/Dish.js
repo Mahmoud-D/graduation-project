@@ -291,8 +291,7 @@ const Dish = {
   },
 
 
-// في ملف models/Dish.js
-updateImage : async (id, imagePath) => {
+ updateImage : async (id, imagePath) => {
   const updatedDish = await sql`
     UPDATE dishes 
     SET image_path = ${imagePath}
@@ -388,7 +387,8 @@ linkCategory : async (dishId, categoryId)=> {
     }, {});
   
     if (Object.keys(filteredData).length === 0) {
-      return; // لا شيء للتحديث
+      return; 
+
     }
   
     const updatedDish = await sql`

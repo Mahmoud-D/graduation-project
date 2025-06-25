@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// إضافة استخدام جديد للكوبون
+
 const addCouponUse = async (userId, couponId, orderId) => {
   try {
     await db`
@@ -12,7 +12,7 @@ const addCouponUse = async (userId, couponId, orderId) => {
   }
 };
 
-// التحقق من عدد الاستخدامات للمستخدم على الكوبون المحدد
+
 const checkUserCouponUsage = async (userId, couponId) => {
   try {
     const result = await db`
@@ -26,7 +26,7 @@ const checkUserCouponUsage = async (userId, couponId) => {
   }
 };
 
-// التحقق من الاستخدامات الكلية للكوبون
+
 const checkCouponTotalUsage = async (couponId) => {
   try {
     const result = await db`
@@ -40,7 +40,7 @@ const checkCouponTotalUsage = async (couponId) => {
   }
 };
 
-// التحقق من صلاحية الكوبون وتواريخه
+
 const getCouponById = async (couponId) => {
   try {
     const result = await db`
@@ -51,7 +51,7 @@ const getCouponById = async (couponId) => {
         AND start_date <= NOW() 
         AND end_date >= NOW();
     `;
-    return result[0]; // بيرجع أول كوبون لو موجود
+    return result[0]; 
   } catch (error) {
     throw new Error('حدث خطأ أثناء التحقق من صلاحية الكوبون');
   }
@@ -63,3 +63,7 @@ module.exports = {
   checkCouponTotalUsage,
   getCouponById,
 };
+
+
+
+ 

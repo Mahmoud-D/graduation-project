@@ -27,8 +27,7 @@ exports.createOffer = async (req, res) => {
   try {
     const { title, description, discount_percentage, start_date, end_date, dishIds } = req.body;
 
-    // التحقق من أن dishIds عبارة عن مصفوفة، وقد تأتي كـ JSON string من الفورم
-    let parsedDishIds = [];
+     let parsedDishIds = [];
     if (dishIds) {
         try {
             parsedDishIds = JSON.parse(dishIds);
@@ -62,8 +61,7 @@ exports.updateOffer = async (req, res) => {
     const { id } = req.params;
     const { title, description, discount_percentage, start_date, end_date, is_active, dishIds } = req.body;
 
-    // التحقق من أن dishIds عبارة عن مصفوفة
-    let parsedDishIds = [];
+     let parsedDishIds = [];
     if (dishIds) {
         try {
             parsedDishIds = JSON.parse(dishIds);

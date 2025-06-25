@@ -184,7 +184,6 @@
     </div>
 
     <script>
-        // البيانات الثابتة (يمكن استبدالها بطلب API فعلي)
         const apiData = {
             "status": "API is operational",
             "timestamp": "2025-06-16T16:07:38.783Z",
@@ -221,7 +220,6 @@
             ]
         };
 
-        // دالة لتنسيق البايت إلى صيغة مقروءة
         function formatBytes(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -231,7 +229,6 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i] )
         }
 
-        // دالة لتنسيق وقت التشغيل
         function formatUptime(seconds) {
             const days = Math.floor(seconds / (3600 * 24));
             seconds %= 3600 * 24;
@@ -249,15 +246,12 @@
             return result;
         }
 
-        // دالة لعرض البيانات
         function renderData(data) {
-            // الحالة العامة
             document.getElementById('global-status').textContent = 
                 data.status.includes('operational') ? 'يعمل بشكل طبيعي' : 'هناك مشكلة';
             document.getElementById('global-status').style.backgroundColor = 
                 data.status.includes('operational') ? 'var(--success)' : 'var(--danger)';
             
-            // قاعدة البيانات
             const dbCard = document.getElementById('database-card');
             const dbStatus = document.getElementById('database-status');
             if (data.database.connected) {
@@ -275,7 +269,6 @@
                 `;
             }
             
-            // نظام الملفات
             const fsCard = document.getElementById('filesystem-card');
             const fsStatus = document.getElementById('filesystem-status');
             if (data.filesystem.uploadsDirectory === 'Available') {
@@ -290,7 +283,6 @@
                 `;
             }
             
-            // معلومات النظام
             const systemTable = document.getElementById('system-info');
             systemTable.innerHTML += `
                 <tr>
@@ -307,7 +299,6 @@
                 </tr>
             `;
             
-            // استخدام الذاكرة
             const memoryUsage = document.getElementById('memory-usage');
             const mem = data.system.memoryUsage;
             const usedPercent = (mem.heapUsed / mem.heapTotal * 100).toFixed(1);
@@ -321,29 +312,22 @@
                 <p class="timestamp">الذاكرة الكلية: ${formatBytes(mem.rss)}</p>
             `;
             
-            // الروابط المتاحة
             const routesContainer = document.getElementById('routes-container');
             routesContainer.innerHTML = data.routes.map(route => `
                 <div class="route-item">${route}</div>
             `).join('');
             
-            // التوقيت
             document.getElementById('last-updated').textContent = 
                 `آخر تحديث: ${new Date(data.timestamp).toLocaleString('ar-EG')}`;
         }
 
-        // محاكاة جلب البيانات من API
         function fetchData() {
-            // في الواقع الفعلي، استخدم:
-            // fetch('/api').then(...)
             
-            // هنا نستخدم البيانات الثابتة لمثال التوضيح
             setTimeout(() => {
                 renderData(apiData);
             }, 1000);
         }
 
-        // بدء التحميل عند فتح الصفحة
         document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>

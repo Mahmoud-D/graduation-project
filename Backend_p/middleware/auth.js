@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const sql = require("../config/db"); // استيراد الاتصال بقاعدة البيانات من الملف الجديد
+const sql = require("../config/db"); 
 require("dotenv").config();
 
 exports.verifyToken = async (req, res, next) => {
@@ -34,8 +34,7 @@ exports.verifyToken = async (req, res, next) => {
       });
     }
 
-    // استعلام للحصول على المستخدم
-    const users = await sql`
+     const users = await sql`
       SELECT id, name, email, role ,is_verified, is_active
       FROM users 
       WHERE id = ${userId}
@@ -43,8 +42,7 @@ exports.verifyToken = async (req, res, next) => {
 
     console.log("users ---->:", users);
 
-    // تحقق من وجود المستخدم
-    if (users.length === 0) {
+     if (users.length === 0) {
       return res.status(401).json({
         message: "المستخدم غير موجود",
         error: "user_not_found",
@@ -66,7 +64,8 @@ exports.verifyToken = async (req, res, next) => {
       });
     }
 
-    req.user = users[0]; // استرجاع أول مستخدم من النتيجة
+    req.user = users[0];
+
     next();
   } catch (error) {
     console.error("❌ Error in verifyToken:", error);

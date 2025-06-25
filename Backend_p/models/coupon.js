@@ -1,7 +1,6 @@
 const sql = require("../config/db");
 
-// إنشاء كوبون
-const createCoupon = async (couponData) => {
+ const createCoupon = async (couponData) => {
   const {
     code,
     discount_value,
@@ -9,8 +8,8 @@ const createCoupon = async (couponData) => {
     start_date,
     end_date,
     max_uses,
-    user_max_uses = 1, // لو مش جاي من الـ frontend
-    is_active = true,
+    user_max_uses = 1, 
+     is_active = true,
     current_uses = 0,
   } = couponData;
 
@@ -40,7 +39,7 @@ const createCoupon = async (couponData) => {
       RETURNING *;
     `;
 
-  return result[0]; // بيرجع أول كوبون بعد الإدخال
+  return result[0]; 
 };
 
 const getCoupons = async (couponCode) => {
@@ -77,7 +76,7 @@ const getCouponsByFilter = async (code) => {
 // ✅ 2. Get coupon by ID
 const getCouponById = async (id) => {
   const result = await sql`SELECT * FROM coupons WHERE id = ${id}`;
-  return result[0]; // رجع أول نتيجة بس
+  return result[0]; 
 };
 
 const getActiveCoupons = async () => {
@@ -167,14 +166,14 @@ const addCouponToOrder = async (couponId, userId, orderId) => {
 // ✅ 8. Apply coupon to order
 const applyCouponToOrder = async (orderId, couponId, userId) => {
   try {
-    // 1. ربط الكوبون بالأوردر
+    // 1. coupon && order
     await sql`
       UPDATE orders 
       SET coupon_id = ${couponId}
       WHERE id = ${orderId} AND user_id = ${userId}
     `;
 
-    // 2. تحديث عدد الاستخدامات
+    // 2. ubdate current_uses  
     await sql`
       UPDATE coupons 
       SET current_uses = current_uses + 1 
