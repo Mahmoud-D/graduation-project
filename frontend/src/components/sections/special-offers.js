@@ -12,16 +12,6 @@ const getOfferIcon = (title) => {
   return Tag;
 };
 
-const getOfferImage = (title) => {
-  if (title.includes("توصيل")) {
-    return `${process.env.NEXT_PUBLIC_API_URL}/uploads/free_delivery.png`;
-  }
-  if (title.includes("أطباق")) {
-    return `${process.env.NEXT_PUBLIC_API_URL}/uploads/discounts.jpg`;
-  }
-  return `${process.env.NEXT_PUBLIC_API_URL}/uploads/20.png`;
-};
-
 export default function SpecialOffers() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +96,7 @@ export default function SpecialOffers() {
                 >
                   <div className="relative h-48">
                     <Image
-                      src={getOfferImage(offer.title)}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}/${offer.image_path}`}
                       alt={offer.title}
                       fill
                       unoptimized
