@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -11,18 +11,42 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock, LogIn } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function LeaveReviewPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const router = useRouter();
   const [form, setForm] = useState({
     rating: "1",
     comment: "",
   });
   const [hoveredRating, setHoveredRating] = useState(0);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = () => {
+    setIsChecking(true);
+    const token = localStorage.getItem("token");
+    
+    if (!token) {
+      setIsLoggedIn(false);
+      setIsChecking(false);
+      // Show toast message
+      toast.error("يرجى تسجيل الدخول", {
+        description: "يجب تسجيل الدخول أولاً لترك تقييم",
+      });
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+      return;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +55,14 @@ export default function LeaveReviewPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("يرجى تسجيل الدخول مرة أخرى");
+      router.push("/login");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -40,11 +72,20 @@ export default function LeaveReviewPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(form),
         }
       );
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        toast.error("انتهت صلاحية جلسة العمل", {
+          description: "يرجى تسجيل الدخول مرة أخرى",
+        });
+        router.push("/login");
+        return;
+      }
 
       if (response.ok) {
         setForm({ rating: "5", comment: "" });
@@ -55,8 +96,9 @@ export default function LeaveReviewPage() {
           router.push("/");
         }, 2000);
       } else {
+        const errorData = await response.json();
         toast.error("حدث خطأ", {
-          description: "فشل في إرسال التقييم. حاول مرة أخرى.",
+          description: errorData.message || "فشل في إرسال التقييم. حاول مرة أخرى.",
         });
       }
     } catch (error) {
@@ -69,7 +111,55 @@ export default function LeaveReviewPage() {
     }
   };
 
+  const handleLoginRedirect = () => {
+    router.push("/login");
+  };
+
   const maxCommentLength = 500;
+
+  if (isChecking) {
+    return (
+      <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-10 xl:py-8" dir="rtl">
+        <Card className="w-full max-w-[95%] sm:max-w-[85%] md:max-w-2xl mx-auto shadow-lg">
+          <CardContent className="p-8 text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin mb-4" />
+            <p className="text-lg">جاري التحقق من حالة تسجيل الدخول...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-10 xl:py-8" dir="rtl">
+        <Toaster position="top-center" expand={true} richColors />
+        <Card className="w-full max-w-[95%] sm:max-w-[85%] md:max-w-2xl mx-auto shadow-lg">
+          <CardHeader className="text-center p-6 sm:p-8 lg:p-6">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <Lock className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-2xl sm:text-3xl lg:text-3xl font-bold mb-2 text-red-600">
+              يرجى تسجيل الدخول
+            </CardTitle>
+            <CardDescription className="text-base sm:text-lg lg:text-lg mt-2">
+              يجب تسجيل الدخول أولاً لترك تقييم
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="p-4 sm:p-6 lg:p-5">
+            <Button
+              onClick={handleLoginRedirect}
+              className="w-full h-12 sm:h-14 lg:h-12 text-base sm:text-lg lg:text-lg
+                font-medium transition-all duration-200"
+            >
+              <LogIn className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              تسجيل الدخول
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div

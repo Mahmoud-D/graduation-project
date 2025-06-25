@@ -5,16 +5,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchTestimonials();
+    checkAuthStatus();
   }, []);
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  };
 
   const fetchTestimonials = async () => {
     try {
@@ -38,6 +47,14 @@ export default function Testimonials() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleReviewClick = () => {
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
+    router.push("/leave-review");
   };
 
   const formatDate = (dateString) => {
@@ -120,15 +137,27 @@ export default function Testimonials() {
             <p className="text-lg text-dark-shade/70 max-w-2xl mx-auto mb-12">
               كن أول من يشارك تجربته معنا
             </p>
-            <Link href="/leave-review" className="inline-block">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-6 h-auto text-lg group cursor-pointer"
-              >
-                <MessageCircle className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                شارك تجربتك معنا
-              </Button>
-            </Link>
+            <Button
+              onClick={handleReviewClick}
+              size="lg"
+              className={`px-8 py-6 h-auto text-lg group cursor-pointer ${
+                isLoggedIn 
+                  ? "bg-primary hover:bg-primary/90 text-white" 
+                  : "bg-gray-500 hover:bg-gray-600 text-white"
+              }`}
+            >
+              {isLoggedIn ? (
+                <>
+                  <MessageCircle className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                  شارك تجربتك معنا
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-5 w-5" />
+                  سجل دخولك لمشاركة تجربتك
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </section>
@@ -215,15 +244,27 @@ export default function Testimonials() {
         )}
 
         <div className="text-center">
-          <Link href="/leave-review" className="inline-block">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 h-auto text-lg group cursor-pointer"
-            >
-              <MessageCircle className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-              شارك تجربتك معنا
-            </Button>
-          </Link>
+          <Button
+            onClick={handleReviewClick}
+            size="lg"
+            className={`px-8 py-6 h-auto text-lg group cursor-pointer ${
+              isLoggedIn 
+                ? "bg-primary hover:bg-primary/90 text-white" 
+                : "bg-gray-500 hover:bg-gray-600 text-white"
+            }`}
+          >
+            {isLoggedIn ? (
+              <>
+                <MessageCircle className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                شارك تجربتك معنا
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-5 w-5" />
+                سجل دخولك لمشاركة تجربتك
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </section>
