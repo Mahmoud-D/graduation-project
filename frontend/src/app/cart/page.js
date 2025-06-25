@@ -21,6 +21,12 @@ export default function Cart() {
   const toggleCart = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleItemClick = (itemId) => {
+    setIsOpen(false); // Close the cart
+    router.push(`/menu/${itemId}`);
+  };
+
   return (
     <div className="relative">
       {/* Cart Icon Button */}
@@ -73,11 +79,14 @@ export default function Cart() {
               <ul className="space-y-4">
                 {items.map((item) => (
                   <li key={item.id} className="flex border-b pb-4">
-                    <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 relative">
-                      {item.image ? (
+                    <div 
+                      className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 relative cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                      onClick={() => handleItemClick(item.id)}
+                    >
+                      {item.image || item.image_path ? (
                         <Image
                           src={
-                            `${process.env.NEXT_PUBLIC_API_URL}/${item.image}` ||
+                            `${process.env.NEXT_PUBLIC_API_URL}/${item.image || item.image_path}` ||
                             "/placeholder-dish.png"
                           }
                           alt={item.name}
@@ -93,7 +102,12 @@ export default function Cart() {
                     </div>
                     <div className="mr-4 flex-grow">
                       <div className="flex justify-between">
-                        <h3 className="font-medium">{item.name}</h3>
+                        <h3 
+                          className="font-medium cursor-pointer hover:text-orange-500 transition-colors duration-200"
+                          onClick={() => handleItemClick(item.id)}
+                        >
+                          {item.name}
+                        </h3>
                         <p className="font-medium">
                           {item.price * item.quantity} جنيه
                         </p>
