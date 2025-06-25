@@ -45,6 +45,9 @@ export default function LeaveReviewPage() {
         router.push("/login");
       }, 2000);
       return;
+    } else {
+      setIsLoggedIn(true);
+      setIsChecking(false);
     }
   };
 

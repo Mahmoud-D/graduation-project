@@ -204,20 +204,9 @@ export default function Testimonials() {
                 </p>
 
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                  <div className="relative w-14 h-14">
-                    <Image
-                      src={testimonial.user_image || "/profile-photo-fallback-1.jpg"}
-                      alt={testimonial.user_name || "مستخدم"}
-                      fill
-                      className="object-cover rounded-full ring-2 ring-primary/10"
-                      onError={(e) => {
-                        e.target.src = "/profile-photo-fallback-1.jpg";
-                      }}
-                    />
-                  </div>
                   <div>
                     <h3 className="font-semibold text-dark-shade text-lg">
-                      {testimonial.user_name || "مستخدم مجهول"}
+                      {testimonial.name || "مستخدم مجهول"}
                     </h3>
                     <span className="text-sm text-dark-shade/50">
                       {testimonial.created_at ? formatDate(testimonial.created_at) : "منذ فترة"}
