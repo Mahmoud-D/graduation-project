@@ -1,5 +1,5 @@
 // sqlController.js
-const db = require('../config/db');  // دي هي `sql` اللي من مكتبة postgres
+const db = require('../config/db');  
 
 const executeSqlQuery = async (req, res) => {
   const query = req.body.query?.replace(/[\r\n]+/g, '').trim();
@@ -11,8 +11,7 @@ const executeSqlQuery = async (req, res) => {
   try {
     console.log('تنفيذ الكويري:', query);
     
-    // تنفيذ الكويري بشكل ديناميكي
-    const result = await db.unsafe(query);
+     const result = await db.unsafe(query);
 
     console.log('النتيجة:', result);
     return res.status(200).json({ query, message: 'تم تنفيذ الاستعلام بنجاح', result });

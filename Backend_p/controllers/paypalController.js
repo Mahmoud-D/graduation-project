@@ -11,7 +11,7 @@ export const createOrder = async (req, res) => {
     purchase_units: [{
       amount: {
         currency_code: 'USD',
-        value: '10.00', // المبلغ، ممكن تخليه dynamic
+        value: '10.00', 
       },
     }],
   }, {

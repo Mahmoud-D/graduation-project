@@ -29,8 +29,7 @@ class DistinctiveDishesController {
     }
   }
 
-  // إضافة طبق مميز (للمشرفين)
-  async addFeaturedDish(req, res) {
+   async addFeaturedDish(req, res) {
     try {
       const newDishId = await DistinctiveDishModel.addDish(req.body);
       res.status(201).json({ success: true, id: newDishId });
@@ -39,8 +38,7 @@ class DistinctiveDishesController {
     }
   }
 
-  // تحديث طبق مميز (للمشرفين)
-  async updateFeaturedDish(req, res) {
+   async updateFeaturedDish(req, res) {
     try {
       await DistinctiveDishModel.updateDish(req.params.id, req.body);
       res.json({ success: true });
@@ -49,8 +47,7 @@ class DistinctiveDishesController {
     }
   }
 
-  // حذف طبق مميز (للمشرفين)
-  async deleteFeaturedDish(req, res) {
+   async deleteFeaturedDish(req, res) {
     try {
       await DistinctiveDishModel.deleteDish(req.params.id);
       res.status(204).end();

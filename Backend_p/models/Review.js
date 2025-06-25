@@ -1,7 +1,7 @@
 const sql = require('../config/db');
 
 const Review = {
-  // إنشاء تقييم جديد
+  // create new review
   create: async ({ user_id, dish_id, rating, comment }) => {
     try {
       const query = sql`
@@ -23,8 +23,7 @@ const Review = {
     }
   },
 
-  // الحصول على جميع التقييمات لطبق معين
-  getByDishId: async (dishId) => {
+   getByDishId: async (dishId) => {
     try {
       const query = sql`
         SELECT reviews.*, users.name AS user_name

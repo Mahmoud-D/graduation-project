@@ -1,6 +1,5 @@
 const validator = (schema) => async (req, res, next) => {
-  // استخدام req.bodyForValidation إذا كان موجوداً، وإلا req.body
-  const dataToValidate = req.bodyForValidation || req.body;
+   const dataToValidate = req.bodyForValidation || req.body;
   
   const result = await schema.safeParseAsync(dataToValidate);
 

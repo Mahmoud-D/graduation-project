@@ -1,8 +1,7 @@
 const sql = require("../config/db");
 
 class Promotion {
-  // استرجاع العروض الترويجية النشطة والتي تكون في فترة صالحة
-  static async findAllActive() {
+   static async findAllActive() {
     try {
       const rows = await sql`
         SELECT * FROM promotions 
@@ -55,8 +54,7 @@ class Promotion {
     }
   }
 
-  // استرجاع عرض ترويجي بناءً على الـ ID
-  static async findById(id) {
+   static async findById(id) {
     try {
       const rows = await sql`
         SELECT * FROM promotions WHERE id = ${id}
@@ -68,8 +66,7 @@ class Promotion {
     }
   }
 
-  // إنشاء عرض ترويجي جديد
-  static async create(data) {
+   static async create(data) {
     const { dish_id, discount_percentage, start_date, end_date } = data;
     try {
       const result = await sql`
@@ -84,8 +81,7 @@ class Promotion {
     }
   }
 
-  // تحديث عرض ترويجي موجود
-  static async update(id, data) {
+   static async update(id, data) {
     const { dish_id, discount_percentage, start_date, end_date, is_active } =
       data;
     try {
@@ -105,7 +101,6 @@ class Promotion {
     }
   }
 
-  // تبديل حالة العرض الترويجي (تفعيل أو إلغاء تفعيل)
   static async toggleStatus(id) {
     try {
       const promo = await this.findById(id);
@@ -122,7 +117,6 @@ class Promotion {
     }
   }
 
-  // حذف عرض ترويجي بناءً على الـ ID
   static async delete(id) {
     try {
       await sql`
@@ -135,7 +129,6 @@ class Promotion {
     }
   }
 
-  // استرجاع الأطباق التي تحتوي على عروض ترويجية نشطة
   static async getDishesWithPromotions() {
     try {
       const dishes = await sql`

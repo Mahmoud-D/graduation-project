@@ -1,9 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const fs = require("fs"); // نحتاج مكتبة fs لفحص وجود الملف
+const fs = require("fs"); 
 // Import routes
-const userRoutes = require("./routes/userRoutes"); // تأكد من إنشاء routes لمستخدميك
+const userRoutes = require("./routes/userRoutes"); 
 const dishRoutes = require("./routes/dishRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const orderDishRoutes = require("./routes/orderDishRoutes");
@@ -81,7 +81,6 @@ app.use("/api/reports", reportsRoutes);
 //   const email = req.query.email;
 //   await supabase.from('email_logs').update({ opened: true, opened_at: new Date() }).eq('email', email);
 
-//   // إرجاع صورة 1x1 شفافة
 //   const img = Buffer.from(
 //     'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'
 //   );
@@ -101,24 +100,22 @@ app.use("/api/reports", reportsRoutes);
 // });
 
 // app.get("/send-email", async (req, res) => {
-//   // إدخال البيانات كـ Static Data
 //   const staticData = {
-//     to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
-//     subject: "Test Email", // الموضوع
-//     html: "<h1>This is a test email</h1>", // المحتوى HTML
-//     text: "This is a test email", // المحتوى النصي
-//     // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
-//     // templateData: {}, // البيانات التي سيتم استخدامها في القالب
-//     language: "ar", // اللغة
-//     // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
-//     // attachments: [] // المرفقات
+//     to: "vimav57250@cotigz.com",  
+//     subject: "Test Email", 
+//     html: "<h1>This is a test email</h1>", 
+//     text: "This is a test email", 
+  // templateName: "testTemplate", 
+
+  // templateData: {}, 
+//     language: "ar", 
+ // bcc: "bcc@example.com", 
+//  attachments: [] 
 //   };
 
 //   try {
-//     // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
 //     const emailResult = await sendEmail(staticData);
 
-//     // إرجاع نتيجة النجاح
 //     res.status(200).json({ message: "Email sent successfully!", result: emailResult });
 //   } catch (error) {
 //     console.error("Error in sending email:", error);
@@ -133,8 +130,7 @@ app.use("/api/reports", reportsRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// مسار لعرض صفحة HTML عند زيارة /status
-app.get('/status', (req, res) => {
+ app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
 });
 

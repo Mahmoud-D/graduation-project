@@ -1,6 +1,5 @@
 const { z } = require('zod');
 
-// إنشاء سكيمة للتحقق من صحة المدخلات
 const CategorySchema = z.object({
   name: z
     .string()

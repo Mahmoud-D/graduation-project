@@ -219,7 +219,8 @@ LEFT JOIN coupons c ON o.coupon_id = c.id
     const now = new Date();
   
     try {
-      // 1. أنشئ الأوردر وارجع البيانات كلها
+
+
       const [order] = await sql`
         INSERT INTO orders (
           user_id, status, created_at, updated_at, 

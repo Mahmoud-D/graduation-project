@@ -1,8 +1,8 @@
-const sql = require('../config/db'); // استيراد الاتصال بقاعدة البيانات
+const sql = require('../config/db'); 
 
 exports.getAll = async () => {
   try {
-    // نستخدم json_agg لتجميع كل الأطباق المرتبطة بكل عرض في مصفوفة JSON
+    
     const query = sql`
       SELECT 
         o.*,
@@ -50,8 +50,8 @@ exports.getById = async (id) => {
           o.id
       `;
       const result = await query;
-      if (result.length === 0) return null; // إذا لم يتم العثور على العرض
-      return result[0]; // إرجاع العرض المحدد
+      if (result.length === 0) return null; 
+      return result[0]; 
     } catch (err) {
       console.error(`❌ Error fetching offer with id ${id}:`, err);
       throw err;
@@ -69,8 +69,7 @@ exports.create = async (offerData, dishIds) => {
       const offerId = newOffer[0].id;
       let linkedDishes = [];
 
-      // 2. إذا كانت هناك أطباق لربطها، قم بإضافتها إلى جدول offer_dishes
-      if (dishIds && dishIds.length > 0) {
+       if (dishIds && dishIds.length > 0) {
         const dishLinks = dishIds.map(dishId => ({ offer_id: offerId, dish_id: dishId }));
         linkedDishes = await sql`
           INSERT INTO offer_dishes ${sql(dishLinks, 'offer_id', 'dish_id')}
@@ -78,8 +77,7 @@ exports.create = async (offerData, dishIds) => {
         `;
       }
       
-      // إرجاع بيانات العرض الكاملة مع الأطباق المرتبطة
-      return { ...newOffer[0], dishes: linkedDishes };
+       return { ...newOffer[0], dishes: linkedDishes };
     });
     return result;
   } catch (err) {
@@ -88,35 +86,26 @@ exports.create = async (offerData, dishIds) => {
   }
 };
 
-/**
- * تعديل عرض موجود وتحديث الأطباق المرتبطة به
- * @param {number} id - رقم العرض
- * @param {object} offerData - بيانات العرض الجديدة
- * @param {Array<number>} dishIds - مصفوفة الأطباق الجديدة
- */
+ 
 exports.update = async (id, offerData, dishIds) => {
   try {
     const result = await sql.begin(async (sql) => {
-      // 1. تحديث بيانات العرض في جدول offers
-      const updatedOffer = await sql`
+       const updatedOffer = await sql`
         UPDATE offers SET ${sql(offerData, 'title', 'description', 'discount_percentage', 'start_date', 'end_date', 'is_active')}
         WHERE id = ${id}
         RETURNING *
       `;
 
       if (updatedOffer.length === 0) {
-        // إذا لم يتم العثور على العرض، أوقف العملية
-        throw new Error('Offer not found');
+         throw new Error('Offer not found');
       }
 
-      // 2. حذف كل الروابط القديمة للأطباق مع هذا العرض
-      await sql`
+       await sql`
         DELETE FROM offer_dishes WHERE offer_id = ${id}
       `;
 
       let linkedDishes = [];
-      // 3. إضافة الروابط الجديدة إذا تم توفيرها
-      if (dishIds && dishIds.length > 0) {
+       if (dishIds && dishIds.length > 0) {
         const dishLinks = dishIds.map(dishId => ({ offer_id: id, dish_id: dishId }));
         linkedDishes = await sql`
           INSERT INTO offer_dishes ${sql(dishLinks, 'offer_id', 'dish_id')}
@@ -128,28 +117,32 @@ exports.update = async (id, offerData, dishIds) => {
     });
     return result;
   } catch (err) {
-    // التحقق من نوع الخطأ لإرجاع رسالة مناسبة
-    if (err.message === 'Offer not found') return null;
+     if (err.message === 'Offer not found') return null;
     console.error(`❌ Error updating offer with id ${id}:`, err);
     throw err;
   }
 };
 
-/**
- * حذف عرض من قاعدة البيانات
- * @param {number} id - رقم العرض
- */
+ 
 exports.delete = async (id) => {
   try {
-    // سيتم حذف السجلات المرتبطة في offer_dishes تلقائيًا بسبب ON DELETE CASCADE
+
+
+
     const query = sql`
       DELETE FROM offers WHERE id = ${id} RETURNING id
     `;
     const result = await query;
-    if (result.length === 0) return null; // إذا لم يتم العثور على العرض
-    return true; // النجاح في الحذف
+    if (result.length === 0) return null; 
+
+    return true; 
+
   } catch (err) {
     console.error(`❌ Error deleting offer with id ${id}:`, err);
     throw err;
   }
 };
+
+
+
+ 

@@ -1,8 +1,7 @@
 
-const Category = require('../models/category'); // تأكد من وجود الموديل الخاص بالفئات
+const Category = require('../models/category'); 
 
-// جلب جميع الفئات
-exports.getAllCategories = async (req, res) => {
+ exports.getAllCategories = async (req, res) => {
   try {
     const categories = await Category.getAll();
     res.json(categories);
@@ -11,8 +10,7 @@ exports.getAllCategories = async (req, res) => {
   }
 };
 
-// إضافة فئة جديدة
-exports.createCategory = async (req, res) => {
+ exports.createCategory = async (req, res) => {
   const { name, description } = req.body;
 
   if (!name || !description) {
@@ -27,7 +25,6 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-// تعديل فئة
 exports.updateCategory = async (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
@@ -48,7 +45,6 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
-// حذف فئة
 exports.deleteCategory = async (req, res) => {
   const { id } = req.params;
 

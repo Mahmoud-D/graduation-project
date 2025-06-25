@@ -1,6 +1,6 @@
 const couponModel = require("../models/coupon");
 
-// إنشاء كوبون
+
 const createCoupon = async (req, res) => {
   const {
     code,
@@ -10,17 +10,18 @@ const createCoupon = async (req, res) => {
     start_date,
     end_date,
     max_uses,
-    current_uses = 0, // تعيين القيمة الافتراضية
-    is_active = 1, // تعيين القيمة الافتراضية
-    user_max_uses = 1, // تعيين القيمة الافتراضية
+    current_uses = 0, 
+    is_active = 1, 
+    user_max_uses = 1, 
   } = req.body;
 
   try {
-    // التحقق من أن الكود فريد
+
+// check if the coupon code unique
+
     const existingCoupon = await couponModel.getCoupons(code);
     if (existingCoupon && existingCoupon.length > 0) {
-      // تحقق إذا كانت القيمة موجودة وغير null
-      return res.status(400).json({ message: "الكود المدخل موجود بالفعل" });
+       return res.status(400).json({ message: "الكود المدخل موجود بالفعل" });
     }
 
     const result = await couponModel.createCoupon({
@@ -101,13 +102,12 @@ const updateCoupon = async (req, res) => {
   } = req.body;
 
   try {
-    const existingCoupon = await couponModel.getCouponById(id); // هنا التغيير
+    const existingCoupon = await couponModel.getCouponById(id); 
     if (!existingCoupon) {
       return res.status(404).json({ message: "الكوبون غير موجود" });
     }
 
-    // تحديث الكوبون
-    await couponModel.updateCoupon(id, {
+     await couponModel.updateCoupon(id, {
       code,
       discount_type,
       discount_value,
@@ -134,8 +134,7 @@ const deleteCoupon = async (req, res) => {
       return res.status(404).json({ message: "الكوبون غير موجود" });
     }
 
-    // حذف الكوبون
-    await couponModel.deleteCoupon(id);
+     await couponModel.deleteCoupon(id);
 
     res.json({ message: "تم حذف الكوبون بنجاح" });
   } catch (error) {
@@ -144,8 +143,7 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
-//---------------------------------
-const applyCoupon = async (req, res) => {
+ const applyCoupon = async (req, res) => {
   const { coupon_code, user_id, order_id } = req.body;
 
   if (!coupon_code || !user_id || !order_id) {
@@ -178,11 +176,11 @@ const applyCoupon = async (req, res) => {
         .json({ message: "لقد تجاوزت الحد الأقصى لاستخدام هذا الكوبون" });
     }
 
-    // الكوبون صالح، ممكن الآن تطبيق الخصم أو المتابعة
-    return res.status(200).json({
+     return res.status(200).json({
       message: "تم تطبيق الكوبون بنجاح",
       discount_value: coupon.discount_value,
-      type: coupon.discount_type, // مثلاً نسبة أو قيمة ثابتة
+      type: coupon.discount_type, 
+
     });
   } catch (error) {
     console.error(error);
@@ -207,8 +205,7 @@ const filterCoupons = async (req, res) => {
   }
 };
 
-// تصدير الدالة بعد التعديل
-module.exports = {
+ module.exports = {
   applyCoupon,
   createCoupon,
   getCoupons,

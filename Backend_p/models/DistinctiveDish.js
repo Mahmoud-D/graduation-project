@@ -2,8 +2,7 @@ const sql = require("../config/db");
 const connection = require("../config/db");
 
 class DistinctiveDishModel {
-  // الحصول على جميع الأطباق المميزة النشطة
-  static async getAllDishesByActivity() {
+   static async getAllDishesByActivity() {
     const [rows] = await connection.promise().query(`
                 SELECT * 
                 FROM distinctive_dishes 
@@ -82,8 +81,7 @@ class DistinctiveDishModel {
     return rows;
   }
 
-  // إضافة طبق مميز
-  static async addDish(dishData) {
+   static async addDish(dishData) {
     try {
       const [result] = await connection
         .promise()
@@ -95,8 +93,7 @@ class DistinctiveDishModel {
         insertId: result.insertId,
       };
     } catch (error) {
-      // نحاول نوضح سبب الخطأ قدر الإمكان
-      let userMessage = "An error occurred while adding the dish.";
+       let userMessage = "An error occurred while adding the dish.";
 
       if (error.code === "ER_NO_REFERENCED_ROW_2") {
         userMessage =
@@ -113,15 +110,13 @@ class DistinctiveDishModel {
     }
   }
 
-  // تحديث طبق مميز
-  static async updateDish(id, updates) {
+   static async updateDish(id, updates) {
     await connection
       .promise()
       .query("UPDATE distinctive_dishes SET ? WHERE id = ?", [updates, id]);
   }
 
-  // حذف طبق مميز
-  static async deleteDish(id) {
+   static async deleteDish(id) {
     await connection
       .promise()
       .query("DELETE FROM distinctive_dishes WHERE id = ?", [id]);
