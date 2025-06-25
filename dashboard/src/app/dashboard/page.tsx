@@ -1,16 +1,18 @@
 "use client";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
+import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { API } from "@/constant";
 import { IconStar } from "@tabler/icons-react";
 
-import data from "./data.json";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+// Import dashboard styles
+import "./dashboard.css";
 
 // User interface matching the API response
 interface User {
@@ -23,30 +25,24 @@ interface User {
   is_verified: boolean;
 }
 
-// Rating interface
-interface RatingResponse {
-  average_rating: string;
-}
-
 export default function Page() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [adminCount, setAdminCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
   const [averageRating, setAverageRating] = useState<number | null>(null);
-  const [usersError, setUsersError] = useState<string | null>(null);
 
   // Your existing getAuthHeaders function
-  const getAuthHeaders = () => {
+  const getAuthHeaders = useCallback(() => {
     const token = localStorage.getItem("authToken");
     return {
       "Content-Type": "application/json",
       Authorization: token ? `Bearer ${token}` : "",
     };
-  };
+  }, []);
 
   // Updated fetchUsers function to count both users and admins
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await fetch(`${API}users`, {
         headers: getAuthHeaders(),
@@ -73,15 +69,12 @@ export default function Page() {
       };
     } catch (err) {
       console.error("Error fetching users:", err);
-      setUsersError(
-        err instanceof Error ? err.message : "Failed to fetch users"
-      );
       return { admins: 0, users: 0, total: 0 };
     }
-  };
+  }, [getAuthHeaders]);
 
   // New function to fetch average rating
-  const fetchAverageRating = async () => {
+  const fetchAverageRating = useCallback(async () => {
     try {
       const response = await fetch(`${API}reports/OverallAverageRating`, {
         headers: getAuthHeaders(),
@@ -105,7 +98,7 @@ export default function Page() {
       console.error("Error fetching average rating:", err);
       return null;
     }
-  };
+  }, [getAuthHeaders]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -120,14 +113,25 @@ export default function Page() {
         setIsLoading(false);
       });
     }
-  }, [router]);
+  }, [router, fetchUsers, fetchAverageRating]);
 
-  // Show loading state or nothing while checking authentication
+  // Show loading state while checking authentication and fetching data
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading...
-      </div>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          <DashboardSkeleton />
+        </SidebarInset>
+      </SidebarProvider>
     );
   }
 
@@ -158,13 +162,13 @@ export default function Page() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 dashboard-loaded">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <SectionCards
+                customCards={customCards}
                 adminCount={adminCount}
                 userCount={userCount}
-                customCards={customCards}
               />
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />

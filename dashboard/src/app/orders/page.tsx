@@ -224,12 +224,12 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="container py-10 mx-auto">
+    <div className="container py-10 mx-auto" dir="rtl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Orders Management</h1>
+        <h1 className="text-2xl font-bold" dir="rtl">إدارة الطلبات</h1>
         <Button onClick={fetchOrders} variant="outline">
           <Loader2 className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
+          تحديث
         </Button>
       </div>
 
@@ -238,7 +238,7 @@ export default function OrdersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search orders, users, or dishes..."
+            placeholder="ابحث عن الطلبات أو المستخدمين أو الأطباق..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -247,6 +247,7 @@ export default function OrdersPage() {
             <button
               onClick={() => setSearchTerm("")}
               className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+              aria-label="مسح البحث"
             >
               <X size={16} />
             </button>
@@ -256,10 +257,10 @@ export default function OrdersPage() {
         <div className="w-full md:w-52">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="تصفية حسب الحالة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="all">كل الحالات</SelectItem>
               {statusOptions.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
@@ -277,50 +278,50 @@ export default function OrdersPage() {
         </div>
       ) : error ? (
         <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
-          <p>{error}</p>
+          <p>حدث خطأ أثناء جلب الطلبات: {error}</p>
           <Button onClick={fetchOrders} variant="outline" className="mt-2">
-            Try Again
+            حاول مرة أخرى
           </Button>
         </div>
       ) : (
         <Table>
-          <TableCaption>A list of all orders</TableCaption>
+          <TableCaption>قائمة بجميع الطلبات</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead 
                 className="cursor-pointer"
                 onClick={() => handleSort("order_id")}
               >
-                Order ID <ArrowUpDown size={14} className="inline ml-1" />
+                رقم الطلب <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
                 onClick={() => handleSort("user_id")}
               >
-                User ID <ArrowUpDown size={14} className="inline ml-1" />
+                رقم المستخدم <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Dishes</TableHead>
+              <TableHead>الحالة</TableHead>
+              <TableHead>الأطباق</TableHead>
               <TableHead 
                 className="cursor-pointer"
                 onClick={() => handleSort("created_at")}
               >
-                Created <ArrowUpDown size={14} className="inline ml-1" />
+                تاريخ الإنشاء <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
                 onClick={() => handleSort("updated_at")}
               >
-                Updated <ArrowUpDown size={14} className="inline ml-1" />
+                آخر تحديث <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {displayedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                  No orders found{searchTerm ? " matching your search" : ""}
+                  لا توجد طلبات{searchTerm ? " مطابقة لبحثك" : ""}
                 </TableCell>
               </TableRow>
             ) : (
@@ -330,7 +331,17 @@ export default function OrdersPage() {
                   <TableCell>{order.user_id}</TableCell>
                   <TableCell>
                     <Badge className={statusColors[order.status]}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      {(() => {
+                        switch (order.status) {
+                          case "pending": return "قيد الانتظار";
+                          case "confirmed": return "تم التأكيد";
+                          case "preparing": return "قيد التحضير";
+                          case "ready": return "جاهز";
+                          case "delivered": return "تم التوصيل";
+                          case "cancelled": return "ملغي";
+                          default: return order.status;
+                        }
+                      })()}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -342,7 +353,7 @@ export default function OrdersPage() {
                       ))}
                       {order.dishes.length > 2 && (
                         <div className="text-xs text-muted-foreground">
-                          +{order.dishes.length - 2} more...
+                          +{order.dishes.length - 2} أطباق أخرى...
                         </div>
                       )}
                     </div>
@@ -361,7 +372,7 @@ export default function OrdersPage() {
                         onClick={() => handleViewOrder(order)}
                       >
                         <Eye className="w-4 h-4 mr-1" />
-                        View
+                        عرض
                       </Button>
                       <Select
                         value={order.status}
@@ -374,7 +385,17 @@ export default function OrdersPage() {
                         <SelectContent>
                           {statusOptions.map((status) => (
                             <SelectItem key={status.value} value={status.value}>
-                              {status.label}
+                              {(() => {
+                                switch (status.value) {
+                                  case "pending": return "قيد الانتظار";
+                                  case "confirmed": return "تم التأكيد";
+                                  case "preparing": return "قيد التحضير";
+                                  case "ready": return "جاهز";
+                                  case "delivered": return "تم التوصيل";
+                                  case "cancelled": return "ملغي";
+                                  default: return status.label;
+                                }
+                              })()}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -392,9 +413,9 @@ export default function OrdersPage() {
       <Dialog open={orderDetailOpen} onOpenChange={setOrderDetailOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Order Details - #{selectedOrder?.order_id}</DialogTitle>
+            <DialogTitle>تفاصيل الطلب - #{selectedOrder?.order_id}</DialogTitle>
             <DialogDescription>
-              Complete information about this order
+              جميع المعلومات حول هذا الطلب
             </DialogDescription>
           </DialogHeader>
 
@@ -402,40 +423,50 @@ export default function OrdersPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Order ID</label>
+                  <label className="text-sm font-medium text-muted-foreground">رقم الطلب</label>
                   <p className="font-medium">#{selectedOrder.order_id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">User ID</label>
+                  <label className="text-sm font-medium text-muted-foreground">رقم المستخدم</label>
                   <p className="font-medium">{selectedOrder.user_id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <label className="text-sm font-medium text-muted-foreground">الحالة</label>
                   <Badge className={statusColors[selectedOrder.status]}>
-                    {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                    {(() => {
+                      switch (selectedOrder.status) {
+                        case "pending": return "قيد الانتظار";
+                        case "confirmed": return "تم التأكيد";
+                        case "preparing": return "قيد التحضير";
+                        case "ready": return "جاهز";
+                        case "delivered": return "تم التوصيل";
+                        case "cancelled": return "ملغي";
+                        default: return selectedOrder.status;
+                      }
+                    })()}
                   </Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Total Items</label>
+                  <label className="text-sm font-medium text-muted-foreground">إجمالي العناصر</label>
                   <p className="font-medium">{selectedOrder.dishes.reduce((sum, dish) => sum + dish.quantity, 0)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created</label>
+                  <label className="text-sm font-medium text-muted-foreground">تاريخ الإنشاء</label>
                   <p className="text-sm">{formatDate(selectedOrder.created_at)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
+                  <label className="text-sm font-medium text-muted-foreground">آخر تحديث</label>
                   <p className="text-sm">{formatDate(selectedOrder.updated_at)}</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Ordered Dishes</label>
+                <label className="text-sm font-medium text-muted-foreground">الأطباق المطلوبة</label>
                 <div className="mt-2 space-y-2">
                   {selectedOrder.dishes.map((dish, index) => (
                     <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                       <span className="font-medium">{dish.dish_name}</span>
-                      <span className="text-sm text-muted-foreground">Quantity: {dish.quantity}</span>
+                      <span className="text-sm text-muted-foreground">الكمية: {dish.quantity}</span>
                     </div>
                   ))}
                 </div>
@@ -443,7 +474,7 @@ export default function OrdersPage() {
 
               <div className="flex justify-between items-center pt-4 border-t">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Update Status</label>
+                  <label className="text-sm font-medium text-muted-foreground">تحديث الحالة</label>
                   <Select
                     value={selectedOrder.status}
                     onValueChange={(newStatus) => updateOrderStatus(selectedOrder.order_id, newStatus)}
@@ -455,7 +486,17 @@ export default function OrdersPage() {
                     <SelectContent>
                       {statusOptions.map((status) => (
                         <SelectItem key={status.value} value={status.value}>
-                          {status.label}
+                          {(() => {
+                            switch (status.value) {
+                              case "pending": return "قيد الانتظار";
+                              case "confirmed": return "تم التأكيد";
+                              case "preparing": return "قيد التحضير";
+                              case "ready": return "جاهز";
+                              case "delivered": return "تم التوصيل";
+                              case "cancelled": return "ملغي";
+                              default: return status.label;
+                            }
+                          })()}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -465,7 +506,7 @@ export default function OrdersPage() {
                   variant="outline" 
                   onClick={() => setOrderDetailOpen(false)}
                 >
-                  Close
+                  إغلاق
                 </Button>
               </div>
             </div>

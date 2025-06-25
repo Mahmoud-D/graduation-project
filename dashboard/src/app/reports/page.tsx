@@ -16,7 +16,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
 } from "@/components/ui/chart";
 import {
   BarChart,
@@ -80,11 +79,13 @@ const chartConfig = {
   categories: {
     label: "Categories",
     color: "rgba(153, 102, 255, 0.5)",
-  }
+  },
 };
 
 const Reports = () => {
-  const [topSellingDishes, setTopSellingDishes] = useState<TopSellingDish[]>([]);
+  const [topSellingDishes, setTopSellingDishes] = useState<TopSellingDish[]>(
+    []
+  );
   const [topRatedDishes, setTopRatedDishes] = useState<TopRatedDish[]>([]);
   const [dailyOrders, setDailyOrders] = useState<DailyOrder[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]);
@@ -98,7 +99,7 @@ const Reports = () => {
       "Content-Type": "application/json",
       Authorization: token ? `Bearer ${token}` : "",
     };
-  };  // Fetch top selling dishes
+  }; // Fetch top selling dishes
   const fetchTopSellingDishes = async () => {
     try {
       const response = await fetch(`${API}reports/getTopSellingDishes`, {
@@ -117,7 +118,7 @@ const Reports = () => {
       return [];
     }
   };
-  
+
   // Fetch top rated dishes
   const fetchTopRatedDishes = async () => {
     try {
@@ -176,7 +177,7 @@ const Reports = () => {
       return [];
     }
   };
-  
+
   useEffect(() => {
     // Check if user is authenticated
     const token = localStorage.getItem("authToken");
@@ -190,12 +191,18 @@ const Reports = () => {
         fetchTopSellingDishes(),
         fetchTopRatedDishes(),
         fetchDailyOrders(),
-        fetchCategoryStats()
+        fetchCategoryStats(),
       ]).then(() => {
         setIsLoading(false);
       });
     }
-  }, [router, fetchTopSellingDishes, fetchTopRatedDishes, fetchDailyOrders, fetchCategoryStats]);
+  }, [
+    router,
+    fetchTopSellingDishes,
+    fetchTopRatedDishes,
+    fetchDailyOrders,
+    fetchCategoryStats,
+  ]);
   // Bar chart data for top selling dishes - format for recharts
   const topSellingChartData = topSellingDishes.map((dish) => ({
     name: dish.dish_name,
@@ -207,7 +214,7 @@ const Reports = () => {
     rating: parseFloat(dish.avg_rating),
     reviews: parseInt(dish.review_count),
   }));
-  
+
   // Combined data for rating vs review count - format for recharts
   const ratingLineData = topRatedDishes.map((dish) => ({
     name: dish.name,
@@ -230,7 +237,7 @@ const Reports = () => {
   if (isLoading) {
     return (
       <div className="container py-10 mx-auto">
-        <h1 className="mb-6 text-2xl font-bold">Reports Dashboard</h1>
+        <h1 className="mb-6 text-2xl font-bold"> تقارير المطعم</h1>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -264,25 +271,27 @@ const Reports = () => {
   }
   return (
     <div className="container py-10 mx-auto">
-      <h1 className="mb-6 text-2xl font-bold">Reports Dashboard</h1>
-      
+      <h1 className="mb-6 text-2xl font-bold">تقارير المطعم</h1>
+
       <Tabs defaultValue="sales" className="mb-8">
         <TabsList className="mb-4">
-          <TabsTrigger value="sales">Sales Data</TabsTrigger>
-          <TabsTrigger value="ratings">Ratings Data</TabsTrigger>
-          <TabsTrigger value="analytics">Additional Analytics</TabsTrigger>
+          <TabsTrigger value="sales"> بيانات المبيعات</TabsTrigger>
+          <TabsTrigger value="ratings">بيانات التقييمات</TabsTrigger>
+          <TabsTrigger value="analytics">تحليلات إضافية</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sales">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Top Selling Dishes</CardTitle>
+                <CardTitle>الأطباق الأكثر مبيعاً</CardTitle>
                 <CardDescription>
-                  Dishes with the highest number of orders
+                  الأطباق التي حصلت على أعلى عدد من الطلبات
                 </CardDescription>
               </CardHeader>{" "}
-              <CardContent>                <div className="h-[350px]">
+              <CardContent>
+                {" "}
+                <div className="h-[350px]">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={topSellingChartData}>
@@ -300,10 +309,12 @@ const Reports = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Sales Distribution</CardTitle>
-                <CardDescription>Proportion of sales by dish</CardDescription>
+                <CardTitle>توزيع المبيعات</CardTitle>
+                <CardDescription>نسبة المبيعات حسب الطبق</CardDescription>
               </CardHeader>{" "}
-              <CardContent>                <div className="h-[350px]">
+              <CardContent>
+                {" "}
+                <div className="h-[350px]">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -332,12 +343,14 @@ const Reports = () => {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Top Rated Dishes</CardTitle>
+                <CardTitle>الأطباق الأكثر تقييماً</CardTitle>
                 <CardDescription>
-                  Dishes with the highest average ratings
+                  الأطباق التي حصلت على أعلى متوسط التقييمات
                 </CardDescription>
               </CardHeader>{" "}
-              <CardContent>                <div className="h-[350px]">
+              <CardContent>
+                {" "}
+                <div className="h-[350px] space-x-2">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -369,12 +382,14 @@ const Reports = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Rating vs. Review Count</CardTitle>
+                <CardTitle>التقييمات مقابل عدد المراجعات</CardTitle>
                 <CardDescription>
-                  Comparing ratings and number of reviews
+                  مقارنة التقييمات وعدد المراجعات
                 </CardDescription>
               </CardHeader>{" "}
-              <CardContent>                <div className="h-[350px]">
+              <CardContent>
+                {" "}
+                <div className="h-[350px]">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={ratingLineData}>
@@ -414,12 +429,12 @@ const Reports = () => {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Daily Order Volume</CardTitle>
-                <CardDescription>
-                  Number of orders placed per day
-                </CardDescription>
+                <CardTitle>حجم الطلبات اليومي</CardTitle>
+                <CardDescription>عدد الطلبات الموضوعة يومياً</CardDescription>
               </CardHeader>
-              <CardContent>                <div className="h-[350px]">
+              <CardContent>
+                {" "}
+                <div className="h-[350px]">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={dailyOrdersData}>
@@ -438,10 +453,8 @@ const Reports = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Category Distribution</CardTitle>
-                <CardDescription>
-                  Number of dishes per category
-                </CardDescription>
+                <CardTitle>توزيع الأطباق حسب الفئة</CardTitle>
+                <CardDescription>عدد الأطباق في كل فئة</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[350px]">
@@ -477,18 +490,20 @@ const Reports = () => {
       <div className="mt-8">
         <Card>
           <CardHeader>
-            <CardTitle>Detailed Reports</CardTitle>
-            <CardDescription>Raw data from the reports</CardDescription>
+            <CardTitle>تقارير مفصلة</CardTitle>
+            <CardDescription>بيانات التقارير</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <h3 className="mb-2 text-lg font-medium">Top Selling Dishes</h3>
+                <h3 className="mb-2 text-lg font-medium">
+                  الأطباق الأكثر مبيعاً
+                </h3>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 text-left">Dish Name</th>
-                      <th className="py-2 text-right">Units Sold</th>
+                      <th className="py-2 text-left">اسم الطبق</th>
+                      <th className="py-2 text-right">عدد الطلبات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -503,13 +518,15 @@ const Reports = () => {
               </div>
 
               <div>
-                <h3 className="mb-2 text-lg font-medium">Top Rated Dishes</h3>
+                <h3 className="mb-2 text-lg font-medium">
+                  الأطباق الأكثر تقييماً
+                </h3>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 text-left">Dish Name</th>
-                      <th className="py-2 text-right">Avg. Rating</th>
-                      <th className="py-2 text-right">Review Count</th>
+                      <th className="py-2 text-left">اسم الطبق</th>
+                      <th className="py-2 text-right">متوسط التقييم</th>
+                      <th className="py-2 text-right">عدد المراجعات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -521,24 +538,30 @@ const Reports = () => {
                         </td>
                         <td className="py-2 text-right">{dish.review_count}</td>
                       </tr>
-                    ))}                  </tbody>
+                    ))}{" "}
+                  </tbody>
                 </table>
               </div>
-            </div>            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+            </div>{" "}
+            <div className="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2">
               <div>
-                <h3 className="mb-2 text-lg font-medium">Daily Order Volume</h3>
+                <h3 className="mb-2 text-lg font-medium">حجم الطلبات اليومي</h3>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 text-left">Date</th>
-                      <th className="py-2 text-right">Total Orders</th>
+                      <th className="py-2 text-left">التاريخ</th>
+                      <th className="py-2 text-right">عدد الطلبات</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dailyOrders.map((order, index) => (
                       <tr key={index} className="border-b">
-                        <td className="py-2">{new Date(order.order_date).toLocaleDateString()}</td>
-                        <td className="py-2 text-right">{order.total_orders}</td>
+                        <td className="py-2">
+                          {new Date(order.order_date).toLocaleDateString()}
+                        </td>
+                        <td className="py-2 text-right">
+                          {order.total_orders}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -546,12 +569,14 @@ const Reports = () => {
               </div>
 
               <div>
-                <h3 className="mb-2 text-lg font-medium">Category Distribution</h3>
+                <h3 className="mb-2 text-lg font-medium">
+                  توزيع الأطباق حسب الفئة
+                </h3>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 text-left">Category Name</th>
-                      <th className="py-2 text-right">Dish Count</th>
+                      <th className="py-2 text-left">اسم الفئة</th>
+                      <th className="py-2 text-right">عدد الأطباق</th>
                     </tr>
                   </thead>
                   <tbody>

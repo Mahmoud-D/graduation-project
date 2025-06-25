@@ -3,7 +3,6 @@
 import * as React from "react";
 import {
   IconCamera,
-  IconChartBar,
   IconCirclePlusFilled,
   IconDashboard,
   IconDatabase,
@@ -20,10 +19,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
