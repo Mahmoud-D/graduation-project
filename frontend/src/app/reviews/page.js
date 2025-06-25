@@ -308,20 +308,9 @@ export default function ReviewsPage() {
                     </p>
 
                     <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="relative w-10 h-10">
-                        <Image
-                          src={review.user_image || "/profile-photo-fallback-1.jpg"}
-                          alt={review.user_name || "مستخدم"}
-                          fill
-                          className="object-cover rounded-full"
-                          onError={(e) => {
-                            e.target.src = "/profile-photo-fallback-1.jpg";
-                          }}
-                        />
-                      </div>
                       <div>
                         <h3 className="font-medium text-dark-shade">
-                          {review.user_name || "مستخدم مجهول"}
+                          {review.name || "مستخدم مجهول"}
                         </h3>
                         <span className="text-sm text-gray-500">
                           {review.created_at ? formatDate(review.created_at) : "منذ فترة"}
