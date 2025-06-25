@@ -39,18 +39,17 @@ export default function Cart() {
       {/* Cart Sidebar */}
 
       {isOpen && (
-  <div onClick={toggleCart} className="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-40 transition-opacity duration-300"></div>
-)}
- 
+        <div
+          onClick={toggleCart}
+          className="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-40 transition-opacity duration-300"
+        ></div>
+      )}
 
       <div
         className={`fixed top-0 left-0 w-full md:w-96 h-full bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-
-
-
         <div className="flex flex-col h-full">
           {/* Cart Header */}
           <div className="flex justify-between items-center p-4 border-b">
