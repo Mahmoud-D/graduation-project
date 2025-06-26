@@ -307,10 +307,13 @@ export default function TablesPage() {
   // Open edit dialog
   const handleEdit = (category: Category) => {
     setEditingCategory({ ...category });
-    editForm.reset({
-      name: category.name,
-      description: category.description || "",
-    });
+    // Reset form with category data after a small delay to ensure state is set
+    setTimeout(() => {
+      editForm.reset({
+        name: category.name,
+        description: category.description || "",
+      });
+    }, 0);
     setEditDialogOpen(true);
   };
 

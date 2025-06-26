@@ -317,7 +317,7 @@ export default function Users() {
                         {processingId === user.id ? (
                           <Loader2 className="mr-1 w-4 h-4 animate-spin" />
                         ) : null}
-                        {user.is_verified ? "Deactivate" : "Activate"}
+                        {user.is_verified ? "Activate" : " Deactivate"}
                       </Button>
                       {/* <Button
                         variant="destructive"

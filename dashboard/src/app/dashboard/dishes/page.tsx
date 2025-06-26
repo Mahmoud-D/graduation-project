@@ -1,6 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Table,
   TableBody,
@@ -31,9 +41,25 @@ import {
 } from "@/components/ui/select";
 import { ArrowUpDown, Search, X, Loader2, Trash2 } from "lucide-react";
 import { API } from "@/constant";
-import { Dish, DishCategory, DishCreate, DishResponse } from "@/types";
+import { Dish, DishCategory, DishResponse } from "@/types";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+
+// Form validation schema
+const dishFormSchema = z.object({
+  name: z
+    .string()
+    .min(2, "اسم الطبق يجب أن يكون حرفين على الأقل")
+    .max(100, "اسم الطبق يجب أن يكون أقل من 100 حرف"),
+  description: z
+    .string()
+    .min(5, "الوصف يجب أن يكون 5 أحرف على الأقل")
+    .max(500, "الوصف يجب أن يكون أقل من 500 حرف"),
+  price: z.number().min(0.01, "السعر يجب أن يكون أكبر من صفر"),
+  category: z.string().min(1, "يجب اختيار التصنيف"),
+});
+
+type DishFormValues = z.infer<typeof dishFormSchema>;
 
 // Memoized DishImage component to prevent unnecessary re-renders
 const DishImage = memo(
@@ -104,18 +130,35 @@ export default function DishesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [dishToDelete, setDishToDelete] = useState<Dish | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Form setup
+  const createForm = useForm<DishFormValues>({
+    resolver: zodResolver(dishFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      category: "",
+    },
+  });
+
+  const editForm = useForm<DishFormValues>({
+    resolver: zodResolver(dishFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      category: "",
+    },
+  });
+
   // New dish form state
-  const [newDish, setNewDish] = useState<DishCreate>({
-    name: "",
-    description: "",
-    price: 0,
-    category: "",
-  }); // Filtered and sorted data
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const router = useRouter();
@@ -287,73 +330,30 @@ export default function DishesPage() {
     }
   };
 
-  // Handle form input changes
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    // Handle numeric values
-    if (name === "price") {
-      const numericValue = parseFloat(value) || 0;
-
-      if (editingDish) {
-        setEditingDish({
-          ...editingDish,
-          [name]: numericValue,
-        });
-      } else {
-        setNewDish((prev) => ({
-          ...prev,
-          [name]: numericValue,
-        }));
-      }
-    } else {
-      // Handle text values
-      if (editingDish) {
-        setEditingDish({
-          ...editingDish,
-          [name]: value,
-        });
-      } else {
-        setNewDish((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
-      }
-    }
-  };
-
+  // Handle image change
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedImage(e.target.files[0]);
     }
-  }; // Handle form submission for new dish
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  };
+
+  // Handle form submission for new dish
+  const handleSubmit = async (data: DishFormValues) => {
     setIsSubmitting(true);
 
     try {
       const formData = new FormData();
-      formData.append("name", newDish.name);
-      formData.append("description", newDish.description);
-      formData.append("price", newDish.price.toString());
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("price", data.price.toString());
 
       // Backend expects category as array of numbers, not strings
-      const categoryArray = newDish.category
-        ? [parseInt(newDish.category)]
-        : [];
+      const categoryArray = data.category ? [parseInt(data.category)] : [];
       formData.append("category", JSON.stringify(categoryArray));
 
-      // Append image if selected
       if (selectedImage) {
         formData.append("image", selectedImage);
-      } else {
-        // Image is required by the backend
-        throw new Error("Please select an image for the dish");
       }
-
-      // Don't set Content-Type header - browser will set it with boundary
 
       const response = await fetch(`${API}dishes`, {
         method: "POST",
@@ -369,97 +369,56 @@ export default function DishesPage() {
       await fetchDishes();
 
       // Reset form and close dialog
-      setNewDish({ name: "", description: "", price: 0, category: "" });
+      createForm.reset();
       setSelectedImage(null);
       setDialogOpen(false);
     } catch (err) {
       console.error("Error creating dish:", err);
-      // Show error to user
-      alert(err instanceof Error ? err.message : "Failed to create dish");
+      showError(err instanceof Error ? err.message : "Failed to create dish");
     } finally {
       setIsSubmitting(false);
     }
-  }; // Handle edit submission
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  };
 
+  // Handle edit submission
+  const handleEditSubmit = async (data: DishFormValues) => {
     if (!editingDish) return;
 
     setIsSubmitting(true);
 
     try {
-      // If image is being updated, use FormData, otherwise use JSON
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("price", data.price.toString());
+
+      // Backend expects category as array of numbers, not strings
+      const categoryArray = data.category ? [parseInt(data.category)] : [];
+      formData.append("category", JSON.stringify(categoryArray));
+
       if (selectedImage) {
-        const formData = new FormData();
-        formData.append("name", editingDish.name);
-        formData.append("description", editingDish.description);
-        formData.append("price", editingDish.price.toString());
-
-        // Handle categories properly - convert to array of numbers
-        const categoryIds = editingDish.categories
-          .map((cat) => {
-            // If cat is a string (category name), find the ID
-            if (typeof cat === "string") {
-              const category = categories.find((c) => c.category_name === cat);
-              return category ? parseInt(category.category_id) : 0;
-            }
-            return parseInt(String(cat));
-          })
-          .filter((id) => id > 0);
-
-        formData.append("category", JSON.stringify(categoryIds));
         formData.append("image", selectedImage);
+      }
 
-        const response = await fetch(`${API}dishes/${editingDish.id}`, {
-          method: "PUT",
-          headers: getAuthHeaders(true),
-          body: formData,
-        });
+      const response = await fetch(`${API}dishes/${editingDish.id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(true),
+        body: formData,
+      });
 
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Error ${response.status}: ${errorData}`);
-        }
-      } else {
-        // Update without image
-        const categoryIds = editingDish.categories
-          .map((cat) => {
-            // If cat is a string (category name), find the ID
-            if (typeof cat === "string") {
-              const category = categories.find((c) => c.category_name === cat);
-              return category ? parseInt(category.category_id) : 0;
-            }
-            return parseInt(String(cat));
-          })
-          .filter((id) => id > 0);
-
-        const updateData = {
-          name: editingDish.name,
-          description: editingDish.description,
-          price: parseFloat(editingDish.price.toString()),
-          category: categoryIds,
-        };
-
-        const response = await fetch(`${API}dishes/${editingDish.id}`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          body: JSON.stringify(updateData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Error ${response.status}: ${errorData}`);
-        }
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
       // Refresh dishes to get updated data
       await fetchDishes();
       setEditingDish(null);
-      setSelectedImage(null);
+      editForm.reset();
       setEditDialogOpen(false);
+      setSelectedImage(null);
     } catch (err) {
       console.error("Error updating dish:", err);
-      alert(err instanceof Error ? err.message : "Failed to update dish");
+      showError(err instanceof Error ? err.message : "Failed to update dish");
     } finally {
       setIsSubmitting(false);
     }
@@ -489,7 +448,7 @@ export default function DishesPage() {
       setDishToDelete(null);
     } catch (err) {
       console.error("Error deleting dish:", err);
-      alert(err instanceof Error ? err.message : "Failed to delete dish");
+      showError(err instanceof Error ? err.message : "Failed to delete dish");
     } finally {
       setIsDeleting(false);
     }
@@ -504,7 +463,16 @@ export default function DishesPage() {
   // Open edit dialog
   const handleEdit = (dish: Dish) => {
     setEditingDish({ ...dish });
-    setSelectedImage(null); // Reset image selection
+    // Reset form with dish data
+    editForm.reset({
+      name: dish.name,
+      description: dish.description,
+      price: dish.price,
+      category:
+        dish.categories && dish.categories.length > 0
+          ? dish.categories[0].toString()
+          : "",
+    });
     setEditDialogOpen(true);
   };
 
@@ -514,6 +482,12 @@ export default function DishesPage() {
       style: "currency",
       currency: "USD",
     }).format(price);
+  };
+
+  // Show error dialog
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setErrorDialogOpen(true);
   };
 
   return (
@@ -526,7 +500,7 @@ export default function DishesPage() {
             setDialogOpen(open);
             if (!open) {
               // Reset form when dialog closes
-              setNewDish({ name: "", description: "", price: 0, category: "" });
+              createForm.reset();
               setSelectedImage(null);
             }
           }}
@@ -542,223 +516,279 @@ export default function DishesPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="name">الاسم</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={newDish.name}
-                  onChange={handleInputChange}
-                  placeholder="اسم الطبق"
-                  required
-                />
-              </div>
+            <Form {...createForm}>
+              <form
+                onSubmit={createForm.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="name">اسم الطبق</Label>
+                  <FormField
+                    control={createForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input id="name" {...field} placeholder="اسم الطبق" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="description">الوصف</Label>
-                <Input
-                  id="description"
-                  name="description"
-                  value={newDish.description}
-                  onChange={handleInputChange}
-                  placeholder="وصف الطبق"
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="description">الوصف</Label>
+                  <FormField
+                    control={createForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="description"
+                            {...field}
+                            placeholder="وصف الطبق"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="price">السعر</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={newDish.price}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="price">السعر</Label>
+                  <FormField
+                    control={createForm.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
+                            placeholder="0.00"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="category">الفئة</Label>
-                <Select
-                  name="category"
-                  value={newDish.category}
-                  onValueChange={(value) => {
-                    setNewDish((prev) => ({ ...prev, category: value }));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر فئة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem
-                        key={category.category_id}
-                        value={category.category_id}
-                      >
-                        {category.category_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="category">التصنيف</Label>
+                  <FormField
+                    control={createForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر التصنيف">
+                                {field.value &&
+                                  categories.find(
+                                    (cat) => cat.category_id === field.value
+                                  )?.category_name}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem
+                                  key={category.category_id}
+                                  value={category.category_id}
+                                >
+                                  {category.category_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="image">الصورة</Label>
-                <div className="flex gap-2 items-center">
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="image">الصورة</Label>
                   <Input
                     id="image"
-                    name="image"
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="flex-1"
                   />
-                  {selectedImage && (
-                    <div className="text-sm text-muted-foreground">
-                      تم اختيار: {selectedImage.name}
-                    </div>
-                  )}
                 </div>
-              </div>
 
-              <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  إنشاء طبق
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    )}
+                    إضافة طبق
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
 
         {/* Edit Dialog */}
-        <Dialog
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            setEditDialogOpen(open);
-            if (!open) {
-              setEditingDish(null);
-              setSelectedImage(null);
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>تعديل الطبق</DialogTitle>
-              <DialogDescription>تحديث معلومات الطبق.</DialogDescription>
+              <DialogDescription>تعديل بيانات الطبق</DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-name">الاسم</Label>
-                <Input
-                  id="edit-name"
-                  name="name"
-                  value={editingDish?.name || ""}
-                  onChange={handleInputChange}
-                  placeholder="اسم الطبق"
-                  required
-                />
-              </div>
+            <Form {...editForm}>
+              <form
+                onSubmit={editForm.handleSubmit(handleEditSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-name">اسم الطبق</Label>
+                  <FormField
+                    control={editForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="edit-name"
+                            {...field}
+                            placeholder="اسم الطبق"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-description">الوصف</Label>
-                <Input
-                  id="edit-description"
-                  name="description"
-                  value={editingDish?.description || ""}
-                  onChange={handleInputChange}
-                  placeholder="وصف الطبق"
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-description">الوصف</Label>
+                  <FormField
+                    control={editForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="edit-description"
+                            {...field}
+                            placeholder="وصف الطبق"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-price">السعر</Label>
-                <Input
-                  id="edit-price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editingDish?.price || 0}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-price">السعر</Label>
+                  <FormField
+                    control={editForm.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="edit-price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
+                            placeholder="0.00"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-category">الفئة</Label>
-                <Select
-                  name="category"
-                  value={editingDish?.categories[0] || ""}
-                  onValueChange={(value) => {
-                    if (editingDish) {
-                      setEditingDish({
-                        ...editingDish,
-                        categories: [value],
-                      });
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر فئة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem
-                        key={category.category_id}
-                        value={category.category_id}
-                      >
-                        {category.category_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>{" "}
-                </Select>
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-category">التصنيف</Label>
+                  <FormField
+                    control={editForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر التصنيف">
+                                {field.value &&
+                                  categories.find(
+                                    (cat) => cat.category_id === field.value
+                                  )?.category_name}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem
+                                  key={category.category_id}
+                                  value={category.category_id}
+                                >
+                                  {category.category_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-image">تحديث الصورة (اختياري)</Label>
-                <div className="flex gap-2 items-center">
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-image">الصورة (اختياري)</Label>
                   <Input
                     id="edit-image"
-                    name="image"
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="flex-1"
                   />
-                  {selectedImage && (
-                    <div className="text-sm text-muted-foreground">
-                      تم اختيار: {selectedImage.name}
-                    </div>
-                  )}
                 </div>
-              </div>
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setEditDialogOpen(false)}
-                  className="mr-2"
-                >
-                  إلغاء
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  حفظ التغييرات
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setEditDialogOpen(false)}
+                    className="mr-2"
+                  >
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    )}
+                    حفظ التعديلات
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -869,7 +899,7 @@ export default function DishesPage() {
                   <TableCell className="max-w-xs truncate">
                     {dish.description}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="flex flex-col text-right">
                     {formatPrice(dish.price)}
                     {dish.oldPrice && (
                       <span className="ml-2 text-xs line-through text-muted-foreground">
@@ -953,6 +983,21 @@ export default function DishesPage() {
               ) : (
                 "حذف الطبق"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>خطأ</DialogTitle>
+            <DialogDescription>{errorMessage}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setErrorDialogOpen(false)}>
+              إغلاق
             </Button>
           </DialogFooter>
         </DialogContent>
