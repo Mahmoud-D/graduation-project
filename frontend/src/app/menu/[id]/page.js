@@ -115,9 +115,6 @@ export default function MenuItemPage() {
               <Button className="flex-1" size="lg" onClick={() => addItem({ ...dish, quantity: 1 })}>
                 إضافة إلى السلة
               </Button>
-              <Button variant="outline" className="flex-1" size="lg">
-                مشاركة
-              </Button>
             </div>
 
             {/* Reviews Section */}

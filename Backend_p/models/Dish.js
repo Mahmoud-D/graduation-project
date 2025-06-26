@@ -403,25 +403,33 @@ linkCategory : async (dishId, categoryId)=> {
 
   // Delete dish by ID
   delete: async (id) => {
-    const query = sql`DELETE FROM dishes WHERE id = ${id}`;
-
     try {
-      const result = await query;
+      // 1 
+      await sql`DELETE FROM dish_categories WHERE dish_id = ${id}`;
+  
+      // 2
+      await sql`DELETE FROM order_items WHERE dish_id = ${id}`;
+  
+      // 3
+      
+       const result = await sql`DELETE FROM dishes WHERE id = ${id}`;
+  
       return result;
+  
     } catch (err) {
       if (err.code === "23503") {
-        // Foreign key violation code
         throw {
           success: false,
           error: "CANNOT_DELETE_RELATED_RECORDS_EXIST",
           message: "لا يمكن الحذف بسبب وجود عناصر مرتبطة بهذا الطبق",
         };
       }
-
+  
       console.error("Error in delete:", err);
       throw err;
     }
   },
+  
 
   // Link dish to a category
   linkCategory: async (dishId, categoryId) => {
