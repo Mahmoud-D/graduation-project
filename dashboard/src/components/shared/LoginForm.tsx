@@ -15,27 +15,30 @@ import {
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 import { API } from "@/constant";
+import { useState } from "react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(2, "Password must be at least 6 characters"),
+  // name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
+  email: z.string().email("البريد الالكتروني غير صالح"),
+  password: z.string().min(2, "كلمة المرور يجب أن يكون أكثر من حرفين"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      // name: "",
       email: "",
       password: "",
     },
   });
   const onSubmit = async (data: FormValues) => {
+    setIsLoading(true);
     try {
       // Add static role to request data
       const requestData = {
@@ -75,6 +78,8 @@ export default function LoginForm() {
       console.log("Success:", responseData);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
     }
 
     // For demonstration, just log the data to the console
@@ -85,9 +90,9 @@ export default function LoginForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="max-w-md p-8 mx-auto mt-10 space-y-4 bg-white border rounded-md shadow-md "
+        className="p-8 mx-auto mt-10 space-y-4 max-w-md bg-white rounded-md border shadow-md"
       >
-        <FormField
+        {/* <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
@@ -99,7 +104,7 @@ export default function LoginForm() {
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
         <FormField
           control={form.control}
           name="email"
@@ -126,7 +131,10 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">تسجيل الدخول</Button>
+        <Button type="submit" disabled={isLoading} className="cursor-pointer">
+          {" "}
+          {isLoading ? "جاري التسجيل..." : "تسجيل الدخول"}{" "}
+        </Button>
       </form>
     </Form>
   );

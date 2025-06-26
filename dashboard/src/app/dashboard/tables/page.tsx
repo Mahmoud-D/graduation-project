@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-import {} from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Table,
   TableBody,
@@ -33,21 +42,23 @@ import {
 } from "@/components/ui/select";
 import { ArrowUpDown, Search, X, Loader2 } from "lucide-react";
 import { API } from "@/constant";
-import {
-  Category,
-  CategoryCreate,
-  CategoryResponse,
-  CategoryUpdate,
-} from "@/types";
+import { Category, CategoryResponse, CategoryUpdate } from "@/types";
 
 // Define validation schema with Zod
-// const categoryFormSchema = z.object({
-//   name: z.string().min(2, "Name must be at least 2 characters"),
-//   description: z.string().min(5, "Description must be at least 5 characters"),
-// });
+const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .min(2, "اسم التصنيف يجب أن يكون حرفين على الأقل")
+    .max(50, "اسم التصنيف يجب أن يكون أقل من 50 حرف"),
+  description: z
+    .string()
+    .min(5, "الوصف يجب أن يكون 5 أحرف على الأقل")
+    .max(200, "الوصف يجب أن يكون أقل من 200 حرف")
+    .optional(),
+});
 
 // Infer the type from the schema
-// type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function TablesPage() {
   // State for categories
@@ -64,25 +75,51 @@ export default function TablesPage() {
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // New category form state
-  const [newCategory, setNewCategory] = useState<CategoryCreate>({
-    name: "",
-    description: "",
+  // Form setup
+  const createForm = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  const editForm = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
   });
 
   // Filtered and sorted data
   const [displayedCategories, setDisplayedCategories] =
     useState<Category[]>(categories);
 
+  // Authentication headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
+    return {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    };
+  };
+
   // Fetch categories from API
   const fetchCategories = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API}categories`);
+      const response = await fetch(`${API}categories`, {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -172,34 +209,15 @@ export default function TablesPage() {
     }
   };
 
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (editingCategory) {
-      setEditingCategory({
-        ...editingCategory,
-        [name]: value,
-      });
-    } else {
-      setNewCategory((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
   // Handle form submission for new category
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: CategoryFormValues) => {
     setIsSubmitting(true);
 
     try {
       const response = await fetch(`${API}categories`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newCategory),
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -210,7 +228,7 @@ export default function TablesPage() {
       await fetchCategories();
 
       // Reset form and close dialog
-      setNewCategory({ name: "", description: "" });
+      createForm.reset();
       setDialogOpen(false);
     } catch (err) {
       console.error("Error creating category:", err);
@@ -221,9 +239,7 @@ export default function TablesPage() {
   };
 
   // Handle edit submission
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleEditSubmit = async (data: CategoryFormValues) => {
     if (!editingCategory) return;
 
     setIsSubmitting(true);
@@ -232,15 +248,13 @@ export default function TablesPage() {
       // Prepare data for the API
       const updateData: CategoryUpdate = {
         category_id: editingCategory.id,
-        name: editingCategory.name,
-        description: editingCategory.description,
+        name: data.name,
+        description: data.description || "",
       };
 
       const response = await fetch(`${API}categories/${editingCategory.id}`, {
         method: "PUT", // Or PATCH depending on your API
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updateData),
       });
 
@@ -252,6 +266,7 @@ export default function TablesPage() {
       await fetchCategories();
       setEditingCategory(null);
       setEditDialogOpen(false);
+      editForm.reset();
     } catch (err) {
       console.error("Error updating category:", err);
       // You could set an error state here for the form
@@ -261,12 +276,14 @@ export default function TablesPage() {
   };
 
   // Handle delete
-  const handleDelete = async (categoryId: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+  const handleDelete = async () => {
+    if (!categoryToDelete) return;
 
+    setIsSubmitting(true);
     try {
-      const response = await fetch(`${API}categories/${categoryId}`, {
+      const response = await fetch(`${API}categories/${categoryToDelete.id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -275,67 +292,103 @@ export default function TablesPage() {
 
       // Refresh categories after deletion
       await fetchCategories();
+
+      // Close dialog and reset state
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
     } catch (err) {
       console.error("Error deleting category:", err);
       // You could show an error toast here
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Open edit dialog
   const handleEdit = (category: Category) => {
     setEditingCategory({ ...category });
+    editForm.reset({
+      name: category.name,
+      description: category.description || "",
+    });
     setEditDialogOpen(true);
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (category: Category) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
   };
 
   return (
     <div className="container py-10 mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
+        <h1 className="text-2xl font-bold"> التصنيفات </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add Category</Button>
+            <Button> إضافة تصنيف </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
-              <DialogDescription>
-                Create a new category for your menu items.
-              </DialogDescription>
+              <DialogTitle> إضافة تصنيف جديد </DialogTitle>
+              <DialogDescription>إضافة تصنيف جديد للأطباق</DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={newCategory.name}
-                  onChange={handleInputChange}
-                  placeholder="Category name"
-                  required
-                />
-              </div>
+            <Form {...createForm}>
+              <form
+                onSubmit={createForm.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="name"> الاسم </Label>
+                  <FormField
+                    control={createForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="name"
+                            {...field}
+                            placeholder="اسم التصنيف"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  name="description"
-                  value={newCategory.description}
-                  onChange={handleInputChange}
-                  placeholder="Category description"
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="description"> الوصف </Label>
+                  <FormField
+                    control={createForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="description"
+                            {...field}
+                            placeholder="Category description"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  Create Category
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    )}
+                    إضافة تصنيف
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
 
@@ -343,53 +396,74 @@ export default function TablesPage() {
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Category</DialogTitle>
-              <DialogDescription>
-                Update category information.
-              </DialogDescription>
+              <DialogTitle>تعديل التصنيف</DialogTitle>
+              <DialogDescription>تعديل التصنيف الحالي</DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  name="name"
-                  value={editingCategory?.name || ""}
-                  onChange={handleInputChange}
-                  placeholder="Category name"
-                  required
-                />
-              </div>
+            <Form {...editForm}>
+              <form
+                onSubmit={editForm.handleSubmit(handleEditSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-name"> الاسم </Label>
+                  <FormField
+                    control={editForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="edit-name"
+                            {...field}
+                            placeholder="Category name"
+                            required
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="grid gap-2 items-center w-full">
-                <Label htmlFor="edit-description">Description</Label>
-                <Input
-                  id="edit-description"
-                  name="description"
-                  value={editingCategory?.description || ""}
-                  onChange={handleInputChange}
-                  placeholder="Category description"
-                />
-              </div>
+                <div className="grid gap-2 items-center w-full">
+                  <Label htmlFor="edit-description"> الوصف </Label>
+                  <FormField
+                    control={editForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="edit-description"
+                            {...field}
+                            placeholder="Category description"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setEditDialogOpen(false)}
-                  className="mr-2"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  Save Changes
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setEditDialogOpen(false)}
+                    className="mr-2"
+                  >
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    )}
+                    حفظ التعديلات
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -420,10 +494,10 @@ export default function TablesPage() {
               <SelectValue placeholder="Filter by items" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="0">Empty (0 items)</SelectItem>
-              <SelectItem value="10">Less than 10</SelectItem>
-              <SelectItem value="10+">10 or more</SelectItem>
+              <SelectItem value="all">كل التصنيفات</SelectItem>
+              <SelectItem value="0">فارغ (0 عناصر)</SelectItem>
+              <SelectItem value="10">أقل من 10</SelectItem>
+              <SelectItem value="10+">10 أو أكثر</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -443,29 +517,29 @@ export default function TablesPage() {
         </div>
       ) : (
         <Table>
-          <TableCaption>A list of your menu categories</TableCaption>
+          <TableCaption>قائمة التصنيفات</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead
                 className="w-[150px] cursor-pointer"
                 onClick={() => handleSort("name")}
               >
-                Name <ArrowUpDown size={14} className="inline ml-1" />
+                الاسم <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead className="w-[300px]">Description</TableHead>
+              <TableHead className="w-[300px]">الوصف</TableHead>
               <TableHead
                 className="text-right cursor-pointer"
                 onClick={() => handleSort("itemCount")}
               >
-                Items <ArrowUpDown size={14} className="inline ml-1" />
+                الأطباق <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
               <TableHead
                 className="text-right cursor-pointer"
                 onClick={() => handleSort("createdAt")}
               >
-                Created <ArrowUpDown size={14} className="inline ml-1" />
+                التاريخ <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -475,7 +549,7 @@ export default function TablesPage() {
                   colSpan={5}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No categories found{searchTerm ? " matching your search" : ""}
+                  لا يوجد تصنيفات{searchTerm ? " مطابقة لبحثك" : ""}
                 </TableCell>
               </TableRow>
             ) : (
@@ -496,14 +570,14 @@ export default function TablesPage() {
                       className="mr-2"
                       onClick={() => handleEdit(category)}
                     >
-                      Edit
+                      تعديل
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDelete(category.id)}
+                      onClick={() => openDeleteDialog(category)}
                     >
-                      Delete
+                      حذف
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -512,6 +586,43 @@ export default function TablesPage() {
           </TableBody>
         </Table>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف التصنيف</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من أنك تريد حذف التصنيف{" "}
+              <span className="font-semibold">{categoryToDelete?.name}</span>؟
+              هذا الإجراء لا يمكن التراجع عنه.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  جاري الحذف...
+                </>
+              ) : (
+                "حذف التصنيف"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

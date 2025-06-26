@@ -1,6 +1,7 @@
 "use client";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { OrderAnalyticsChart } from "@/components/order-analytics-chart";
+import { CustomerActivityChart } from "@/components/customer-activity-chart";
 import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
@@ -107,13 +108,22 @@ export default function Page() {
     if (!token) {
       // Redirect to login if no authentication token found
       router.push("/login");
-    } else {
-      // Fetch all data after authentication check
-      Promise.all([fetchUsers(), fetchAverageRating()]).then(() => {
-        setIsLoading(false);
-      });
+      return;
     }
-  }, [router, fetchUsers, fetchAverageRating]);
+
+    // Fetch all data after authentication check
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchUsers(), fetchAverageRating()]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array to run only once on mount
 
   // Show loading state while checking authentication and fetching data
   if (isLoading) {
@@ -171,7 +181,10 @@ export default function Page() {
                 userCount={userCount}
               />
               <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+                <div className="grid grid-cols-1 gap-6">
+                  <OrderAnalyticsChart />
+                  <CustomerActivityChart />
+                </div>
               </div>
               {/* <DataTable data={data} /> */}
             </div>

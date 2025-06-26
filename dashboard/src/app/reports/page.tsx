@@ -185,24 +185,27 @@ const Reports = () => {
     if (!token) {
       // Redirect to login if no authentication token found
       router.push("/login");
-    } else {
-      // Fetch all data
-      Promise.all([
-        fetchTopSellingDishes(),
-        fetchTopRatedDishes(),
-        fetchDailyOrders(),
-        fetchCategoryStats(),
-      ]).then(() => {
-        setIsLoading(false);
-      });
+      return;
     }
-  }, [
-    router,
-    fetchTopSellingDishes,
-    fetchTopRatedDishes,
-    fetchDailyOrders,
-    fetchCategoryStats,
-  ]);
+
+    // Fetch all data
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          fetchTopSellingDishes(),
+          fetchTopRatedDishes(),
+          fetchDailyOrders(),
+          fetchCategoryStats(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array to run only once on mount
   // Bar chart data for top selling dishes - format for recharts
   const topSellingChartData = topSellingDishes.map((dish) => ({
     name: dish.dish_name,

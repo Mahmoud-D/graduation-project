@@ -20,6 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Loader2, Search, X } from "lucide-react";
 import { API } from "@/constant";
 
@@ -42,6 +50,11 @@ export default function Users() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [processingId, setProcessingId] = useState<number | null>(null);
+
+  // Delete dialog states
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Authentication headers
   const getAuthHeaders = () => {
@@ -108,6 +121,42 @@ export default function Users() {
       setProcessingId(null);
     }
   };
+
+  // Delete user function
+  const deleteUser = async (userId: number) => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${API}users/${userId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      // Remove user from local state
+      setUsers(users.filter((user) => user.id !== userId));
+
+      // Apply filters again
+      applyFilters();
+
+      // Close dialog and reset state
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      alert("فشل في حذف المستخدم. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Open delete confirmation dialog
+  // const openDeleteDialog = (user: User) => {
+  //   setUserToDelete(user);
+  //   setDeleteDialogOpen(true);
+  // };
 
   // Apply filters for search and dropdown selections
   const applyFilters = () => {
@@ -199,7 +248,7 @@ export default function Users() {
 
       {/* Loading and error states */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : error ? (
@@ -247,7 +296,7 @@ export default function Users() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={user.is_verified ? "success" : "destructive"}
+                      variant={user.is_verified ? "default" : "destructive"}
                       className={
                         user.is_verified ? "bg-green-100 text-green-800" : ""
                       }
@@ -256,19 +305,30 @@ export default function Users() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant={user.is_verified ? "destructive" : "default"}
-                      size="sm"
-                      onClick={() =>
-                        toggleUserStatus(user.id, user.is_verified)
-                      }
-                      disabled={processingId === user.id}
-                    >
-                      {processingId === user.id ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      ) : null}
-                      {user.is_verified ? "Deactivate" : "Activate"}
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant={user.is_verified ? "destructive" : "default"}
+                        size="sm"
+                        onClick={() =>
+                          toggleUserStatus(user.id, user.is_verified)
+                        }
+                        disabled={processingId === user.id}
+                      >
+                        {processingId === user.id ? (
+                          <Loader2 className="mr-1 w-4 h-4 animate-spin" />
+                        ) : null}
+                        {user.is_verified ? "Deactivate" : "Activate"}
+                      </Button>
+                      {/* <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openDeleteDialog(user)}
+                        disabled={processingId === user.id}
+                        className="cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button> */}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -276,6 +336,45 @@ export default function Users() {
           </TableBody>
         </Table>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف المستخدم</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من أنك تريد حذف المستخدم{" "}
+              <span className="font-semibold">{userToDelete?.name}</span>؟ هذا
+              الإجراء لا يمكن التراجع عنه.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+              className="cursor-pointer"
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => userToDelete && deleteUser(userToDelete.id)}
+              disabled={isDeleting}
+              className="cursor-pointer"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  جاري الحذف...
+                </>
+              ) : (
+                "حذف المستخدم"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconTicket,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -37,11 +38,11 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    {
-      title: "لوحة التحكم",
-      url: "/dashboard",
-      icon: IconDashboard,
-    },
+    // {
+    //   title: "لوحة التحكم",
+    //   url: "/dashboard",
+    //   icon: IconDashboard,
+    // },
     {
       title: "التقارير",
       url: "/reports",
@@ -71,6 +72,11 @@ const data = {
       title: "العروض الترويجية",
       url: "/promotions",
       icon: IconCirclePlusFilled,
+    },
+    {
+      title: "الكوبونات",
+      url: "/coupons",
+      icon: IconTicket,
     },
     // {
     //   title: "Lifecycle",

@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowUpDown, Search, X, Loader2 } from "lucide-react";
+import { ArrowUpDown, Search, X, Loader2, Trash2 } from "lucide-react";
 import { API } from "@/constant";
 import { Dish, DishCategory, DishCreate, DishResponse } from "@/types";
 import { useRouter } from "next/navigation";
@@ -63,14 +63,14 @@ const DishImage = memo(
 
     if (!imagePath || hasError) {
       return (
-        <div className="flex items-center justify-center w-20 h-20 text-xs rounded bg-muted text-muted-foreground">
+        <div className="flex justify-center items-center w-20 h-20 text-xs rounded bg-muted text-muted-foreground">
           No img
         </div>
       );
     }
 
     return (
-      <div className="relative w-20 h-20 overflow-hidden rounded">
+      <div className="overflow-hidden relative w-20 h-20 rounded">
         <Image
           src={imageUrl}
           alt={dishName}
@@ -103,8 +103,11 @@ export default function DishesPage() {
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [dishToDelete, setDishToDelete] = useState<Dish | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // New dish form state
   const [newDish, setNewDish] = useState<DishCreate>({
@@ -213,9 +216,17 @@ export default function DishesPage() {
       router.push("/login");
       return;
     }
-    fetchCategories();
-    fetchDishes();
-  }, [fetchCategories, fetchDishes, router]);
+
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchCategories(), fetchDishes()]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array to run only once on mount
   // Memoized filtered and sorted dishes to prevent unnecessary recalculations
   const displayedDishes = useMemo(() => {
     let result = [...dishes];
@@ -383,12 +394,20 @@ export default function DishesPage() {
         formData.append("name", editingDish.name);
         formData.append("description", editingDish.description);
         formData.append("price", editingDish.price.toString());
-        formData.append(
-          "category",
-          JSON.stringify(
-            editingDish.categories.map((catId) => parseInt(catId.toString()))
-          )
-        );
+
+        // Handle categories properly - convert to array of numbers
+        const categoryIds = editingDish.categories
+          .map((cat) => {
+            // If cat is a string (category name), find the ID
+            if (typeof cat === "string") {
+              const category = categories.find((c) => c.category_name === cat);
+              return category ? parseInt(category.category_id) : 0;
+            }
+            return parseInt(String(cat));
+          })
+          .filter((id) => id > 0);
+
+        formData.append("category", JSON.stringify(categoryIds));
         formData.append("image", selectedImage);
 
         const response = await fetch(`${API}dishes/${editingDish.id}`, {
@@ -403,13 +422,22 @@ export default function DishesPage() {
         }
       } else {
         // Update without image
+        const categoryIds = editingDish.categories
+          .map((cat) => {
+            // If cat is a string (category name), find the ID
+            if (typeof cat === "string") {
+              const category = categories.find((c) => c.category_name === cat);
+              return category ? parseInt(category.category_id) : 0;
+            }
+            return parseInt(String(cat));
+          })
+          .filter((id) => id > 0);
+
         const updateData = {
           name: editingDish.name,
           description: editingDish.description,
           price: parseFloat(editingDish.price.toString()),
-          category: editingDish.categories.map((catId) =>
-            parseInt(catId.toString())
-          ),
+          category: categoryIds,
         };
 
         const response = await fetch(`${API}dishes/${editingDish.id}`, {
@@ -436,10 +464,12 @@ export default function DishesPage() {
       setIsSubmitting(false);
     }
   };
+
   // Handle delete
   const handleDelete = async (dishId: string) => {
-    if (!confirm("Are you sure you want to delete this dish?")) return;
+    if (!dishToDelete) return;
 
+    setIsDeleting(true);
     try {
       const response = await fetch(`${API}dishes/${dishId}`, {
         method: "DELETE",
@@ -451,13 +481,26 @@ export default function DishesPage() {
         throw new Error(`Error ${response.status}: ${errorData}`);
       }
 
-      // Refresh dishes after deletion
-      await fetchDishes();
+      // Remove dish from local state
+      setDishes(dishes.filter((dish) => dish.id !== dishId));
+
+      // Close dialog and reset state
+      setDeleteDialogOpen(false);
+      setDishToDelete(null);
     } catch (err) {
       console.error("Error deleting dish:", err);
       alert(err instanceof Error ? err.message : "Failed to delete dish");
+    } finally {
+      setIsDeleting(false);
     }
   };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (dish: Dish) => {
+    setDishToDelete(dish);
+    setDeleteDialogOpen(true);
+  };
+
   // Open edit dialog
   const handleEdit = (dish: Dish) => {
     setEditingDish({ ...dish });
@@ -475,7 +518,7 @@ export default function DishesPage() {
 
   return (
     <div className="container py-10 mx-auto" dir="rtl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">الأطباق</h1>
         <Dialog
           open={dialogOpen}
@@ -500,7 +543,7 @@ export default function DishesPage() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="name">الاسم</Label>
                 <Input
                   id="name"
@@ -512,7 +555,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="description">الوصف</Label>
                 <Input
                   id="description"
@@ -523,7 +566,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="price">السعر</Label>
                 <Input
                   id="price"
@@ -538,7 +581,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="category">الفئة</Label>
                 <Select
                   name="category"
@@ -563,9 +606,9 @@ export default function DishesPage() {
                 </Select>
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="image">الصورة</Label>
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     id="image"
                     name="image"
@@ -585,7 +628,7 @@ export default function DishesPage() {
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   )}
                   إنشاء طبق
                 </Button>
@@ -612,7 +655,7 @@ export default function DishesPage() {
             </DialogHeader>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-name">الاسم</Label>
                 <Input
                   id="edit-name"
@@ -624,7 +667,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-description">الوصف</Label>
                 <Input
                   id="edit-description"
@@ -635,7 +678,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-price">السعر</Label>
                 <Input
                   id="edit-price"
@@ -650,7 +693,7 @@ export default function DishesPage() {
                 />
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-category">الفئة</Label>
                 <Select
                   name="category"
@@ -680,9 +723,9 @@ export default function DishesPage() {
                 </Select>
               </div>
 
-              <div className="grid items-center w-full gap-2">
+              <div className="grid gap-2 items-center w-full">
                 <Label htmlFor="edit-image">تحديث الصورة (اختياري)</Label>
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     id="edit-image"
                     name="image"
@@ -710,7 +753,7 @@ export default function DishesPage() {
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   )}
                   حفظ التغييرات
                 </Button>
@@ -762,7 +805,7 @@ export default function DishesPage() {
 
       {/* Loading and error states */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <span className="ml-2">جار التحميل...</span>
         </div>
@@ -841,7 +884,7 @@ export default function DishesPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {dish.averageRating ? (
-                      <div className="flex items-center justify-end">
+                      <div className="flex justify-end items-center">
                         <span>
                           ⭐{" "}
                           {parseFloat(dish.averageRating.toString()).toFixed(1)}
@@ -854,21 +897,22 @@ export default function DishesPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mr-2"
-                      onClick={() => handleEdit(dish)}
-                    >
-                      تعديل
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(dish.id)}
-                    >
-                      حذف
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(dish)}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openDeleteDialog(dish)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -876,6 +920,43 @@ export default function DishesPage() {
           </TableBody>
         </Table>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف الطبق</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من أنك تريد حذف الطبق{" "}
+              <span className="font-semibold">{dishToDelete?.name}</span>؟ هذا
+              الإجراء لا يمكن التراجع عنه.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => dishToDelete && handleDelete(dishToDelete.id)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  جاري الحذف...
+                </>
+              ) : (
+                "حذف الطبق"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
