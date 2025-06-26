@@ -58,7 +58,8 @@ exports.verifyToken = async (req, res, next) => {
     }
 
     if (!users[0].is_active) {
-      return res.status(401).json({
+      return res.status(403).json({
+        
         message: " المستخدم غير مفعل يرجى التواصل مع خدمة العملاء   ",
         error: "user_not_verified",
       });
