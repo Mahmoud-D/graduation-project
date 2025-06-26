@@ -39,17 +39,20 @@ export default function OrderSummary({
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative w-8 h-8">
-                    <Image
-  src="/placeholder-dish.png"
-  alt={item.name}
-  width={32}
-  height={32}
-  className="object-cover rounded-sm"
-/>
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_URL}/${item.image_path || item.image}`}
+                        alt={item.name}
+                        fill
+                        className="object-cover rounded-sm"
+                      />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-800">{item.name}</h4>
-                      <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
+                      <h4 className="font-semibold text-gray-800">
+                        {item.name}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        الكمية: {item.quantity}
+                      </p>
                     </div>
                   </div>
                   <span className="font-bold text-purple-600">
@@ -75,7 +78,9 @@ export default function OrderSummary({
                   </div>
                   <div className="flex justify-between text-lg">
                     <span className="text-gray-600">المجموع بعد الخصم</span>
-                    <span className="font-semibold">{subtotal - discountAmount} جنيه</span>
+                    <span className="font-semibold">
+                      {subtotal - discountAmount} جنيه
+                    </span>
                   </div>
                 </>
               )}
@@ -98,7 +103,10 @@ export default function OrderSummary({
             </div>
 
             <div className="text-center pt-4">
-              <Badge variant="outline" className="text-green-600 border-green-600">
+              <Badge
+                variant="outline"
+                className="text-green-600 border-green-600"
+              >
                 🚚 شحن مجاني للطلبات أكثر من 500 جنيه
               </Badge>
             </div>
