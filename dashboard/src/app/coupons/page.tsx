@@ -42,6 +42,7 @@ import { API } from "@/constant";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 // Coupon interface
 interface Coupon {
@@ -359,523 +360,543 @@ export default function CouponsPage() {
   }, [searchTerm, statusFilter, coupons]);
 
   return (
-    <div className="container py-10 mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">إدارة الكوبونات</h1>
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 w-4 h-4" />
-              إضافة كوبون
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>إضافة كوبون جديد</DialogTitle>
-              <DialogDescription>إنشاء كوبون خصم جديد</DialogDescription>
-            </DialogHeader>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <SidebarInset>
+        <div className="container py-10 mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">إدارة الكوبونات</h1>
 
-            <Form {...createForm}>
-              <form
-                onSubmit={createForm.handleSubmit(createCoupon)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={createForm.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>كود الكوبون</FormLabel>
-                      <FormControl>
-                        <Input placeholder="مثال: SAVE20" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  إضافة كوبون
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md ">
+                <DialogHeader>
+                  <DialogTitle>إضافة كوبون جديد</DialogTitle>
+                  <DialogDescription>إنشاء كوبون خصم جديد</DialogDescription>
+                </DialogHeader>
 
-                <FormField
-                  control={createForm.control}
-                  name="discount_value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>قيمة الخصم</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="20.00"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <Form {...createForm}>
+                  <form
+                    onSubmit={createForm.handleSubmit(createCoupon)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={createForm.control}
+                      name="code"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>كود الكوبون</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: SAVE20" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={createForm.control}
-                  name="min_order"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>الحد الأدنى للطلب</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="100.00"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={createForm.control}
+                      name="discount_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>قيمة الخصم</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="20.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={createForm.control}
-                    name="start_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>تاريخ البداية</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={createForm.control}
+                      name="min_order"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>الحد الأدنى للطلب</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="100.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={createForm.control}
-                    name="end_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>تاريخ الانتهاء</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={createForm.control}
-                    name="max_uses"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>الحد الأقصى للاستخدام</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="500" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={createForm.control}
-                    name="user_max_uses"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>الحد الأقصى لكل مستخدم</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="3" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={createForm.control}
-                  name="is_active"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">نشط</FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          تفعيل الكوبون للاستخدام
-                        </div>
-                      </div>
-                      <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
-                          className="w-4 h-4"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <DialogFooter>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && (
-                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    )}
-                    إنشاء الكوبون
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search and filters */}
-      <div className="flex flex-col gap-4 mb-6 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="البحث في الكوبونات..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
-
-        <div className="w-full md:w-40">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="فلترة حسب الحالة" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">جميع الحالات</SelectItem>
-              <SelectItem value="active">نشط</SelectItem>
-              <SelectItem value="inactive">غير نشط</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Loading and error states */}
-      {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : error ? (
-        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
-          <p>{error}</p>
-          <Button onClick={fetchCoupons} variant="outline" className="mt-2">
-            Try Again
-          </Button>
-        </div>
-      ) : (
-        <Table>
-          <TableCaption>قائمة بجميع الكوبونات</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>الكود</TableHead>
-              <TableHead>قيمة الخصم</TableHead>
-              <TableHead>الحد الأدنى</TableHead>
-              <TableHead>تاريخ البداية</TableHead>
-              <TableHead>تاريخ الانتهاء</TableHead>
-              <TableHead>الاستخدامات</TableHead>
-              <TableHead>الحالة</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayedCoupons.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  لا توجد كوبونات{searchTerm ? " مطابقة لبحثك" : ""}
-                </TableCell>
-              </TableRow>
-            ) : (
-              displayedCoupons.map((coupon) => (
-                <TableRow key={coupon.id}>
-                  <TableCell className="font-medium">{coupon.code}</TableCell>
-                  <TableCell>{coupon.discount_value} ج.م</TableCell>
-                  <TableCell>{coupon.min_order} ج.م</TableCell>
-                  <TableCell>{formatDate(coupon.start_date)}</TableCell>
-                  <TableCell>{formatDate(coupon.end_date)}</TableCell>
-                  <TableCell>
-                    {coupon.current_uses} / {coupon.max_uses}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        isActiveAndValid(coupon)
-                          ? "default"
-                          : isExpired(coupon.end_date)
-                          ? "destructive"
-                          : "secondary"
-                      }
-                    >
-                      {isActiveAndValid(coupon)
-                        ? "نشط"
-                        : isExpired(coupon.end_date)
-                        ? "منتهي الصلاحية"
-                        : "غير نشط"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(coupon)}
-                        disabled={processingId === coupon.id}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant={coupon.is_active ? "destructive" : "default"}
-                        size="sm"
-                        onClick={() =>
-                          toggleCouponStatus(coupon.id, coupon.is_active)
-                        }
-                        disabled={processingId === coupon.id}
-                      >
-                        {processingId === coupon.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : coupon.is_active ? (
-                          "إلغاء التفعيل"
-                        ) : (
-                          "تفعيل"
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={createForm.control}
+                        name="start_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>تاريخ البداية</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(coupon)}
-                        disabled={processingId === coupon.id}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="end_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>تاريخ الانتهاء</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  </TableCell>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={createForm.control}
+                        name="max_uses"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الحد الأقصى للاستخدام</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="user_max_uses"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الحد الأقصى لكل مستخدم</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="3" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={createForm.control}
+                      name="is_active"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">نشط</FormLabel>
+                            <div className="text-sm text-muted-foreground">
+                              تفعيل الكوبون للاستخدام
+                            </div>
+                          </div>
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="w-4 h-4"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        )}
+                        إنشاء الكوبون
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Search and filters */}
+          <div className="flex flex-col gap-4 mb-6 md:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="البحث في الكوبونات..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            <div className="w-full md:w-40">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="فلترة حسب الحالة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
+                  <SelectItem value="active">نشط</SelectItem>
+                  <SelectItem value="inactive">غير نشط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Loading and error states */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
+              <p>{error}</p>
+              <Button onClick={fetchCoupons} variant="outline" className="mt-2">
+                Try Again
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableCaption>قائمة بجميع الكوبونات</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>الكود</TableHead>
+                  <TableHead>قيمة الخصم</TableHead>
+                  <TableHead>الحد الأدنى</TableHead>
+                  <TableHead>تاريخ البداية</TableHead>
+                  <TableHead>تاريخ الانتهاء</TableHead>
+                  <TableHead>الاستخدامات</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      )}
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>تعديل الكوبون</DialogTitle>
-            <DialogDescription>تعديل بيانات الكوبون</DialogDescription>
-          </DialogHeader>
-
-          <Form {...editForm}>
-            <form
-              onSubmit={editForm.handleSubmit(updateCoupon)}
-              className="space-y-4"
-            >
-              <FormField
-                control={editForm.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>كود الكوبون</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: SAVE20" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              </TableHeader>
+              <TableBody>
+                {displayedCoupons.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      لا توجد كوبونات{searchTerm ? " مطابقة لبحثك" : ""}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayedCoupons.map((coupon) => (
+                    <TableRow key={coupon.id}>
+                      <TableCell className="font-medium">
+                        {coupon.code}
+                      </TableCell>
+                      <TableCell>{coupon.discount_value} ج.م</TableCell>
+                      <TableCell>{coupon.min_order} ج.م</TableCell>
+                      <TableCell>{formatDate(coupon.start_date)}</TableCell>
+                      <TableCell>{formatDate(coupon.end_date)}</TableCell>
+                      <TableCell>
+                        {coupon.current_uses} / {coupon.max_uses}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            isActiveAndValid(coupon)
+                              ? "default"
+                              : isExpired(coupon.end_date)
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {isActiveAndValid(coupon)
+                            ? "نشط"
+                            : isExpired(coupon.end_date)
+                            ? "منتهي الصلاحية"
+                            : "غير نشط"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(coupon)}
+                            disabled={processingId === coupon.id}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={
+                              coupon.is_active ? "destructive" : "default"
+                            }
+                            size="sm"
+                            onClick={() =>
+                              toggleCouponStatus(coupon.id, coupon.is_active)
+                            }
+                            disabled={processingId === coupon.id}
+                          >
+                            {processingId === coupon.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : coupon.is_active ? (
+                              "إلغاء التفعيل"
+                            ) : (
+                              "تفعيل"
+                            )}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(coupon)}
+                            disabled={processingId === coupon.id}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
-              />
+              </TableBody>
+            </Table>
+          )}
 
-              <FormField
-                control={editForm.control}
-                name="discount_value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>قيمة الخصم</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="20.00"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Edit Dialog */}
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>تعديل الكوبون</DialogTitle>
+                <DialogDescription>تعديل بيانات الكوبون</DialogDescription>
+              </DialogHeader>
 
-              <FormField
-                control={editForm.control}
-                name="min_order"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>الحد الأدنى للطلب</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="100.00"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <Form {...editForm}>
+                <form
+                  onSubmit={editForm.handleSubmit(updateCoupon)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={editForm.control}
+                    name="code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>كود الكوبون</FormLabel>
+                        <FormControl>
+                          <Input placeholder="مثال: SAVE20" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>تاريخ البداية</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={editForm.control}
+                    name="discount_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>قيمة الخصم</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="20.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={editForm.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>تاريخ الانتهاء</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <FormField
+                    control={editForm.control}
+                    name="min_order"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الحد الأدنى للطلب</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="100.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="max_uses"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>الحد الأقصى للاستخدام</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="500" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="start_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>تاريخ البداية</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={editForm.control}
-                  name="user_max_uses"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>الحد الأقصى لكل مستخدم</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="3" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={editForm.control}
+                      name="end_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>تاريخ الانتهاء</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={editForm.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">نشط</FormLabel>
-                      <div className="text-sm text-muted-foreground">
-                        تفعيل الكوبون للاستخدام
-                      </div>
-                    </div>
-                    <FormControl>
-                      <input
-                        type="checkbox"
-                        checked={field.value}
-                        onChange={field.onChange}
-                        className="w-4 h-4"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="max_uses"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>الحد الأقصى للاستخدام</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="500" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
+                    <FormField
+                      control={editForm.control}
+                      name="user_max_uses"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>الحد الأقصى لكل مستخدم</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="3" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={editForm.control}
+                    name="is_active"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">نشط</FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            تفعيل الكوبون للاستخدام
+                          </div>
+                        </div>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="w-4 h-4"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditDialogOpen(false)}
+                      disabled={isSubmitting}
+                    >
+                      إلغاء
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      )}
+                      حفظ التعديلات
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>تأكيد حذف الكوبون</DialogTitle>
+                <DialogDescription>
+                  هل أنت متأكد من أنك تريد حذف الكوبون{" "}
+                  <span className="font-semibold">{couponToDelete?.code}</span>؟
+                  هذا الإجراء لا يمكن التراجع عنه.
+                </DialogDescription>
+              </DialogHeader>
               <DialogFooter>
                 <Button
-                  type="button"
                   variant="outline"
-                  onClick={() => setEditDialogOpen(false)}
+                  onClick={() => setDeleteDialogOpen(false)}
                   disabled={isSubmitting}
                 >
                   إلغاء
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                <Button
+                  variant="destructive"
+                  onClick={deleteCoupon}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      جاري الحذف...
+                    </>
+                  ) : (
+                    "حذف الكوبون"
                   )}
-                  حفظ التعديلات
                 </Button>
               </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>تأكيد حذف الكوبون</DialogTitle>
-            <DialogDescription>
-              هل أنت متأكد من أنك تريد حذف الكوبون{" "}
-              <span className="font-semibold">{couponToDelete?.code}</span>؟ هذا
-              الإجراء لا يمكن التراجع عنه.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              إلغاء
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={deleteCoupon}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  جاري الحذف...
-                </>
-              ) : (
-                "حذف الكوبون"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

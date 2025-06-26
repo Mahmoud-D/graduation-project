@@ -44,6 +44,7 @@ import { API } from "@/constant";
 import { Dish, DishCategory, DishResponse } from "@/types";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 // Form validation schema
 const dishFormSchema = z.object({
@@ -491,517 +492,541 @@ export default function DishesPage() {
   };
 
   return (
-    <div className="container py-10 mx-auto" dir="rtl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">الأطباق</h1>
-        <Dialog
-          open={dialogOpen}
-          onOpenChange={(open) => {
-            setDialogOpen(open);
-            if (!open) {
-              // Reset form when dialog closes
-              createForm.reset();
-              setSelectedImage(null);
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>إضافة طبق</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>إضافة طبق جديد</DialogTitle>
-              <DialogDescription>
-                أنشئ طبقًا جديدًا لقائمة الطعام الخاصة بك.
-              </DialogDescription>
-            </DialogHeader>
-
-            <Form {...createForm}>
-              <form
-                onSubmit={createForm.handleSubmit(handleSubmit)}
-                className="space-y-4"
-              >
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="name">اسم الطبق</Label>
-                  <FormField
-                    control={createForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input id="name" {...field} placeholder="اسم الطبق" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="description">الوصف</Label>
-                  <FormField
-                    control={createForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            id="description"
-                            {...field}
-                            placeholder="وصف الطبق"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="price">السعر</Label>
-                  <FormField
-                    control={createForm.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            id="price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            placeholder="0.00"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="category">التصنيف</Label>
-                  <FormField
-                    control={createForm.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="اختر التصنيف">
-                                {field.value &&
-                                  categories.find(
-                                    (cat) => cat.category_id === field.value
-                                  )?.category_name}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem
-                                  key={category.category_id}
-                                  value={category.category_id}
-                                >
-                                  {category.category_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="image">الصورة</Label>
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </div>
-
-                <DialogFooter>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && (
-                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    )}
-                    إضافة طبق
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>تعديل الطبق</DialogTitle>
-              <DialogDescription>تعديل بيانات الطبق</DialogDescription>
-            </DialogHeader>
-
-            <Form {...editForm}>
-              <form
-                onSubmit={editForm.handleSubmit(handleEditSubmit)}
-                className="space-y-4"
-              >
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="edit-name">اسم الطبق</Label>
-                  <FormField
-                    control={editForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            id="edit-name"
-                            {...field}
-                            placeholder="اسم الطبق"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="edit-description">الوصف</Label>
-                  <FormField
-                    control={editForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            id="edit-description"
-                            {...field}
-                            placeholder="وصف الطبق"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="edit-price">السعر</Label>
-                  <FormField
-                    control={editForm.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            id="edit-price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            placeholder="0.00"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="edit-category">التصنيف</Label>
-                  <FormField
-                    control={editForm.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="اختر التصنيف">
-                                {field.value &&
-                                  categories.find(
-                                    (cat) => cat.category_id === field.value
-                                  )?.category_name}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem
-                                  key={category.category_id}
-                                  value={category.category_id}
-                                >
-                                  {category.category_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid gap-2 items-center w-full">
-                  <Label htmlFor="edit-image">الصورة (اختياري)</Label>
-                  <Input
-                    id="edit-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setEditDialogOpen(false)}
-                    className="mr-2"
-                  >
-                    إلغاء
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && (
-                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    )}
-                    حفظ التعديلات
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search and filters */}
-      <div className="flex flex-col gap-4 mb-6 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="ابحث عن الأطباق..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <SidebarInset>
+        <div className="container py-10 mx-auto" dir="rtl">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">الأطباق</h1>
+            <Dialog
+              open={dialogOpen}
+              onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (!open) {
+                  // Reset form when dialog closes
+                  createForm.reset();
+                  setSelectedImage(null);
+                }
+              }}
             >
-              <X size={16} />
-            </button>
-          )}
-        </div>
+              <DialogTrigger asChild>
+                <Button>إضافة طبق</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>إضافة طبق جديد</DialogTitle>
+                  <DialogDescription>
+                    أنشئ طبقًا جديدًا لقائمة الطعام الخاصة بك.
+                  </DialogDescription>
+                </DialogHeader>
 
-        <div className="w-full md:w-52">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="تصفية حسب الفئة" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">كل الفئات</SelectItem>
-              {categories.map((category) => (
-                <SelectItem
-                  key={category.category_id}
-                  value={category.category_id}
-                >
-                  {category.category_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+                <Form {...createForm}>
+                  <form
+                    onSubmit={createForm.handleSubmit(handleSubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="name">اسم الطبق</Label>
+                      <FormField
+                        control={createForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="name"
+                                {...field}
+                                placeholder="اسم الطبق"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-      {/* Loading and error states */}
-      {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="ml-2">جار التحميل...</span>
-        </div>
-      ) : error ? (
-        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
-          <p>{error}</p>
-          <Button onClick={fetchDishes} variant="outline" className="mt-2">
-            حاول مرة أخرى
-          </Button>
-        </div>
-      ) : (
-        <Table>
-          <TableCaption>قائمة الأطباق في قائمتك</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[60px]">صورة</TableHead>
-              <TableHead
-                className="w-[150px] cursor-pointer"
-                onClick={() => handleSort("name")}
-              >
-                الاسم <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead className="w-[300px]">الوصف</TableHead>
-              <TableHead
-                className="text-right cursor-pointer"
-                onClick={() => handleSort("price")}
-              >
-                السعر <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead>الفئة</TableHead>
-              <TableHead
-                className="text-right cursor-pointer"
-                onClick={() => handleSort("averageRating")}
-              >
-                التقييم <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead className="text-right">إجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayedDishes.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  لا توجد أطباق{searchTerm ? " مطابقة لبحثك" : ""}
-                </TableCell>
-              </TableRow>
-            ) : (
-              displayedDishes.map((dish) => (
-                <TableRow key={dish.id}>
-                  <TableCell>
-                    <DishImage
-                      imagePath={dish.imagePath}
-                      dishName={dish.name}
-                      onImageError={handleImageError}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{dish.name}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {dish.description}
-                  </TableCell>
-                  <TableCell className="flex flex-col text-right">
-                    {formatPrice(dish.price)}
-                    {dish.oldPrice && (
-                      <span className="ml-2 text-xs line-through text-muted-foreground">
-                        {formatPrice(dish.oldPrice)}
-                      </span>
-                    )}{" "}
-                  </TableCell>
-                  <TableCell>
-                    {Array.isArray(dish.categories)
-                      ? dish.categories.join(", ")
-                      : dish.categories}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {dish.averageRating ? (
-                      <div className="flex justify-end items-center">
-                        <span>
-                          ⭐{" "}
-                          {parseFloat(dish.averageRating.toString()).toFixed(1)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        لا يوجد تقييمات
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="description">الوصف</Label>
+                      <FormField
+                        control={createForm.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="description"
+                                {...field}
+                                placeholder="وصف الطبق"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="price">السعر</Label>
+                      <FormField
+                        control={createForm.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
+                                placeholder="0.00"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="category">التصنيف</Label>
+                      <FormField
+                        control={createForm.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="اختر التصنيف">
+                                    {field.value &&
+                                      categories.find(
+                                        (cat) => cat.category_id === field.value
+                                      )?.category_name}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categories.map((category) => (
+                                    <SelectItem
+                                      key={category.category_id}
+                                      value={category.category_id}
+                                    >
+                                      {category.category_name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="image">الصورة</Label>
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && (
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                        )}
+                        إضافة طبق
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>تعديل الطبق</DialogTitle>
+                  <DialogDescription>تعديل بيانات الطبق</DialogDescription>
+                </DialogHeader>
+
+                <Form {...editForm}>
+                  <form
+                    onSubmit={editForm.handleSubmit(handleEditSubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="edit-name">اسم الطبق</Label>
+                      <FormField
+                        control={editForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="edit-name"
+                                {...field}
+                                placeholder="اسم الطبق"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="edit-description">الوصف</Label>
+                      <FormField
+                        control={editForm.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="edit-description"
+                                {...field}
+                                placeholder="وصف الطبق"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="edit-price">السعر</Label>
+                      <FormField
+                        control={editForm.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                id="edit-price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
+                                placeholder="0.00"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="edit-category">التصنيف</Label>
+                      <FormField
+                        control={editForm.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="اختر التصنيف">
+                                    {field.value &&
+                                      categories.find(
+                                        (cat) => cat.category_id === field.value
+                                      )?.category_name}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categories.map((category) => (
+                                    <SelectItem
+                                      key={category.category_id}
+                                      value={category.category_id}
+                                    >
+                                      {category.category_name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-2 items-center w-full">
+                      <Label htmlFor="edit-image">الصورة (اختياري)</Label>
+                      <Input
+                        id="edit-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+
+                    <DialogFooter>
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(dish)}
+                        type="button"
+                        onClick={() => setEditDialogOpen(false)}
+                        className="mr-2"
                       >
-                        تعديل
+                        إلغاء
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(dish)}
-                      >
-                        <Trash2 className="w-4 h-4" />
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && (
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                        )}
+                        حفظ التعديلات
                       </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      )}
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>تأكيد حذف الطبق</DialogTitle>
-            <DialogDescription>
-              هل أنت متأكد من أنك تريد حذف الطبق{" "}
-              <span className="font-semibold">{dishToDelete?.name}</span>؟ هذا
-              الإجراء لا يمكن التراجع عنه.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-            >
-              إلغاء
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => dishToDelete && handleDelete(dishToDelete.id)}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  جاري الحذف...
-                </>
-              ) : (
-                "حذف الطبق"
+          {/* Search and filters */}
+          <div className="flex flex-col gap-4 mb-6 md:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="ابحث عن الأطباق..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={16} />
+                </button>
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </div>
 
-      {/* Error Dialog */}
-      <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>خطأ</DialogTitle>
-            <DialogDescription>{errorMessage}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setErrorDialogOpen(false)}>
-              إغلاق
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <div className="w-full md:w-52">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="تصفية حسب الفئة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">كل الفئات</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category.category_id}
+                      value={category.category_id}
+                    >
+                      {category.category_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Loading and error states */}
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <span className="ml-2">جار التحميل...</span>
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
+              <p>{error}</p>
+              <Button onClick={fetchDishes} variant="outline" className="mt-2">
+                حاول مرة أخرى
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableCaption>قائمة الأطباق في قائمتك</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px]">صورة</TableHead>
+                  <TableHead
+                    className="w-[150px] cursor-pointer"
+                    onClick={() => handleSort("name")}
+                  >
+                    الاسم <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead className="w-[300px]">الوصف</TableHead>
+                  <TableHead
+                    className="text-right cursor-pointer"
+                    onClick={() => handleSort("price")}
+                  >
+                    السعر <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead>الفئة</TableHead>
+                  <TableHead
+                    className="text-right cursor-pointer"
+                    onClick={() => handleSort("averageRating")}
+                  >
+                    التقييم <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead className="text-right">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayedDishes.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      لا توجد أطباق{searchTerm ? " مطابقة لبحثك" : ""}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayedDishes.map((dish) => (
+                    <TableRow key={dish.id}>
+                      <TableCell>
+                        <DishImage
+                          imagePath={dish.imagePath}
+                          dishName={dish.name}
+                          onImageError={handleImageError}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">{dish.name}</TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {dish.description}
+                      </TableCell>
+                      <TableCell className="flex flex-col text-right">
+                        {formatPrice(dish.price)}
+                        {dish.oldPrice && (
+                          <span className="ml-2 text-xs line-through text-muted-foreground">
+                            {formatPrice(dish.oldPrice)}
+                          </span>
+                        )}{" "}
+                      </TableCell>
+                      <TableCell>
+                        {Array.isArray(dish.categories)
+                          ? dish.categories.join(", ")
+                          : dish.categories}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {dish.averageRating ? (
+                          <div className="flex justify-end items-center">
+                            <span>
+                              ⭐{" "}
+                              {parseFloat(
+                                dish.averageRating.toString()
+                              ).toFixed(1)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            لا يوجد تقييمات
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(dish)}
+                          >
+                            تعديل
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(dish)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>تأكيد حذف الطبق</DialogTitle>
+                <DialogDescription>
+                  هل أنت متأكد من أنك تريد حذف الطبق{" "}
+                  <span className="font-semibold">{dishToDelete?.name}</span>؟
+                  هذا الإجراء لا يمكن التراجع عنه.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  disabled={isDeleting}
+                >
+                  إلغاء
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => dishToDelete && handleDelete(dishToDelete.id)}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                      جاري الحذف...
+                    </>
+                  ) : (
+                    "حذف الطبق"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Error Dialog */}
+          <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>خطأ</DialogTitle>
+                <DialogDescription>{errorMessage}</DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setErrorDialogOpen(false)}
+                >
+                  إغلاق
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

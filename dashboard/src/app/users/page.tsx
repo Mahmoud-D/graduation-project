@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Search, X } from "lucide-react";
 import { API } from "@/constant";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 // User interface
 interface User {
@@ -37,7 +38,7 @@ interface User {
   name: string;
   email: string;
   role: string;
-  is_verified: boolean;
+  is_active: boolean;
 }
 
 export default function Users() {
@@ -109,7 +110,7 @@ export default function Users() {
       // Update user in the local state
       setUsers(
         users.map((user) =>
-          user.id === userId ? { ...user, is_verified: !currentStatus } : user
+          user.id === userId ? { ...user, is_active: !currentStatus } : user
         )
       );
 
@@ -179,7 +180,7 @@ export default function Users() {
     // Apply status filter
     if (statusFilter !== "all") {
       const isActive = statusFilter === "active";
-      filtered = filtered.filter((user) => user.is_verified === isActive);
+      filtered = filtered.filter((user) => user.is_active === isActive);
     }
 
     setDisplayedUsers(filtered);
@@ -196,185 +197,199 @@ export default function Users() {
   }, [searchTerm, roleFilter, statusFilter, users]);
 
   return (
-    <div className="container py-10 mx-auto">
-      <h1 className="mb-6 text-2xl font-bold">إدارة المستخدمين</h1>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <SidebarInset>
+        <div className="container py-10 mx-auto">
+          <h1 className="mb-6 text-2xl font-bold">إدارة المستخدمين</h1>
 
-      {/* Filters and search */}
-      <div className="flex flex-col gap-4 mb-6 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
-
-        <div className="w-full md:w-40">
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">جميع الأدوار</SelectItem>
-              <SelectItem value="admin">مسؤل</SelectItem>
-              <SelectItem value="user">مستخدم</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-full md:w-40">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">جميع الحالات</SelectItem>
-              <SelectItem value="active">نشط</SelectItem>
-              <SelectItem value="inactive">غير نشط</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Loading and error states */}
-      {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : error ? (
-        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
-          <p>{error}</p>
-          <Button onClick={fetchUsers} variant="outline" className="mt-2">
-            Try Again
-          </Button>
-        </div>
-      ) : (
-        <Table>
-          <TableCaption>قائمة بجميع المستخدمين في النظام</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">الرقم التعريفي</TableHead>
-              <TableHead>الاسم</TableHead>
-              <TableHead>البريد الالكتروني</TableHead>
-              <TableHead>الدور</TableHead>
-              <TableHead>الحالة</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayedUsers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
+          {/* Filters and search */}
+          <div className="flex flex-col gap-4 mb-6 md:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
                 >
-                  No users found{searchTerm ? " matching your search" : ""}
-                </TableCell>
-              </TableRow>
-            ) : (
-              displayedUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.id}</TableCell>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={user.role === "admin" ? "default" : "outline"}
-                    >
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={user.is_verified ? "default" : "destructive"}
-                      className={
-                        user.is_verified ? "bg-green-100 text-green-800" : ""
-                      }
-                    >
-                      {user.is_verified ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        variant={user.is_verified ? "destructive" : "default"}
-                        size="sm"
-                        onClick={() =>
-                          toggleUserStatus(user.id, user.is_verified)
-                        }
-                        disabled={processingId === user.id}
-                      >
-                        {processingId === user.id ? (
-                          <Loader2 className="mr-1 w-4 h-4 animate-spin" />
-                        ) : null}
-                        {user.is_verified ? "Activate" : " Deactivate"}
-                      </Button>
-                      {/* <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(user)}
-                        disabled={processingId === user.id}
-                        className="cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button> */}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>تأكيد حذف المستخدم</DialogTitle>
-            <DialogDescription>
-              هل أنت متأكد من أنك تريد حذف المستخدم{" "}
-              <span className="font-semibold">{userToDelete?.name}</span>؟ هذا
-              الإجراء لا يمكن التراجع عنه.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-              className="cursor-pointer"
-            >
-              إلغاء
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => userToDelete && deleteUser(userToDelete.id)}
-              disabled={isDeleting}
-              className="cursor-pointer"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  جاري الحذف...
-                </>
-              ) : (
-                "حذف المستخدم"
+                  <X size={16} />
+                </button>
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            </div>
+
+            <div className="w-full md:w-40">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الأدوار</SelectItem>
+                  <SelectItem value="admin">مسؤل</SelectItem>
+                  <SelectItem value="user">مستخدم</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full md:w-40">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
+                  <SelectItem value="active">نشط</SelectItem>
+                  <SelectItem value="inactive">غير نشط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Loading and error states */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
+              <p>{error}</p>
+              <Button onClick={fetchUsers} variant="outline" className="mt-2">
+                Try Again
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableCaption>قائمة بجميع المستخدمين في النظام</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">الرقم التعريفي</TableHead>
+                  <TableHead>الاسم</TableHead>
+                  <TableHead>البريد الالكتروني</TableHead>
+                  <TableHead>الدور</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayedUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No users found{searchTerm ? " matching your search" : ""}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayedUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.id}</TableCell>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            user.role === "admin" ? "default" : "outline"
+                          }
+                        >
+                          {user.role.charAt(0).toUpperCase() +
+                            user.role.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={user.is_active ? "default" : "destructive"}
+                          className={
+                            user.is_active ? "bg-green-100 text-green-800" : ""
+                          }
+                        >
+                          {user.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant={user.is_active ? "destructive" : "default"}
+                            size="sm"
+                            onClick={() =>
+                              toggleUserStatus(user.id, user.is_active)
+                            }
+                            disabled={processingId === user.id}
+                          >
+                            {processingId === user.id ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : null}
+                            {user.is_active ? " Deactivate" : "Activate"}
+                          </Button>
+                          {/* <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(user)}
+                            disabled={processingId === user.id}
+                            className="cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button> */}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>تأكيد حذف المستخدم</DialogTitle>
+                <DialogDescription>
+                  هل أنت متأكد من أنك تريد حذف المستخدم{" "}
+                  <span className="font-semibold">{userToDelete?.name}</span>؟
+                  هذا الإجراء لا يمكن التراجع عنه.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  disabled={isDeleting}
+                  className="cursor-pointer"
+                >
+                  إلغاء
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => userToDelete && deleteUser(userToDelete.id)}
+                  disabled={isDeleting}
+                  className="cursor-pointer"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      جاري الحذف...
+                    </>
+                  ) : (
+                    "حذف المستخدم"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

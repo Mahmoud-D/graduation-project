@@ -1,11 +1,8 @@
 "use client";
-import { AppSidebar } from "@/components/app-sidebar";
 import { OrderAnalyticsChart } from "@/components/order-analytics-chart";
 import { CustomerActivityChart } from "@/components/customer-activity-chart";
 import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 import { SectionCards } from "@/components/section-cards";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { API } from "@/constant";
 import { IconStar } from "@tabler/icons-react";
 
@@ -127,22 +124,7 @@ export default function Page() {
 
   // Show loading state while checking authentication and fetching data
   if (isLoading) {
-    return (
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <DashboardSkeleton />
-        </SidebarInset>
-      </SidebarProvider>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Create custom cards array with the rating card
@@ -161,36 +143,25 @@ export default function Page() {
   ];
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-col flex-1 dashboard-loaded">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards
-                customCards={customCards}
-                adminCount={adminCount}
-                userCount={userCount}
-              />
-              <div className="px-4 lg:px-6">
-                <div className="grid grid-cols-1 gap-6">
-                  <OrderAnalyticsChart />
-                  <CustomerActivityChart />
-                </div>
+    <>
+      <div className="flex flex-col flex-1 dashboard-loaded">
+        <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <SectionCards
+              customCards={customCards}
+              adminCount={adminCount}
+              userCount={userCount}
+            />
+            <div className="px-4 lg:px-6">
+              <div className="grid grid-cols-1 gap-6">
+                <OrderAnalyticsChart />
+                <CustomerActivityChart />
               </div>
-              {/* <DataTable data={data} /> */}
             </div>
+            {/* <DataTable data={data} /> */}
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </>
   );
 }

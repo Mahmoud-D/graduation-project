@@ -30,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 // Types for orders
 interface OrderDish {
@@ -173,16 +174,8 @@ export default function OrdersPage() {
       return;
     }
 
-    const fetchData = async () => {
-      try {
-        await fetchOrders();
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
-
-    fetchData();
-  }, []); // Empty dependency array to run only once on mount
+    fetchOrders();
+  }, [fetchOrders, router]);
 
   // Memoized filtered and sorted orders
   const displayedOrders = useMemo(() => {
@@ -246,180 +239,341 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="container py-10 mx-auto" dir="rtl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold" dir="rtl">
-          إدارة الطلبات
-        </h1>
-        <Button onClick={fetchOrders} variant="outline">
-          <Loader2
-            className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-          />
-          تحديث
-        </Button>
-      </div>
+    <SidebarProvider
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      }}
+    >
+      <SidebarInset>
+        <div className="container py-10 mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold" dir="rtl">
+              إدارة الطلبات
+            </h1>
+            <Button onClick={fetchOrders} variant="outline">
+              <Loader2
+                className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              />
+              تحديث
+            </Button>
+          </div>
 
-      {/* Search and filters */}
-      <div className="flex flex-col gap-4 mb-6 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="ابحث عن الطلبات أو المستخدمين أو الأطباق..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
-              aria-label="مسح البحث"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
-
-        <div className="w-full md:w-52">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="تصفية حسب الحالة" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">كل الحالات</SelectItem>
-              {statusOptions.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Loading and error states */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : error ? (
-        <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
-          <p>حدث خطأ أثناء جلب الطلبات: {error}</p>
-          <Button onClick={fetchOrders} variant="outline" className="mt-2">
-            حاول مرة أخرى
-          </Button>
-        </div>
-      ) : (
-        <Table>
-          <TableCaption>قائمة بجميع الطلبات</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("order_id")}
-              >
-                رقم الطلب <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("user_id")}
-              >
-                رقم المستخدم <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead>الحالة</TableHead>
-              <TableHead>الأطباق</TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("created_at")}
-              >
-                تاريخ الإنشاء <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("updated_at")}
-              >
-                آخر تحديث <ArrowUpDown size={14} className="inline ml-1" />
-              </TableHead>
-              <TableHead className="text-right">إجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayedOrders.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-muted-foreground"
+          {/* Search and filters */}
+          <div className="flex flex-col gap-4 mb-6 md:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="ابحث عن الطلبات أو المستخدمين أو الأطباق..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground hover:text-foreground"
+                  aria-label="مسح البحث"
                 >
-                  لا توجد طلبات{searchTerm ? " مطابقة لبحثك" : ""}
-                </TableCell>
-              </TableRow>
-            ) : (
-              displayedOrders.map((order) => (
-                <TableRow key={order.order_id}>
-                  <TableCell className="font-medium">
-                    #{order.order_id}
-                  </TableCell>
-                  <TableCell>{order.user_id}</TableCell>
-                  <TableCell>
-                    <Badge className={statusColors[order.status]}>
-                      {(() => {
-                        switch (order.status) {
-                          case "pending":
-                            return "قيد الانتظار";
-                          case "confirmed":
-                            return "تم التأكيد";
-                          case "preparing":
-                            return "قيد التحضير";
-                          case "ready":
-                            return "جاهز";
-                          case "delivered":
-                            return "تم التوصيل";
-                          case "cancelled":
-                            return "ملغي";
-                          default:
-                            return order.status;
-                        }
-                      })()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-xs">
-                      {order.dishes.slice(0, 2).map((dish, index) => (
-                        <div key={index} className="text-sm">
-                          {dish.dish_name} (×{dish.quantity})
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            <div className="w-full md:w-52">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="تصفية حسب الحالة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">كل الحالات</SelectItem>
+                  {statusOptions.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Loading and error states */}
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center rounded-md bg-destructive/10 text-destructive">
+              <p>حدث خطأ أثناء جلب الطلبات: {error}</p>
+              <Button onClick={fetchOrders} variant="outline" className="mt-2">
+                حاول مرة أخرى
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableCaption>قائمة بجميع الطلبات</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => handleSort("order_id")}
+                  >
+                    رقم الطلب <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => handleSort("user_id")}
+                  >
+                    رقم المستخدم{" "}
+                    <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>الأطباق</TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => handleSort("created_at")}
+                  >
+                    تاريخ الإنشاء{" "}
+                    <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => handleSort("updated_at")}
+                  >
+                    آخر تحديث <ArrowUpDown size={14} className="inline ml-1" />
+                  </TableHead>
+                  <TableHead className="text-right">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayedOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      لا توجد طلبات{searchTerm ? " مطابقة لبحثك" : ""}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayedOrders.map((order) => (
+                    <TableRow key={order.order_id}>
+                      <TableCell className="font-medium">
+                        #{order.order_id}
+                      </TableCell>
+                      <TableCell>{order.user_id}</TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[order.status]}>
+                          {(() => {
+                            switch (order.status) {
+                              case "pending":
+                                return "قيد الانتظار";
+                              case "confirmed":
+                                return "تم التأكيد";
+                              case "preparing":
+                                return "قيد التحضير";
+                              case "ready":
+                                return "جاهز";
+                              case "delivered":
+                                return "تم التوصيل";
+                              case "cancelled":
+                                return "ملغي";
+                              default:
+                                return order.status;
+                            }
+                          })()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-xs">
+                          {order.dishes.slice(0, 2).map((dish, index) => (
+                            <div key={index} className="text-sm">
+                              {dish.dish_name} (×{dish.quantity})
+                            </div>
+                          ))}
+                          {order.dishes.length > 2 && (
+                            <div className="text-xs text-muted-foreground">
+                              +{order.dishes.length - 2} أطباق أخرى...
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(order.created_at)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(order.updated_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end items-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewOrder(order)}
+                          >
+                            <Eye className="mr-1 w-4 h-4" />
+                            عرض
+                          </Button>
+                          <Select
+                            value={order.status}
+                            onValueChange={(newStatus) =>
+                              updateOrderStatus(order.order_id, newStatus)
+                            }
+                            disabled={isUpdating}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusOptions.map((status) => (
+                                <SelectItem
+                                  key={status.value}
+                                  value={status.value}
+                                >
+                                  {(() => {
+                                    switch (status.value) {
+                                      case "pending":
+                                        return "قيد الانتظار";
+                                      case "confirmed":
+                                        return "تم التأكيد";
+                                      case "preparing":
+                                        return "قيد التحضير";
+                                      case "ready":
+                                        return "جاهز";
+                                      case "delivered":
+                                        return "تم التوصيل";
+                                      case "cancelled":
+                                        return "ملغي";
+                                      default:
+                                        return status.label;
+                                    }
+                                  })()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+
+          {/* Order Detail Dialog */}
+          <Dialog open={orderDetailOpen} onOpenChange={setOrderDetailOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>
+                  تفاصيل الطلب - #{selectedOrder?.order_id}
+                </DialogTitle>
+                <DialogDescription>
+                  جميع المعلومات حول هذا الطلب
+                </DialogDescription>
+              </DialogHeader>
+
+              {selectedOrder && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        رقم الطلب
+                      </label>
+                      <p className="font-medium">#{selectedOrder.order_id}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        رقم المستخدم
+                      </label>
+                      <p className="font-medium">{selectedOrder.user_id}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        الحالة
+                      </label>
+                      <Badge className={statusColors[selectedOrder.status]}>
+                        {(() => {
+                          switch (selectedOrder.status) {
+                            case "pending":
+                              return "قيد الانتظار";
+                            case "confirmed":
+                              return "تم التأكيد";
+                            case "preparing":
+                              return "قيد التحضير";
+                            case "ready":
+                              return "جاهز";
+                            case "delivered":
+                              return "تم التوصيل";
+                            case "cancelled":
+                              return "ملغي";
+                            default:
+                              return selectedOrder.status;
+                          }
+                        })()}
+                      </Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        إجمالي العناصر
+                      </label>
+                      <p className="font-medium">
+                        {selectedOrder.dishes.reduce(
+                          (sum, dish) => sum + dish.quantity,
+                          0
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        تاريخ الإنشاء
+                      </label>
+                      <p className="text-sm">
+                        {formatDate(selectedOrder.created_at)}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        آخر تحديث
+                      </label>
+                      <p className="text-sm">
+                        {formatDate(selectedOrder.updated_at)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      الأطباق المطلوبة
+                    </label>
+                    <div className="mt-2 space-y-2">
+                      {selectedOrder.dishes.map((dish, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 rounded-lg bg-muted"
+                        >
+                          <span className="font-medium">{dish.dish_name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            الكمية: {dish.quantity}
+                          </span>
                         </div>
                       ))}
-                      {order.dishes.length > 2 && (
-                        <div className="text-xs text-muted-foreground">
-                          +{order.dishes.length - 2} أطباق أخرى...
-                        </div>
-                      )}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(order.created_at)}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(order.updated_at)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewOrder(order)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        عرض
-                      </Button>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        تحديث الحالة
+                      </label>
                       <Select
-                        value={order.status}
+                        value={selectedOrder.status}
                         onValueChange={(newStatus) =>
-                          updateOrderStatus(order.order_id, newStatus)
+                          updateOrderStatus(selectedOrder.order_id, newStatus)
                         }
                         disabled={isUpdating}
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="mt-1 w-40">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -448,162 +602,19 @@ export default function OrdersPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      )}
-
-      {/* Order Detail Dialog */}
-      <Dialog open={orderDetailOpen} onOpenChange={setOrderDetailOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>تفاصيل الطلب - #{selectedOrder?.order_id}</DialogTitle>
-            <DialogDescription>جميع المعلومات حول هذا الطلب</DialogDescription>
-          </DialogHeader>
-
-          {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    رقم الطلب
-                  </label>
-                  <p className="font-medium">#{selectedOrder.order_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    رقم المستخدم
-                  </label>
-                  <p className="font-medium">{selectedOrder.user_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    الحالة
-                  </label>
-                  <Badge className={statusColors[selectedOrder.status]}>
-                    {(() => {
-                      switch (selectedOrder.status) {
-                        case "pending":
-                          return "قيد الانتظار";
-                        case "confirmed":
-                          return "تم التأكيد";
-                        case "preparing":
-                          return "قيد التحضير";
-                        case "ready":
-                          return "جاهز";
-                        case "delivered":
-                          return "تم التوصيل";
-                        case "cancelled":
-                          return "ملغي";
-                        default:
-                          return selectedOrder.status;
-                      }
-                    })()}
-                  </Badge>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    إجمالي العناصر
-                  </label>
-                  <p className="font-medium">
-                    {selectedOrder.dishes.reduce(
-                      (sum, dish) => sum + dish.quantity,
-                      0
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    تاريخ الإنشاء
-                  </label>
-                  <p className="text-sm">
-                    {formatDate(selectedOrder.created_at)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    آخر تحديث
-                  </label>
-                  <p className="text-sm">
-                    {formatDate(selectedOrder.updated_at)}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  الأطباق المطلوبة
-                </label>
-                <div className="mt-2 space-y-2">
-                  {selectedOrder.dishes.map((dish, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-3 bg-muted rounded-lg"
+                    <Button
+                      variant="outline"
+                      onClick={() => setOrderDetailOpen(false)}
                     >
-                      <span className="font-medium">{dish.dish_name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        الكمية: {dish.quantity}
-                      </span>
-                    </div>
-                  ))}
+                      إغلاق
+                    </Button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    تحديث الحالة
-                  </label>
-                  <Select
-                    value={selectedOrder.status}
-                    onValueChange={(newStatus) =>
-                      updateOrderStatus(selectedOrder.order_id, newStatus)
-                    }
-                    disabled={isUpdating}
-                  >
-                    <SelectTrigger className="w-40 mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {(() => {
-                            switch (status.value) {
-                              case "pending":
-                                return "قيد الانتظار";
-                              case "confirmed":
-                                return "تم التأكيد";
-                              case "preparing":
-                                return "قيد التحضير";
-                              case "ready":
-                                return "جاهز";
-                              case "delivered":
-                                return "تم التوصيل";
-                              case "cancelled":
-                                return "ملغي";
-                              default:
-                                return status.label;
-                            }
-                          })()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setOrderDetailOpen(false)}
-                >
-                  إغلاق
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

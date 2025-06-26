@@ -38,11 +38,11 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    // {
-    //   title: "لوحة التحكم",
-    //   url: "/dashboard",
-    //   icon: IconDashboard,
-    // },
+    {
+      title: "لوحة التحكم",
+      url: "/dashboard",
+      icon: IconDashboard,
+    },
     {
       title: "التقارير",
       url: "/reports",
