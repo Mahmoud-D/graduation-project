@@ -7,8 +7,8 @@ const registerSchema = z.object({
   name: z
     .string()
     .min(2, "اسم المستخدم يجب أن يكون على الأقل مكون من حرفين")
-    .regex(/^[a-zA-Z\s]+$/, "الاسم يجب أن يحتوي فقط على حروف ومسافات"),
-  email: z
+     .regex(/^[\p{L}\s]+$/u, "الاسم يجب أن يحتوي فقط على حروف (عربية أو إنجليزية) ومسافات"),
+    email: z
     .string()
     .email("تنسيق البريد الإلكتروني غير صحيح")
     .transform((email) => email.toLowerCase()) 

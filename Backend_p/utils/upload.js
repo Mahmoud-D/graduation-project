@@ -8,11 +8,12 @@ const path = require('path');
      cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    // توليد اسم فريد للملف مع الإبقاء على الامتداد الأصلي
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
+
+
 
  const upload = multer({ storage: storage });
 

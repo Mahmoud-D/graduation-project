@@ -1,14 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const fs = require("fs"); // نحتاج مكتبة fs لفحص وجود الملف
+const fs = require("fs"); 
 // Import routes
-const userRoutes = require("./routes/userRoutes"); // تأكد من إنشاء routes لمستخدميك
+const userRoutes = require("./routes/userRoutes"); 
 const dishRoutes = require("./routes/dishRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const orderDishRoutes = require("./routes/orderDishRoutes");
 const authRoutes = require("./routes/authRoutes");
- const reportsRoutes = require("./routes/reportsRoutes.js");
+const reportsRoutes = require("./routes/reportsRoutes.js");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
 const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
@@ -17,9 +17,8 @@ const paypalRoutes = require("./routes/paypalRoutes");
 
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
-const couponUsesRoutes = require("./routes/couponUsesRoutes");
 const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
- 
+const offersRoutes = require("./routes/offersRoutes");
 const imageController = require("./controllers/imageController");
 
 const { executeSqlQuery } = require("./controllers/sqlController");
@@ -37,8 +36,8 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "*", 
-   methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
@@ -58,35 +57,30 @@ app.post("/api/execute-sql", executeSqlQuery);
 
 // Routes
 app.use("/api/users", userRoutes);
-app.use("/api/promotions", promotionsRoutes);
 app.use("/api/dishes", dishRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/promotions", promotionsRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/restaurantReviews", restaurantReviewsRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/coupons", couponRoutes);
-app.use("/api/apply-coupon", couponUsesRoutes);
+
+
+
+
 app.use("/api/distinctive-dishes", distinctiveDishRoutes);
- 
-app.use("/api/orderDishes", orderDishRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/reports", reportsRoutes);
-app.use("/api/paypal", paypalRoutes);
 
+app.use("/api/offers", offersRoutes);
 
-
-
-
-
-
-
+ app.use("/api/auth", authRoutes);
+app.use("/api/reports", reportsRoutes); 
+// app.use("/api/paypal", paypalRoutes);
 
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {
 //   const email = req.query.email;
 //   await supabase.from('email_logs').update({ opened: true, opened_at: new Date() }).eq('email', email);
 
-//   // إرجاع صورة 1x1 شفافة
 //   const img = Buffer.from(
 //     'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'
 //   );
@@ -106,24 +100,22 @@ app.use("/api/paypal", paypalRoutes);
 // });
 
 // app.get("/send-email", async (req, res) => {
-//   // إدخال البيانات كـ Static Data
 //   const staticData = {
-//     to: "vimav57250@cotigz.com", // البريد الإلكتروني للمستلم
-//     subject: "Test Email", // الموضوع
-//     html: "<h1>This is a test email</h1>", // المحتوى HTML
-//     text: "This is a test email", // المحتوى النصي
-//     // templateName: "testTemplate", // اسم القالب (إذا كان موجودًا)
-//     // templateData: {}, // البيانات التي سيتم استخدامها في القالب
-//     language: "ar", // اللغة
-//     // bcc: "bcc@example.com", // Cc إذا كنت ترغب في إضافته
-//     // attachments: [] // المرفقات
+//     to: "vimav57250@cotigz.com",  
+//     subject: "Test Email", 
+//     html: "<h1>This is a test email</h1>", 
+//     text: "This is a test email", 
+  // templateName: "testTemplate", 
+
+  // templateData: {}, 
+//     language: "ar", 
+ // bcc: "bcc@example.com", 
+//  attachments: [] 
 //   };
 
 //   try {
-//     // استدعاء دالة إرسال البريد الإلكتروني مع البيانات الثابتة
 //     const emailResult = await sendEmail(staticData);
 
-//     // إرجاع نتيجة النجاح
 //     res.status(200).json({ message: "Email sent successfully!", result: emailResult });
 //   } catch (error) {
 //     console.error("Error in sending email:", error);
@@ -138,8 +130,7 @@ app.use("/api/paypal", paypalRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// مسار لعرض صفحة HTML عند زيارة /status
-app.get('/status', (req, res) => {
+ app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
 });
 

@@ -45,20 +45,18 @@
   <script>
     document.getElementById("payButton").addEventListener("click", async function() {
       try {
-        // إرسال طلب POST إلى الـ Backend
-        const response = await fetch('http://localhost:3000/pay', {
+         const response = await fetch('http://localhost:3000/pay', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ amount: '10.00' }) // إرسال المبلغ المطلوب دفعه
-        });
+          body: JSON.stringify({ amount: '10.00' }) 
+         });
 
         const data = await response.json();
 
         if (data.approvalUrl) {
-          // إعادة توجيه المستخدم إلى رابط PayPal
-          window.location.href = data.approvalUrl;
+           window.location.href = data.approvalUrl;
         } else {
           alert('حدث خطأ في الدفع');
         }

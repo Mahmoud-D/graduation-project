@@ -1,8 +1,7 @@
-const sql = require('../config/db');
+const sql = require("../config/db");
 
 class Promotion {
-  // استرجاع العروض الترويجية النشطة والتي تكون في فترة صالحة
-  static async findAllActive() {
+   static async findAllActive() {
     try {
       const rows = await sql`
         SELECT * FROM promotions 
@@ -28,8 +27,34 @@ class Promotion {
     }
   }
 
-  // استرجاع عرض ترويجي بناءً على الـ ID
-  static async findById(id) {
+  static async getVAllPromotions() {
+    try {
+      const result = await sql`
+      SELECT 
+        dish_id,
+        name,
+        description,
+        image_path,
+        original_price,
+        discount_percentage,
+        discounted_price,
+        discount_amount,
+        start_date,
+        end_date,
+        promotion_id,
+        promotion_created_at,
+        dish_created_at
+      FROM v_dishes_with_offers
+      ORDER BY discount_percentage DESC
+    `;
+    return result;
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+      throw error;
+    }
+  }
+
+   static async findById(id) {
     try {
       const rows = await sql`
         SELECT * FROM promotions WHERE id = ${id}
@@ -41,9 +66,7 @@ class Promotion {
     }
   }
 
-  // إنشاء عرض ترويجي جديد
-  static async create(data) {
-    console.log("data", data);
+   static async create(data) {
     const { dish_id, discount_percentage, start_date, end_date } = data;
     try {
       const result = await sql`
@@ -58,9 +81,9 @@ class Promotion {
     }
   }
 
-  // تحديث عرض ترويجي موجود
-  static async update(id, data) {
-    const { dish_id, discount_percentage, start_date, end_date, is_active } = data;
+   static async update(id, data) {
+    const { dish_id, discount_percentage, start_date, end_date, is_active } =
+      data;
     try {
       await sql`
         UPDATE promotions
@@ -78,7 +101,6 @@ class Promotion {
     }
   }
 
-  // تبديل حالة العرض الترويجي (تفعيل أو إلغاء تفعيل)
   static async toggleStatus(id) {
     try {
       const promo = await this.findById(id);
@@ -95,7 +117,6 @@ class Promotion {
     }
   }
 
-  // حذف عرض ترويجي بناءً على الـ ID
   static async delete(id) {
     try {
       await sql`
@@ -108,7 +129,6 @@ class Promotion {
     }
   }
 
-  // استرجاع الأطباق التي تحتوي على عروض ترويجية نشطة
   static async getDishesWithPromotions() {
     try {
       const dishes = await sql`

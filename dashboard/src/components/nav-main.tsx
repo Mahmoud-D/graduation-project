@@ -66,23 +66,23 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton
+          <SidebarMenuItem className="flex gap-2 items-center">
+            {/* <SidebarMenuButton
               tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              className="duration-200 ease-linear bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8"
               onClick={() => setDialogOpen(true)}
             >
               <IconCirclePlusFilled />
-              <span>Quick Create</span>
-            </SidebarMenuButton>
-            <Button
+              <span className="text-center">إنشاء سريع</span>
+            </SidebarMenuButton> */}
+            {/* <Button
               size="icon"
               className="size-8 group-data-[collapsible=icon]:opacity-0"
               variant="outline"
             >
               <IconMail />
               <span className="sr-only">Inbox</span>
-            </Button>
+            </Button> */}
           </SidebarMenuItem>
         </SidebarMenu>
 
@@ -90,14 +90,14 @@ export function NavMain({
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Quick Create</DialogTitle>
+              <DialogTitle>إنشاء سريع</DialogTitle>
               <DialogDescription>
-                Create a new item quickly from here.
+                قم بإنشاء عنصر جديد بسرعة من هنا
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4">
-              <p>Select what you want to create:</p>
+              <p>حدد ما تريد إنشاءه:</p>
               <div className="grid grid-cols-2 gap-2 mt-4">
                 <Button
                   variant="outline"
@@ -106,23 +106,23 @@ export function NavMain({
                     setDialogOpen(false);
                   }}
                 >
-                  New Category
+                  فئة جديدة
                 </Button>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  New Dish
+                  طبق جديد
                 </Button>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  New Coupon
+                  قسيمة جديدة
                 </Button>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  New Promotion
+                  عرض ترويجي جديد
                 </Button>
               </div>
             </div>
 
             <div className="flex justify-end">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
+                إلغاء
               </Button>
             </div>
           </DialogContent>
@@ -134,7 +134,7 @@ export function NavMain({
             <DialogHeader>
               <DialogTitle>Add New Category</DialogTitle>
               <DialogDescription>
-                Create a new category for your menu items.
+                إنشاء فئة جديدة لعناصر القائمة الخاصة بك.
               </DialogDescription>
             </DialogHeader>
 

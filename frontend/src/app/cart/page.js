@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, X, Plus, Minus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Cart() {
   const {
@@ -21,6 +22,11 @@ export default function Cart() {
     setIsOpen(!isOpen);
   };
 
+  const handleItemClick = (itemId) => {
+    setIsOpen(false); // Close the cart
+    router.push(`/menu/${itemId}`);
+  };
+
   return (
     <div className="relative">
       {/* Cart Icon Button */}
@@ -37,6 +43,14 @@ export default function Cart() {
       </button>
 
       {/* Cart Sidebar */}
+
+      {isOpen && (
+        <div
+          onClick={toggleCart}
+          className="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-40 transition-opacity duration-300"
+        ></div>
+      )}
+
       <div
         className={`fixed top-0 left-0 w-full md:w-96 h-full bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -65,12 +79,20 @@ export default function Cart() {
               <ul className="space-y-4">
                 {items.map((item) => (
                   <li key={item.id} className="flex border-b pb-4">
-                    <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                      {item.image ? (
-                        <img
-                          src={item.image}
+                    <div 
+                      className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 relative cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                      onClick={() => handleItemClick(item.id)}
+                    >
+                      {item.image || item.image_path ? (
+                        <Image
+                          src={
+                            `${process.env.NEXT_PUBLIC_API_URL}/${item.image || item.image_path}` ||
+                            "/placeholder-dish.png"
+                          }
                           alt={item.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          priority
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-gray-400">
@@ -80,7 +102,12 @@ export default function Cart() {
                     </div>
                     <div className="mr-4 flex-grow">
                       <div className="flex justify-between">
-                        <h3 className="font-medium">{item.name}</h3>
+                        <h3 
+                          className="font-medium cursor-pointer hover:text-orange-500 transition-colors duration-200"
+                          onClick={() => handleItemClick(item.id)}
+                        >
+                          {item.name}
+                        </h3>
                         <p className="font-medium">
                           {item.price * item.quantity} جنيه
                         </p>

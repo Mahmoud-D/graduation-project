@@ -23,7 +23,7 @@ export default function MenuItemPage() {
 
   const fetchDish = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/dishes/${id}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dishes/${id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch dish details");
       }
@@ -114,9 +114,6 @@ export default function MenuItemPage() {
             <div className="flex gap-4 mb-8">
               <Button className="flex-1" size="lg" onClick={() => addItem({ ...dish, quantity: 1 })}>
                 إضافة إلى السلة
-              </Button>
-              <Button variant="outline" className="flex-1" size="lg">
-                مشاركة
               </Button>
             </div>
 

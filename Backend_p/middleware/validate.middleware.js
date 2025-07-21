@@ -1,12 +1,21 @@
 const validator = (schema) => async (req, res, next) => {
-  const result = await schema.safeParseAsync(req.body);
+   const dataToValidate = req.bodyForValidation || req.body;
+  
+  const result = await schema.safeParseAsync(dataToValidate);
 
   if (!result.success) {
-    const errors = result.error.errors.map((e) => e);
-    return res.status(400).json({ errors });
+    const formattedErrors = result.error.errors.map((err) => ({
+      field: err.path.join('.'),
+      message: err.message
+    }));
+    
+    return res.status(400).json({ 
+      message: "Validation failed",
+      errors: formattedErrors 
+    });
   }
 
-  req.validatedBody = result.data;
+  req.validatedData = result.data;
   next();
 };
 

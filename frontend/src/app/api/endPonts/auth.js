@@ -1,4 +1,3 @@
-// auth.js
 import { APIHandler } from "../apiHandler";
 
 class AuthService {
@@ -54,7 +53,6 @@ class AuthService {
 
 }
 
-// Create a singleton instance
 const authService = new AuthService();
 
 export default authService;

@@ -1,6 +1,6 @@
-const sql = require('../config/db'); // استيراد الاتصال بقاعدة البيانات
+const sql = require("../config/db"); 
 
-// جلب جميع الفئات
+
 exports.getAll = async () => {
   try {
     const query = sql`
@@ -16,14 +16,15 @@ exports.getAll = async () => {
       GROUP BY 
         c.id
     `;
-    return query;  // العودة بالنتائج من الاستعلام
+    return query; 
+
   } catch (err) {
-    console.error('❌ Error fetching categories:', err);
-    throw err;  // التعامل مع الخطأ إذا حدث
+    console.error("❌ Error fetching categories:", err);
+    throw err; 
+
   }
 };
 
-// إضافة فئة جديدة
 exports.create = async (name, description) => {
   try {
     const query = sql`
@@ -32,14 +33,15 @@ exports.create = async (name, description) => {
       RETURNING id
     `;
     const result = await query;
-    return { id: result[0].id, name, description }; // إرجاع الـ id وبيانات الفئة الجديدة
+    return { id: result[0].id, name, description };
+
   } catch (err) {
-    console.error('❌ Error creating category:', err);
+    console.error("❌ Error creating category:", err);
     throw err;
   }
 };
 
-// تعديل فئة
+
 exports.update = async (id, name, description) => {
   try {
     const query = sql`
@@ -49,31 +51,29 @@ exports.update = async (id, name, description) => {
       RETURNING id, name, description
     `;
     const result = await query;
-    if (result.length === 0) return null; // إذا لم يتم العثور على الفئة
-    return result[0]; // إرجاع الفئة المعدلة
+    if (result.length === 0) return null; 
+    return result[0]; 
   } catch (err) {
-    console.error('❌ Error updating category:', err);
+    console.error("❌ Error updating category:", err);
     throw err;
   }
 };
 
- exports.delete = async (id) => {
+exports.delete = async (id) => {
   try {
     const query = sql`
       DELETE FROM categories WHERE id = ${id} RETURNING id
     `;
     const result = await query;
-    if (result.length === 0) return null; // إذا لم يتم العثور على الفئة
-    return true; // النجاح في الحذف
+    if (result.length === 0) return null; 
+    return true; 
   } catch (err) {
-    console.error('❌ Error deleting category:', err);
+    console.error("❌ Error deleting category:", err);
     throw err;
   }
 };
 
-
-
- exports.getstatsCategories = async () => {
+exports.getstatsCategories = async () => {
   try {
     const query = sql`
        SELECT name, COUNT(*) AS count
@@ -82,10 +82,16 @@ exports.update = async (id, name, description) => {
   ORDER BY count DESC;
     `;
     const result = await query;
- 
-    return result; 
+
+    return result;
   } catch (err) {
-    console.error('❌ Error deleting category:', err);
+    console.error("❌ Error deleting category:", err);
     throw err;
   }
 };
+
+
+
+
+
+ 

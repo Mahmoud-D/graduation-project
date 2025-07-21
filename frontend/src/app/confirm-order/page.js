@@ -1,4 +1,3 @@
-// app/payment/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -44,7 +43,6 @@ import CheckoutSteps from "./CheckoutSteps";
 import OrderSuccess from "./OrderSuccess";
 import CouponInput from "./CouponInput";
 
-// أضف هذه الاستيرادات في أعلى الملف
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { CheckCircle2 } from "lucide-react";
 
@@ -82,14 +80,14 @@ export default function EnhancedPaymentPage() {
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       form.reset(parsedData);
-      localStorage.removeItem("orderFormData"); // Clear saved data after restoring
+      localStorage.removeItem("orderFormData"); 
     }
   }, [form]);
 
   const createOrder = async (payload) => {
 
     try {
-      const res = await fetch("http://localhost:5000/api/orders", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +133,6 @@ export default function EnhancedPaymentPage() {
         setIsOrderConfirmed(true);
       }
     } catch (error) {
-      // Handle error appropriately
       console.error("Order creation failed:", error);
     } finally {
       setIsSubmitting(false);
@@ -153,12 +150,12 @@ export default function EnhancedPaymentPage() {
     setCouponError(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/coupons/${code}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/coupons/${code}`)
       const data = await response.json();
       if (response.ok) {
         const coupon = data[0];
         const myOrders = await fetch(
-          "http://localhost:5000/api/orders/my-orders",
+          `${process.env.NEXT_PUBLIC_API_URL}/orders/my-orders`,
           {
             method: "GET",
             headers: {
@@ -200,7 +197,6 @@ export default function EnhancedPaymentPage() {
     }
   };
 
-  // Add this function to calculate discount
   const calculateDiscount = () => {
     if (couponData && couponData[0].discount_value) {
       return subtotal * (couponData[0].discount_value / 100);
@@ -208,13 +204,11 @@ export default function EnhancedPaymentPage() {
     return 0;
   };
 
-  // Modify the calculateTotal function
   const calculateTotal = () => {
     let finalTotal = subtotal;
     const discountAmount = calculateDiscount();
     finalTotal = finalTotal - discountAmount;
 
-    // Add shipping fee if order is less than 500
     if (finalTotal < 500) {
       finalTotal += shippingFee;
     }
@@ -263,7 +257,7 @@ export default function EnhancedPaymentPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-base font-semibold text-gray-700">
                           <User className="w-4 h-4" />
-                          اسم المستخدم
+                          اسم المستلم                          
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -450,7 +444,7 @@ export default function EnhancedPaymentPage() {
                             purchase_units: [
                               {
                                 amount: {
-                                  value: total.toFixed(2) / 50, // total calculated already (from dollar to EGP conversion)
+                                  value: total.toFixed(2) / 50, 
                                 },
                               },
                             ],

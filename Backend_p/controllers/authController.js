@@ -11,7 +11,6 @@ const sendEmail = require("../utils/emailService");
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  // التحقق من وجود البيانات المطلوبة
   if (!email || !password) {
     return res.status(400).json({
       success: false,
@@ -20,10 +19,8 @@ exports.login = async (req, res) => {
   }
 
   try {
-    // البحث عن المستخدم
     const user = await User.findByEmail(email);
 
-    // حالة عدم وجود المستخدم
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -32,7 +29,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // حالة الحساب غير المفعل
     if (!user.is_verified) {
       return res.status(403).json({
         success: false,
@@ -41,7 +37,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // التحقق من كلمة المرور
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -51,18 +46,20 @@ exports.login = async (req, res) => {
       });
     }
 
-    // إنشاء Token
+
+
+    // create  token
     const token = jwt.sign(
       {
         userId: user.id,
         role: user.role,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "JWT_SECRET",
       { expiresIn: process.env.JWT_EXPIRATION }
     );
 
-    // إرجاع الاستجابة الناجحة
-    res.status(200).json({
+
+     res.status(200).json({
       success: true,
       message: "تم تسجيل الدخول بنجاح",
       token: token,
@@ -79,28 +76,11 @@ exports.login = async (req, res) => {
       success: false,
       message: "حدث خطأ في الخادم",
       system_message: error.message,
+      error: error,
       hint: "الرجاء المحاولة مرة أخرى لاحقًا",
     });
   }
 };
-
-// exports.register = async (req, res) => {
-//   const { name, email, password, role } = req.body;
-
-//   try {
-//     const newUser = new User(name, email, password, role || "user");
-//     const userId = await newUser.create();
-
-//     const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-//       expiresIn: "1h",
-//     });
-
-//     res.status(201).json({ message: "تم إنشاء المستخدم بنجاح", userId, token });
-//   } catch (error) {
-//     console.error("❌ Error in register:", error);
-//     res.status(500).json({ message: error.message || "حدث خطأ أثناء التسجيل" });
-//   }
-// };
 
 exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -115,7 +95,7 @@ exports.register = async (req, res) => {
 
     const token = generateToken(userId);
 
-    const frontendUrl = process.env.FRONTEND_URL; // fallback إذا لم يكن موجودًا في الـ headers
+    const frontendUrl = process.env.FRONTEND_URL; 
     const verificationLink = `${frontendUrl}/verify-email?token=${token}`;
 
     console.log(verificationLink);
@@ -176,20 +156,18 @@ exports.register = async (req, res) => {
   `;
 
     const category = "User Registration";
-    const senderName = "Your Team"; // تخصيص اسم المرسل
+    const senderName = "restaurant "; 
 
-    // 4. إرسال البريد الإلكتروني مع التوكين
-    await sendEmail({
-      to: email, // إرسال البريد إلى المستخدم الجديد
-      subject, // الموضوع
-      text, // نص البريد
-      html, // نص HTML للبريد
-      category, // فئة البريد الإلكتروني
-      senderName, // اسم المرسل
+     await sendEmail({
+      to: email, 
+      subject, 
+      text, 
+      html, 
+      category, 
+      senderName, 
     });
 
-    // 5. الرد على العميل مع التوكن والمعلومات الأساسية
-    res.status(201).json({
+     res.status(201).json({
       message:
         "تم إنشاء المستخدم بنجاح، تحقق من بريدك الإلكتروني لتفعيل الحساب.",
       // userId,
@@ -205,7 +183,7 @@ exports.verifyEmail = async (req, res) => {
   const { token } = req.query;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
     const userId = decoded.userId;
     const user = await User.getById(userId);
     if (!user) {
@@ -247,10 +225,9 @@ exports.resendVerificationEmail = async (req, res) => {
     const html = `<p>مرحبًا ${user.name},</p><p>اضغط على الرابط التالي لتوثيق حسابك:</p><a href="${process.env.FRONTEND_URL}/verify-email?token=${token}">توثيق البريد</a>`;
 
     const category = "Resend Verification";
-    const senderName = "Your Team";
+    const senderName = "restaurant "; 
 
-    // 5. إرسال الإيميل
-    await sendEmail({
+     await sendEmail({
       to: email,
       subject,
       text,
@@ -274,29 +251,26 @@ exports.sendResetPasswordEmail = async (req, res) => {
   const { email } = req.body;
 
   try {
-    // 1. التأكد أن المستخدم موجود
+    // 1. check if user exists    
     const user = await User.findByEmail(email);
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          message: "إن كنت مسجلا فقد ارسلنا الان لك رسالة بها خطوات التسجيل ",
-        });
+      return res.status(404).json({
+        message: "إن كنت مسجلا فقد ارسلنا الان لك رسالة بها خطوات التسجيل ",
+      });
     }
 
-    // 2. إنشاء توكين جديد
-    const token = generateToken(user.id); // ممكن تخصص نوع التوكين لو تحب
-
-    // 3. تحضير محتوى الإيميل
+    // 2. generate token
+    const token = generateToken(user.id); 
+ 
+    // 3. send email 
     const subject = "إعادة تعيين كلمة المرور";
     const text = `مرحبًا ${user.name},\n\nاضغط على الرابط التالي لإعادة تعيين كلمة المرور:\n${process.env.FRONTEND_URL}/reset-password?token=${token}`;
     const html = `<p>مرحبًا ${user.name},</p><p>اضغط على الرابط التالي لإعادة تعيين كلمة المرور:</p><a href="${process.env.FRONTEND_URL}/reset-password?token=${token}">إعادة تعيين كلمة المرور</a>`;
 
     const category = "Password Reset";
-    const senderName = "Your Team";
+    const senderName = "restaurant "; 
 
-    // 4. إرسال الإيميل
-    await sendEmail({
+     await sendEmail({
       to: email,
       subject,
       text,
@@ -305,11 +279,9 @@ exports.sendResetPasswordEmail = async (req, res) => {
       senderName,
     });
 
-    res
-      .status(200)
-      .json({
-        message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
-      });
+    res.status(200).json({
+      message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
+    });
   } catch (error) {
     console.error("❌ Error in sendResetPasswordEmail:", error);
     res.status(500).json({
@@ -324,17 +296,17 @@ exports.resetPassword = async (req, res) => {
   const { newPassword } = req.body;
 
   try {
-    // 1. التحقق من صحة التوكين
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // 1. verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
     const userId = decoded.userId;
 
-    // 2. التحقق أن المستخدم موجود
+    // 2. check if user exists
     const user = await User.getById(userId);
     if (!user) {
       return res.status(404).json({ message: "المستخدم غير موجود" });
     }
 
-    // 3. تحديث كلمة السر
+    // 3. update password
     const hashedPassword = await User.hashPassword(newPassword);
     await User.update(user.id, { password: hashedPassword });
 

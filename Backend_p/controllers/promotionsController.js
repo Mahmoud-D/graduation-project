@@ -11,16 +11,9 @@ exports.getActivePromotions = async (req, res) => {
 };
 
 exports.getDishesWithPromotions = async (req, res) => {
-  try {
-     
-    const [dishes] = await db.promise().query(`
-      SELECT d.*, p.discount_percentage 
-      FROM dishes d
-      JOIN promotions p ON d.id = p.dish_id
-      WHERE p.is_active = TRUE
-      AND NOW() BETWEEN p.start_date AND p.end_date
-    `);
-    res.json(dishes);
+   try {
+    const promotions = await Promotion.getVAllPromotions(req.body);
+    res.json(promotions);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -72,8 +65,7 @@ exports.deletePromotion = async (req, res) => {
       return res.status(404).json({ message: 'العرض غير موجود' });
     }
 
-    // حذف العرض
-    const isDeleted = await Promotion.delete(promotionId);
+     const isDeleted = await Promotion.delete(promotionId);
     
     if (isDeleted) {
       res.json({ message: 'تم حذف العرض بنجاح' });

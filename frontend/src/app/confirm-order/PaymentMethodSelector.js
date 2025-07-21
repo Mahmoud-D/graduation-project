@@ -25,7 +25,6 @@ export default function PaymentMethodSelector({
   const [paypalReady, setPaypalReady] = useState(false);
   const [paypalError, setPaypalError] = useState(null);
 
-  // تحميل سكريبت PayPal
   useEffect(() => {
     if (form.watch("paymentMethod") !== "paypal") return;
 
@@ -64,14 +63,13 @@ export default function PaymentMethodSelector({
                 defaultValue={field.value}
                 className="space-y-4"
               >
-                {/* خيار الدفع عند الاستلام */}
-                <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-green-200 bg-green-50 p-6 hover:bg-green-100 transition-colors">
+                 <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-green-200 bg-green-50 p-6 hover:bg-green-100 transition-colors">
                   <FormControl>
                     <RadioGroupItem value="cash" className="text-green-600" />
                   </FormControl>
                   <div className="flex-1">
                     <FormLabel className="font-semibold text-lg cursor-pointer">
-                      💵 الدفع عند الاستلام
+                       الدفع عند الاستلام
                     </FormLabel>
                     <p className="text-sm text-gray-600 mt-1">
                       ادفع نقداً عند استلام طلبك
@@ -82,7 +80,7 @@ export default function PaymentMethodSelector({
                   </Badge>
                 </FormItem>
 
-                {/* خيار الدفع عبر PayPal */}
+                {/*  pay with  PayPal */}
                 <FormItem className="flex items-center space-x-3 space-y-0 rtl:space-x-reverse rounded-xl border-2 border-blue-200 bg-blue-50 p-6 hover:bg-blue-100 transition-colors">
                   <FormControl>
                     <RadioGroupItem value="paypal" className="text-blue-600" />
@@ -106,8 +104,8 @@ export default function PaymentMethodSelector({
         )}
       />
 
-      {/* عرض أزرار PayPal عند الاختيار */}
-      {form.watch("paymentMethod") === "paypal" && (
+ {/* show PayPal buttons */}
+       {form.watch("paymentMethod") === "paypal" && (
         <div className="mt-4 space-y-2">
           {paypalError ? (
             <Alert variant="destructive">

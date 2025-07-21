@@ -1,9 +1,11 @@
 import LoginForm from "@/components/shared/LoginForm";
 
 const Login = () => {
+  // redirect("/dashboard");
+
   return (
-    <section className="text-center h-screen  bg-slate-300">
-      <h2 className="text-2xl font-bold pt-20"> Login</h2>
+    <section className="h-screen text-center bg-slate-300">
+      <h2 className="pt-20 text-2xl font-bold"> تسجيل الدخول</h2>
       <LoginForm />{" "}
     </section>
   );

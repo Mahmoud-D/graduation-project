@@ -28,8 +28,8 @@ export default function Home() {
   }
 
   return (
-    <main className="text-center h-screen  bg-gray-100">
-      <h2 className="text-2xl font-bold pt-20"> Login</h2>
+    <main className="h-screen text-center bg-gray-100">
+      <h2 className="pt-20 text-2xl font-bold">تسجيل الدخول</h2>
       <LoginForm />
     </main>
   );

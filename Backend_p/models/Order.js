@@ -180,6 +180,9 @@ LEFT JOIN coupons c ON o.coupon_id = c.id
           o.created_at,
           o.updated_at,
           o.coupon_id,
+          o.total_amount,
+          o.delivery_fees,
+          o.delivery_address,
           STRING_AGG(d.name || ' (' || od.quantity || ')', ', ') AS dishes
         FROM orders o
         JOIN order_items od ON o.id = od.order_id
@@ -216,7 +219,8 @@ LEFT JOIN coupons c ON o.coupon_id = c.id
     const now = new Date();
   
     try {
-      // 1. أنشئ الأوردر وارجع البيانات كلها
+
+
       const [order] = await sql`
         INSERT INTO orders (
           user_id, status, created_at, updated_at, 

@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#f3f4f6"/>
+  <path d="M32 16C35.866 16 39 19.134 39 23C39 26.866 35.866 30 32 30C28.134 30 25 26.866 25 23C25 19.134 28.134 16 32 16Z" fill="#9ca3af"/>
+  <path d="M16 48C16 40.268 22.268 34 30 34H34C41.732 34 48 40.268 48 48V50H16V48Z" fill="#9ca3af"/>
+  <text x="32" y="58" text-anchor="middle" fill="#6b7280" font-size="8" font-family="Arial, sans-serif">No Image</text>
+</svg>

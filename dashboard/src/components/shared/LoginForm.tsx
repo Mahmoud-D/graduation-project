@@ -14,33 +14,36 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
+import { API } from "@/constant";
+import { useState } from "react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(2, "Password must be at least 6 characters"),
+  // name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
+  email: z.string().email("البريد الالكتروني غير صالح"),
+  password: z.string().min(2, "كلمة المرور يجب أن يكون أكثر من حرفين"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      // name: "",
       email: "",
       password: "",
     },
   });
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/";
   const onSubmit = async (data: FormValues) => {
+    setIsLoading(true);
     try {
       // Add static role to request data
       const requestData = {
         ...data,
-        role: "user", // Set your required static role value here
+        role: "admin", // Set your required static role value here
       };
 
       // Handle form submission, e.g., send data to an API endpoint
@@ -75,6 +78,8 @@ export default function LoginForm() {
       console.log("Success:", responseData);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
     }
 
     // For demonstration, just log the data to the console
@@ -85,27 +90,27 @@ export default function LoginForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-md mx-auto mt-10 border p-8 rounded-md shadow-md bg-white "
+        className="p-8 mx-auto mt-10 space-y-4 max-w-md bg-white rounded-md border shadow-md"
       >
-        <FormField
+        {/* <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>الاسم</FormLabel>
               <FormControl>
                 <Input placeholder="Your name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>البريد الالكتروني</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="you@example.com" {...field} />
               </FormControl>
@@ -118,7 +123,7 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>كلمة المرور</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="Password" {...field} />
               </FormControl>
@@ -126,7 +131,10 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit" disabled={isLoading} className="cursor-pointer">
+          {" "}
+          {isLoading ? "جاري التسجيل..." : "تسجيل الدخول"}{" "}
+        </Button>
       </form>
     </Form>
   );

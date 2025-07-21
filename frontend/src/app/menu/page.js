@@ -1,70 +1,103 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import ProductCard from "@/components/productCard";
+import { useState, useEffect, useMemo } from "react";
+import MenuSearchBar from "@/components/MenuSearchBar";
+import CategoryFilters from "@/components/CategoryFilters";
+import EnhancedProductCard from "@/components/productCard";
 
 export default function MenuPage() {
-  const [dishes, setDishes] = useState([]);
-  const [selectedDishes, setSelectedDishes] = useState(dishes);
+  const [allDishes, setAllDishes] = useState([]);
+  const [offerDishes, setOfferDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("الكل");
+  
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("الكل");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    fetchDishes();
-    fetchCategories();
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        
+        const [dishesResponse, categoriesResponse, offersResponse] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/dishes`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/promotions/dishes-with-promotions`)
+        ]);
+
+        if (!dishesResponse.ok) throw new Error("فشل في جلب الأطباق");
+        if (!categoriesResponse.ok) throw new Error("فشل في جلب التصنيفات");
+        
+        const dishesData = await dishesResponse.json();
+        const categoriesData = await categoriesResponse.json();
+        
+        let offersData = [];
+        if (offersResponse.ok) {
+          offersData = await offersResponse.json();
+        }
+
+        const offersMap = new Map();
+        offersData.forEach(offer => {
+          offersMap.set(offer.dish_id, {
+            discounted_price: offer.discounted_price,
+            discount_percentage: offer.discount_percentage,
+            discount_amount: offer.discount_amount,
+            isOffer: true
+          });
+        });
+
+        const dishesWithOffers = dishesData.map(dish => {
+          const offerData = offersMap.get(dish.id);
+          if (offerData) {
+            return {
+              ...dish,
+              ...offerData,
+              original_price: dish.price 
+            };
+          }
+          return dish;
+        });
+
+        setAllDishes(dishesWithOffers);
+        setOfferDishes(offersData);
+        setCategories([{ category_id: 0, category_name: "الكل" }, ...categoriesData]);
+      } catch (err) {
+        setError("فشل في تحميل قائمة الطعام. الرجاء المحاولة مرة أخرى.");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
   }, []);
 
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-    if (category === "الكل") {
-      setSelectedDishes(dishes);
-      return;
-    }
-    const filteredDishes = dishes.filter((dish) =>
-      dish.categories.includes(category)
-    );
-    setSelectedDishes(filteredDishes);
-  };
+  const filteredDishes = useMemo(() => {
+    let dishes = allDishes;
 
-  const fetchDishes = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/dishes`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch dishes");
-      }
-      const data = await response.json();
-      setDishes(data);
-      setSelectedDishes(data);
-      setLoading(false);
-    } catch (err) {
-      setError("فشل في تحميل قائمة الطعام. الرجاء المحاولة مرة أخرى.");
-      setLoading(false);
-      console.error("Error fetching dishes:", err);
+    if (selectedCategory !== "الكل") {
+      dishes = dishes.filter((dish) =>
+        dish.categories.includes(selectedCategory)
+      );
     }
-  };
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/categories`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch categories");
-      }
-      const data = await response.json();
-      setCategories([{ category_id: 0, category_name: "الكل" }, ...data]);
-    } catch (err) {
-      setError("فشل في تحميل التصنيفات. الرجاء المحاولة مرة أخرى.");
-      console.error("Error fetching categories:", err);
+    if (searchQuery.trim() !== "") {
+      dishes = dishes.filter((dish) =>
+        dish.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
-  };
+
+    return dishes;
+  }, [allDishes, selectedCategory, searchQuery]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl text-primary">جاري التحميل...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-2xl text-primary">جاري التحميل...</p>
+        </div>
       </div>
     );
   }
@@ -72,44 +105,49 @@ export default function MenuPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl text-red-500">{error}</div>
+        <div className="text-center">
+          <div className="text-2xl text-red-500 mb-4">{error}</div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-20 bg-gray-50">
+    <div className="min-h-screen py-20 bg-gray-50" dir="rtl">
       <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold text-center mb-8">قائمة الطعام</h1>
+        <header className="text-center mb-12 space-y-4">
+          <h1 className="text-4xl font-bold">قائمة الطعام</h1>
+          <p className="text-lg text-gray-500">استكشف أشهى الأطباق لدينا</p>
+          <MenuSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        </header>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-3 justify-center mb-12">
-          {categories.map((category) => (
-            <Button
-              key={category.category_id}
-              variant={
-                category.category_name === selectedCategory
-                  ? "default"
-                  : "outline"
-              }
-              className="rounded-full cursor-pointer"
-              onClick={() => handleCategoryClick(category.category_name)}
-            >
-              {category.category_name}
-            </Button>
-          ))}
+        <div className="mb-12">
+          <CategoryFilters
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
         </div>
 
-        {/* Dishes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {selectedDishes.map((dish, index) => (
-            <ProductCard key={index} dish={dish} />
-          ))} 
-        </div>
-
-        {selectedDishes.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
-            لا توجد أطباق في هذا التصنيف حالياً
+        {filteredDishes.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredDishes.map((dish) => (
+              <EnhancedProductCard 
+                key={dish.id} 
+                dish={dish} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 mt-16">
+            <p className="text-2xl font-semibold mb-2">لا توجد أطباق تطابق بحثك</p>
+            <p>حاول تغيير فلتر التصنيف أو تعديل كلمة البحث.</p>
           </div>
         )}
       </div>
