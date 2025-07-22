@@ -67,7 +67,7 @@ export default function ProductDetailModal({ isOpen, onClose, dish }) {
           >
             <Image
               src={
-                `http://localhost:5000/${dish.image_path}` ||
+                `${process.env.NEXT_PUBLIC_API_URL}/${dish.image_path}` ||
                 "/placeholder-dish.png"
               }
               alt={dish.name}
