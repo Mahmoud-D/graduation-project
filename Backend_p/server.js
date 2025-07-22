@@ -153,6 +153,7 @@ app.get("/api", async (req, res) => {
       },
       system: systemInfo,
       routes: [
+        "version 1.0",
         "/api/users",
         "/api/dishes",
         "/api/orders",
