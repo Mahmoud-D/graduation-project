@@ -127,7 +127,7 @@ app.use("/api/reports", reportsRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
- app.get('/status', (req, res) => {
+ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
 });
 
