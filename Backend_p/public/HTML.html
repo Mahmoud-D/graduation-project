@@ -1,289 +1,303 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>لوحة تحكم النظام</title>
     <style>
-        :root {
-            --primary: #3498db;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --dark: #2c3e50;
-            --light: #f8f9fa;
+      :root {
+        --primary: #3498db;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+        --dark: #2c3e50;
+        --light: #f8f9fa;
+      }
+      body {
+        font-family: "Tajawal", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+      header {
+        background: var(--dark);
+        color: white;
+        padding: 20px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        background: var(--success);
+        color: white;
+      }
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 15px 20px;
+        background: var(--primary);
+        color: white;
+        font-weight: bold;
+      }
+      .card-body {
+        padding: 20px;
+      }
+      .card.success {
+        border-top: 4px solid var(--success);
+      }
+      .card.danger {
+        border-top: 4px solid var(--danger);
+      }
+      .card.warning {
+        border-top: 4px solid var(--warning);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: right;
+        border-bottom: 1px solid #eee;
+      }
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+      }
+      .progress-bar {
+        height: 10px;
+        background: #eee;
+        border-radius: 5px;
+        margin-top: 5px;
+        overflow: hidden;
+      }
+      .progress {
+        height: 100%;
+        background: var(--primary);
+      }
+      .routes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+      }
+      .route-item {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        text-align: center;
+      }
+      .timestamp {
+        font-size: 0.9em;
+        color: #777;
+      }
+      .loading {
+        text-align: center;
+        padding: 50px;
+      }
+      .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        body {
-            font-family: 'Tajawal', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
+        100% {
+          transform: rotate(360deg);
         }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        header {
-            background: var(--dark);
-            color: white;
-            padding: 20px;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            background: var(--success);
-            color: white;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .card-header {
-            padding: 15px 20px;
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-        }
-        .card-body {
-            padding: 20px;
-        }
-        .card.success {
-            border-top: 4px solid var(--success);
-        }
-        .card.danger {
-            border-top: 4px solid var(--danger);
-        }
-        .card.warning {
-            border-top: 4px solid var(--warning);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: right;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .progress-bar {
-            height: 10px;
-            background: #eee;
-            border-radius: 5px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        .progress {
-            height: 100%;
-            background: var(--primary);
-        }
-        .routes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        .route-item {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            text-align: center;
-        }
-        .timestamp {
-            font-size: 0.9em;
-            color: #777;
-        }
-        .loading {
-            text-align: center;
-            padding: 50px;
-        }
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+      }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>لوحة تحكم النظام</h1>
-            <div id="global-status" class="status-badge">جاري التحميل...</div>
-        </header>
-        
-        <div class="dashboard">
-            <div id="database-card" class="card">
-                <div class="card-header">قاعدة البيانات</div>
-                <div class="card-body">
-                    <div id="database-status">جاري التحقق...</div>
-                </div>
-            </div>
-            
-            <div id="filesystem-card" class="card">
-                <div class="card-header">نظام الملفات</div>
-                <div class="card-body">
-                    <div id="filesystem-status">جاري التحقق...</div>
-                </div>
-            </div>
-            
-            <div id="system-card" class="card">
-                <div class="card-header">معلومات النظام</div>
-                <div class="card-body">
-                    <table id="system-info">
-                        <tr>
-                            <th>المعيار</th>
-                            <th>القيمة</th>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            
-            <div id="memory-card" class="card">
-                <div class="card-header">استخدام الذاكرة</div>
-                <div class="card-body">
-                    <div id="memory-usage">جاري التحقق...</div>
-                </div>
-            </div>
-            
-            <div id="routes-card" class="card">
-                <div class="card-header">الواجهات البرمجية المتاحة</div>
-                <div class="card-body">
-                    <div id="routes-container" class="routes-grid">جاري التحميل...</div>
-                </div>
-            </div>
+      <header>
+        <h1>لوحة تحكم النظام version 1.0</h1>
+        <div id="global-status" class="status-badge">جاري التحميل...</div>
+      </header>
+
+      <div class="dashboard">
+        <div id="database-card" class="card">
+          <div class="card-header">قاعدة البيانات</div>
+          <div class="card-body">
+            <div id="database-status">جاري التحقق...</div>
+          </div>
         </div>
-        
-        <div class="timestamp" id="last-updated">آخر تحديث: جاري التحميل...</div>
+
+        <div id="filesystem-card" class="card">
+          <div class="card-header">نظام الملفات</div>
+          <div class="card-body">
+            <div id="filesystem-status">جاري التحقق...</div>
+          </div>
+        </div>
+
+        <div id="system-card" class="card">
+          <div class="card-header">معلومات النظام</div>
+          <div class="card-body">
+            <table id="system-info">
+              <tr>
+                <th>المعيار</th>
+                <th>القيمة</th>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div id="memory-card" class="card">
+          <div class="card-header">استخدام الذاكرة</div>
+          <div class="card-body">
+            <div id="memory-usage">جاري التحقق...</div>
+          </div>
+        </div>
+
+        <div id="routes-card" class="card">
+          <div class="card-header">الواجهات البرمجية المتاحة</div>
+          <div class="card-body">
+            <div id="routes-container" class="routes-grid">جاري التحميل...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timestamp" id="last-updated">آخر تحديث: جاري التحميل...</div>
     </div>
 
     <script>
-        const apiData = {
-            "status": "API is operational",
-            "timestamp": "2025-06-16T16:07:38.783Z",
-            "database": {
-                "connected": true,
-                "message": "Successfully connected to Supabase PostgreSQL",
-                "timestamp": "2025-06-16T16:05:10.428Z"
-            },
-            "filesystem": {
-                "uploadsDirectory": "Available"
-            },
-            "system": {
-                "nodeVersion": "v20.13.1",
-                "platform": "win32",
-                "memoryUsage": {
-                    "rss": 54153216,
-                    "heapTotal": 15077376,
-                    "heapUsed": 14253224,
-                    "external": 3455048,
-                    "arrayBuffers": 90022
-                },
-                "uptime": 70.6269781
-            },
-            "routes": [
-                "/api/users",
-                "/api/dishes",
-                "/api/orders",
-                "/api/auth",
-                "/api/reports",
-                "/api/execute-sql",
-                "/api/send-email",
-                "/api/track/click"
-            ]
-        };
+      const apiData = {
+        status: "API is operational",
+        timestamp: "2025-06-16T16:07:38.783Z",
+        database: {
+          connected: true,
+          message: "Successfully connected to Supabase PostgreSQL",
+          timestamp: "2025-06-16T16:05:10.428Z",
+        },
+        filesystem: {
+          uploadsDirectory: "Available",
+        },
+        system: {
+          nodeVersion: "v20.13.1",
+          platform: "win32",
+          memoryUsage: {
+            rss: 54153216,
+            heapTotal: 15077376,
+            heapUsed: 14253224,
+            external: 3455048,
+            arrayBuffers: 90022,
+          },
+          uptime: 70.6269781,
+        },
+        routes: [
+          "/api/users",
+          "/api/dishes",
+          "/api/orders",
+          "/api/auth",
+          "/api/reports",
+          "/api/execute-sql",
+          "/api/send-email",
+          "/api/track/click",
+        ],
+      };
 
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i] )
-        }
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i]);
+      }
 
-        function formatUptime(seconds) {
-            const days = Math.floor(seconds / (3600 * 24));
-            seconds %= 3600 * 24;
-            const hours = Math.floor(seconds / 3600);
-            seconds %= 3600;
-            const minutes = Math.floor(seconds / 60);
-            seconds = Math.floor(seconds % 60);
-            
-            let result = '';
-            if (days > 0) result += `${days} يوم `;
-            if (hours > 0) result += `${hours} ساعة `;
-            if (minutes > 0) result += `${minutes} دقيقة `;
-            result += `${seconds} ثانية`;
-            
-            return result;
-        }
+      function formatUptime(seconds) {
+        const days = Math.floor(seconds / (3600 * 24));
+        seconds %= 3600 * 24;
+        const hours = Math.floor(seconds / 3600);
+        seconds %= 3600;
+        const minutes = Math.floor(seconds / 60);
+        seconds = Math.floor(seconds % 60);
 
-        function renderData(data) {
-            document.getElementById('global-status').textContent = 
-                data.status.includes('operational') ? 'يعمل بشكل طبيعي' : 'هناك مشكلة';
-            document.getElementById('global-status').style.backgroundColor = 
-                data.status.includes('operational') ? 'var(--success)' : 'var(--danger)';
-            
-            const dbCard = document.getElementById('database-card');
-            const dbStatus = document.getElementById('database-status');
-            if (data.database.connected) {
-                dbCard.classList.add('success');
-                dbStatus.innerHTML = `
+        let result = "";
+        if (days > 0) result += `${days} يوم `;
+        if (hours > 0) result += `${hours} ساعة `;
+        if (minutes > 0) result += `${minutes} دقيقة `;
+        result += `${seconds} ثانية`;
+
+        return result;
+      }
+
+      function renderData(data) {
+        document.getElementById("global-status").textContent =
+          data.status.includes("operational")
+            ? "يعمل بشكل طبيعي"
+            : "هناك مشكلة";
+        document.getElementById("global-status").style.backgroundColor =
+          data.status.includes("operational")
+            ? "var(--success)"
+            : "var(--danger)";
+
+        const dbCard = document.getElementById("database-card");
+        const dbStatus = document.getElementById("database-status");
+        if (data.database.connected) {
+          dbCard.classList.add("success");
+          dbStatus.innerHTML = `
                     <p>✅ متصل بنجاح</p>
                     <p>${data.database.message}</p>
-                    <p class="timestamp">آخر اتصال: ${new Date(data.database.timestamp).toLocaleString('ar-EG')}</p>
+                    <p class="timestamp">آخر اتصال: ${new Date(
+                      data.database.timestamp
+                    ).toLocaleString("ar-EG")}</p>
                 `;
-            } else {
-                dbCard.classList.add('danger');
-                dbStatus.innerHTML = `
+        } else {
+          dbCard.classList.add("danger");
+          dbStatus.innerHTML = `
                     <p>❌ غير متصل</p>
                     <p>${data.database.message}</p>
                 `;
-            }
-            
-            const fsCard = document.getElementById('filesystem-card');
-            const fsStatus = document.getElementById('filesystem-status');
-            if (data.filesystem.uploadsDirectory === 'Available') {
-                fsCard.classList.add('success');
-                fsStatus.innerHTML = `
+        }
+
+        const fsCard = document.getElementById("filesystem-card");
+        const fsStatus = document.getElementById("filesystem-status");
+        if (data.filesystem.uploadsDirectory === "Available") {
+          fsCard.classList.add("success");
+          fsStatus.innerHTML = `
                     <p>✅ مجلد التحميلات متاح</p>
                 `;
-            } else {
-                fsCard.classList.add('danger');
-                fsStatus.innerHTML = `
+        } else {
+          fsCard.classList.add("danger");
+          fsStatus.innerHTML = `
                     <p>❌ مجلد التحميلات غير متاح</p>
                 `;
-            }
-            
-            const systemTable = document.getElementById('system-info');
-            systemTable.innerHTML += `
+        }
+
+        const systemTable = document.getElementById("system-info");
+        systemTable.innerHTML += `
                 <tr>
                     <td>إصدار Node.js</td>
                     <td>${data.system.nodeVersion}</td>
@@ -297,37 +311,45 @@
                     <td>${formatUptime(data.system.uptime)}</td>
                 </tr>
             `;
-            
-            const memoryUsage = document.getElementById('memory-usage');
-            const mem = data.system.memoryUsage;
-            const usedPercent = (mem.heapUsed / mem.heapTotal * 100).toFixed(1);
-            
-            memoryUsage.innerHTML = `
-                <p>الذاكرة المستخدمة: ${formatBytes(mem.heapUsed)} من ${formatBytes(mem.heapTotal)}</p>
+
+        const memoryUsage = document.getElementById("memory-usage");
+        const mem = data.system.memoryUsage;
+        const usedPercent = ((mem.heapUsed / mem.heapTotal) * 100).toFixed(1);
+
+        memoryUsage.innerHTML = `
+                <p>الذاكرة المستخدمة: ${formatBytes(
+                  mem.heapUsed
+                )} من ${formatBytes(mem.heapTotal)}</p>
                 <div class="progress-bar">
                     <div class="progress" style="width: ${usedPercent}%"></div>
                 </div>
                 <p>النسبة: ${usedPercent}%</p>
                 <p class="timestamp">الذاكرة الكلية: ${formatBytes(mem.rss)}</p>
             `;
-            
-            const routesContainer = document.getElementById('routes-container');
-            routesContainer.innerHTML = data.routes.map(route => `
+
+        const routesContainer = document.getElementById("routes-container");
+        routesContainer.innerHTML = data.routes
+          .map(
+            (route) => `
                 <div class="route-item">${route}</div>
-            `).join('');
-            
-            document.getElementById('last-updated').textContent = 
-                `آخر تحديث: ${new Date(data.timestamp).toLocaleString('ar-EG')}`;
-        }
+            `
+          )
+          .join("");
 
-        function fetchData() {
-            
-            setTimeout(() => {
-                renderData(apiData);
-            }, 1000);
-        }
+        document.getElementById(
+          "last-updated"
+        ).textContent = `آخر تحديث: ${new Date(data.timestamp).toLocaleString(
+          "ar-EG"
+        )}`;
+      }
 
-        document.addEventListener('DOMContentLoaded', fetchData);
+      function fetchData() {
+        setTimeout(() => {
+          renderData(apiData);
+        }, 1000);
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchData);
     </script>
-</body>
+  </body>
 </html>
