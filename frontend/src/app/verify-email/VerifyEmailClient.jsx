@@ -14,6 +14,8 @@ export default function VerifyEmailClient() {
   const [verificationStatus, setVerificationStatus] = useState('verifying');
   const [progress, setProgress] = useState(0);
 
+
+  
   useEffect(() => {
     const token = searchParams.get('token');
     if (!token) return setVerificationStatus('error');
