@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
   "dev": "next dev",
-    "dev1": "next dev --port 3001 --turbopack",
   "build": "next build",
-    "start": "next start",
+  "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
