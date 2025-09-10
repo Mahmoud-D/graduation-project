@@ -12,9 +12,7 @@ const reportsRoutes = require("./routes/reportsRoutes.js");
 const promotionsRoutes = require("./routes/promotionsRoutes");
 const reviewRoutes = require("./routes/reviewsRoutes");
 const restaurantReviewsRoutes = require("./routes/restaurantReviewsRoutes");
-// paypalRoutes
-const paypalRoutes = require("./routes/paypalRoutes");
-
+  
 const categoryRoutes = require("./routes/categoryRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const distinctiveDishRoutes = require("./routes/distinctiveDishRoutes");
@@ -74,8 +72,7 @@ app.use("/api/offers", offersRoutes);
 
  app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportsRoutes); 
-// app.use("/api/paypal", paypalRoutes);
-
+ 
 // app.post('/send-email', emailController.sendEmail);
 // app.get('/track/open', async (req, res) => {
 //   const email = req.query.email;
@@ -130,7 +127,7 @@ app.use("/api/reports", reportsRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
- app.get('/status', (req, res) => {
+ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'HTML.html'));
 });
 
@@ -156,13 +153,13 @@ app.get("/api", async (req, res) => {
       },
       system: systemInfo,
       routes: [
+        "version 1.0",
         "/api/users",
         "/api/dishes",
         "/api/orders",
         "/api/auth",
         "/api/reports",
-        "/api/paypal",
-        "/api/execute-sql",
+         "/api/execute-sql",
         "/api/send-email",
         "/api/track/click",]
     });

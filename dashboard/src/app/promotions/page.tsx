@@ -269,7 +269,7 @@ const PromotionsPage = () => {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch("http://localhost:5000/api/promotions", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/promotions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -305,7 +305,7 @@ const PromotionsPage = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `http://localhost:5000/api/promotions/${selectedPromotion.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/promotions/${selectedPromotion.id}`,
         {
           method: "PUT",
           headers: {
@@ -343,7 +343,7 @@ const PromotionsPage = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `http://localhost:5000/api/promotions/${promotion.id}/toggle`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/promotions/${promotion.id}/toggle`,
         {
           method: "PATCH",
           headers: {
@@ -374,7 +374,7 @@ const PromotionsPage = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `http://localhost:5000/api/promotions/${promotionId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/promotions/${promotionId}`,
         {
           method: "DELETE",
           headers: {

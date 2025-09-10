@@ -7,6 +7,8 @@ class AuthService {
 
   async login(email, password) {
     const response = await this.api.post('/auth/login', { email, password });
+    console.log(response);
+    
     
     if (response.success && response.data?.token) {
       this.api.setToken(response.data.token);

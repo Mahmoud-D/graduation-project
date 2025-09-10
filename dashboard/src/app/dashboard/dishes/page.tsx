@@ -80,7 +80,7 @@ const DishImage = memo(
       const path = imagePath.startsWith("uploads/")
         ? imagePath
         : `uploads/${imagePath}`;
-      return `http://localhost:5000/api/${path}`;
+      return `${process.env.NEXT_PUBLIC_API_URL}/api/${path}`;
     }, [imagePath, hasError]);
 
     const handleError = useCallback(() => {

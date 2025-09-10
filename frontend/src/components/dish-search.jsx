@@ -112,7 +112,7 @@ export default function DishSearch({ onSearchActive }) {
       setCategoriesLoading(true);
       setCategoryError(null);
       try {
-        const response = await fetch(`http://localhost:5000/api/categories`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -168,7 +168,7 @@ export default function DishSearch({ onSearchActive }) {
           if (maxP && !isNaN(maxP)) params.append("maxPrice", maxP);
 
           const response = await fetch(
-            `http://localhost:5000/api/dishes?${params.toString()}`
+            `${process.env.NEXT_PUBLIC_API_URL}/api/dishes?${params.toString()}`
           );
           
           if (!response.ok) {
