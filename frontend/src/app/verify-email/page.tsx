@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import authEndpoints from "@/app/api/endPonts/auth";
 import { Progress } from "@/components/ui/progress";
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
-const VerifyEmail = () => {
+const VerifyEmailContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [verificationStatus, setVerificationStatus] = useState('verifying');
@@ -93,5 +93,25 @@ const VerifyEmail = () => {
     </div>
   );
 };
+
+const VerifyEmailFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <Card className="w-full max-w-md">
+      <CardContent className="space-y-6 pt-6">
+        <Progress value={20} className="w-full" />
+        <div className="text-center space-y-4">
+          <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading verification...</p>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const VerifyEmail = () => (
+  <Suspense fallback={<VerifyEmailFallback />}>
+    <VerifyEmailContent />
+  </Suspense>
+);
 
 export default VerifyEmail;
